@@ -284,7 +284,7 @@ class DPMModelProperties:
 @dataclass
 class PointInjection:
     numberOfParticlesPerPoint: BatchableNumber  = field(default_factory=lambda: BatchableNumber('100'))
-    injectionTime: BatchableNumber              = field(default_factory=lambda: BatchableNumber('100'))
+    injectionTime: BatchableNumber              = field(default_factory=lambda: BatchableNumber('0'))
     particleVelocity: Vector                    = field(default_factory=lambda: Vector.new('1', '1', '1'))
     positions: list                             = field(default_factory=list)
 
@@ -336,8 +336,8 @@ class FlowRate:
     specification: DPMFlowRateSpec              = DPMFlowRateSpec.PARTICLE_COUNT
     particleCount: ParticleCountParameters      = field(default_factory=ParticleCountParameters)
     particleVolume: ParticleVolumeParameters    = field(default_factory=ParticleVolumeParameters)
-    startTime: BatchableNumber                  = field(default_factory=lambda: BatchableNumber('1'))
-    stopTime: BatchableNumber                   = field(default_factory=lambda: BatchableNumber('100'))
+    startTime: BatchableNumber                  = field(default_factory=lambda: BatchableNumber('0'))
+    stopTime: BatchableNumber                   = field(default_factory=lambda: BatchableNumber('1'))
 
     @staticmethod
     def fromElement(e):
@@ -462,7 +462,7 @@ class Injection:
                     <injectorProperties>
                         <pointInjection>
                             <numberOfParticlesPerPoint>100</numberOfParticlesPerPoint>
-                            <injectionTime>1</injectionTime>
+                            <injectionTime>0</injectionTime>
                             <particleVelocity>
                                 <x>1</x>
                                 <y>1</y>
@@ -485,7 +485,7 @@ class Injection:
                                 </volumeFlowRate>
                                 <massFlowRate>1e-6</massFlowRate>
                             </particleVolume>
-                            <startTime>0.01</startTime>
+                            <startTime>0</startTime>
                             <stopTime>1</stopTime>
                         </flowRate>
                         <coneInjection>

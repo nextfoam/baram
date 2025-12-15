@@ -186,7 +186,7 @@ class InjectionDialog(QDialog):
         try:
             if injectionType == DPMInjectionType.POINT:
                 self._ui.numberOfParticlesPerPoint.validate(self.tr('Number of Particles per Point'))
-                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0)
+                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0, lowInclusive=True)
                 self._ui.pointParticleVelocity.validate(self.tr('Particle Velocity'))
             else:
                 if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
@@ -199,7 +199,7 @@ class InjectionDialog(QDialog):
                     self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
                     self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
 
-                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=False)
+                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=True)
                 self._ui.stopTime.validate(self.tr('Stop Time'))
                 if self._ui.startTime.validatedFloat() >= self._ui.stopTime.validatedFloat():
                     await AsyncMessageBox().information(self, self.tr('Input Error'),

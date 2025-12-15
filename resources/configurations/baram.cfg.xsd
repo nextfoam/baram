@@ -2601,7 +2601,7 @@
                                                                                 <xs:complexType>
                                                                                     <xs:sequence>
                                                                                         <xs:element name="numberOfParticlesPerPoint" type="inputPositiveIntegerType" default="100"/>
-                                                                                        <xs:element name="injectionTime" type="inputNumberType" default="100"/>
+                                                                                        <xs:element name="injectionTime" type="inputNumberType" default="0"/>
                                                                                         <xs:element name="particleVelocity" type="vector"/>
                                                                                         <xs:element name="positions">
                                                                                             <xs:complexType>
@@ -2642,8 +2642,8 @@
                                                                                                 </xs:sequence>
                                                                                             </xs:complexType>
                                                                                         </xs:element>
-                                                                                        <xs:element name="startTime" type="inputPositiveNumberType" default="100"/>
-                                                                                        <xs:element name="stopTime" type="inputPositiveNumberType" default="100"/>
+                                                                                        <xs:element name="startTime" type="inputNumberType" default="0"/>
+                                                                                        <xs:element name="stopTime" type="inputPositiveNumberType" default="1"/>
                                                                                     </xs:sequence>
                                                                                 </xs:complexType>
                                                                             </xs:element>
