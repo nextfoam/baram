@@ -363,7 +363,7 @@ class CloudProperties(DictionaryFile):
                 localPatches.append({
                     'type': 'rebound',
                     'e': self._helper.pFloatValue(interaction.reflect.normal),
-                    'mu': self._helper.pFloatValue(interaction.reflect.tangential),
+                    'mu': (1 - float(self._helper.pFloatValue(interaction.reflect.tangential))),
                 })
             elif interaction.type == WallInteractionType.ESCAPE:
                 localPatches.append({
