@@ -72,7 +72,6 @@ class ProcessInformationPage(ContentPage):
         self._ui.calculation.setMinimumWidth(self.parent().width() - 30)
         self._connectSignalsSlots()
 
-        self._batchCaseList.load()
         self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
 
     def showEvent(self, ev):
