@@ -80,10 +80,10 @@ class CastellationPage(StepPage):
             return False
 
     def load(self):
+        self._db = app.db.checkout()
+
         if self._loaded:
             return
-
-        self._db = app.db.checkout()
 
         castellation = self._db.getElement('castellation')
         self._setConfigurastions(castellation)
