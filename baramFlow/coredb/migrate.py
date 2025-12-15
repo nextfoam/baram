@@ -1118,6 +1118,7 @@ def _version_11(root: etree.Element):
                         <numericalConditions>
                             <interactionWithContinuousPhase>true</interactionWithContinuousPhase>
                             <maxParticleCourantNumber>0.3</maxParticleCourantNumber>
+                            <DPMIterationInterval>10</DPMIterationInterval>
                             <nodeBasedAveraging>true</nodeBasedAveraging>
                             <trackingScheme>implicit</trackingScheme>
                         </numericalConditions>

@@ -44,46 +44,62 @@ from baramFlow.openfoam.solver import findSolver, usePrgh
 from .fv_options import generateSourceTermField, generateFixedValueField
 
 
-def _getAvailableFields():
+def _getSolverInfoFields(rname: str)->list[str]:
+    db = coredb.CoreDB()
+
+    solveFlow = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow')
+    solveEnergy = (db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
+    solveUDS = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS')
+
     compresibleDensity = GeneralDB.isCompressibleDensity()
-    if compresibleDensity:
-        fields = ['rhoU', 'rho']
-    else:
-        fields = ['U']
 
-    if usePrgh():
-        fields.append('p_rgh')
-    else:
-        fields.append('p')
+    mid = RegionDB.getMaterial(rname)
+    phase = MaterialDB.getPhase(mid)
 
-    # Fields depending on the turbulence model
-    rasModel = TurbulenceModelsDB.getRASModel()
-    if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
-        fields.append('k')
-        fields.append('epsilon')
-    elif rasModel == TurbulenceModel.K_OMEGA:
-        fields.append('k')
-        fields.append('omega')
-    elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
-        fields.append('nuTilda')
+    fields: list[str] = []
 
-    if ModelsDB.isEnergyModelOn():
+    if solveFlow and phase != Phase.SOLID:
         if compresibleDensity:
-            fields.append('rhoE')
+            fields.extend(['rhoU', 'rho'])
         else:
-            fields.append('h')
+            fields.append('U')
 
-    if ModelsDB.isMultiphaseModelOn():
-        for _, name, _, phase in MaterialDB.getMaterials():
-            if phase != Phase.SOLID.value:
-                fields.append(f'alpha.{name}')
-    elif ModelsDB.isSpeciesModelOn():
-        for mixture, _ in RegionDB.getMixturesInRegions():
-            for name in MaterialDB.getSpecies(mixture).values():
-                fields.append(name)
+        if usePrgh():
+            fields.append('p_rgh')
+        else:
+            fields.append('p')
 
-    for _, fieldName in CoreDBReader().getUserDefinedScalars():
-        fields.append(fieldName)
+        # Fields depending on the turbulence model
+        rasModel = TurbulenceModelsDB.getRASModel()
+        if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
+            fields.append('k')
+            fields.append('epsilon')
+        elif rasModel == TurbulenceModel.K_OMEGA:
+            fields.append('k')
+            fields.append('omega')
+        elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
+            fields.append('nuTilda')
+
+        if ModelsDB.isMultiphaseModelOn():
+            for _, name, _, phase in MaterialDB.getMaterials():
+                if phase != Phase.SOLID.value:
+                    fields.append(f'alpha.{name}')
+
+        if ModelsDB.isSpeciesModelOn():
+            for mixture, _ in RegionDB.getMixturesInRegions():
+                for name in MaterialDB.getSpecies(mixture).values():
+                    fields.append(name)
+
+    if solveEnergy:
+        if ModelsDB.isEnergyModelOn():
+            if compresibleDensity:
+                fields.append('rhoE')
+            else:
+                fields.append('h')
+
+    if solveUDS and phase != Phase.SOLID:
+        for _, fieldName in CoreDBReader().getUserDefinedScalars():
+            fields.append(fieldName)
 
     return fields
 
@@ -312,14 +328,10 @@ class ControlDict(DictionaryFile):
 
             residualsName = f'solverInfo_{rgid}'
 
-            mid = RegionDB.getMaterial(rname)
-            if MaterialDB.getPhase(mid) == Phase.SOLID:
-                if ModelsDB.isEnergyModelOn():
-                    fields = ['h']
-                else:
-                    continue  # 'h' is the only property solid has
-            else:
-                fields = _getAvailableFields()
+            fields = _getSolverInfoFields(rname)
+
+            if len(fields) == 0:
+                continue
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',

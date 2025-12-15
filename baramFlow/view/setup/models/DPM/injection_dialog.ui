@@ -54,7 +54,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="injectionType"/>
+              <widget class="PythonComboBox" name="injectionType"/>
              </item>
             </layout>
            </widget>
@@ -149,7 +149,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QComboBox" name="flowRateSpec"/>
+                 <widget class="PythonComboBox" name="flowRateSpec"/>
                 </item>
                </layout>
               </widget>
@@ -274,7 +274,7 @@
              <item row="0" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
-                <widget class="QComboBox" name="surfaceParticleVelocityType"/>
+                <widget class="PythonComboBox" name="surfaceParticleVelocityType"/>
                </item>
                <item>
                 <widget class="VectorWidget" name="surfaceParticleVelocity" native="true"/>
@@ -320,7 +320,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="coneInjectorType"/>
+              <widget class="PythonComboBox" name="coneInjectorType"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_7">
@@ -365,7 +365,7 @@
              <item row="5" column="0">
               <widget class="QLabel" name="label_30">
                <property name="text">
-                <string>Outer Radius ()m)</string>
+                <string>Outer Radius (m)</string>
                </property>
               </widget>
              </item>
@@ -375,7 +375,7 @@
              <item row="6" column="0">
               <widget class="QLabel" name="label_31">
                <property name="text">
-                <string>Inner Radius ()m)</string>
+                <string>Inner Radius (m)</string>
                </property>
               </widget>
              </item>
@@ -400,7 +400,7 @@
               </widget>
              </item>
              <item row="8" column="1">
-              <widget class="QComboBox" name="coneParticleSpeed"/>
+              <widget class="PythonComboBox" name="coneParticleSpeed"/>
              </item>
              <item row="9" column="0">
               <widget class="QLabel" name="label_34">
@@ -461,7 +461,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_21">
                <property name="text">
-                <string>Diameter Distributionl</string>
+                <string>Diameter Distribution</string>
                </property>
               </widget>
              </item>
@@ -621,6 +621,11 @@
    <extends>QWidget</extends>
    <header>baramFlow.view.setup.models.DPM.function1_widget</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <resources/>

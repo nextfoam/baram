@@ -105,6 +105,7 @@ class InjectionDialog(QDialog):
         self._ui.injectionType.currentIndexChanged.connect(self._injectionTypeChanged)
         self._ui.editPosition.clicked.connect(self._opePositionEditor)
         self._ui.flowRateSpec.currentIndexChanged.connect(self._flowRateSpecChanged)
+        self._ui.surfaceParticleVelocityType.currentIndexChanged.connect(self._surfaceParticleVelocityTypeChanged)
         self._ui.surfaceSelect.clicked.connect(self._openSurfaceSelector)
         self._ui.coneInjectorType.currentIndexChanged.connect(self._coneInjectorTypeChanged)
         self._ui.coneParticleSpeed.currentIndexChanged.connect(self._coneParticleSpeedChanged)
@@ -185,7 +186,7 @@ class InjectionDialog(QDialog):
         try:
             if injectionType == DPMInjectionType.POINT:
                 self._ui.numberOfParticlesPerPoint.validate(self.tr('Number of Particles per Point'))
-                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0)
+                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0, lowInclusive=True)
                 self._ui.pointParticleVelocity.validate(self.tr('Particle Velocity'))
             else:
                 if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
@@ -198,7 +199,7 @@ class InjectionDialog(QDialog):
                     self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
                     self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
 
-                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=False)
+                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=True)
                 self._ui.stopTime.validate(self.tr('Stop Time'))
                 if self._ui.startTime.validatedFloat() >= self._ui.stopTime.validatedFloat():
                     await AsyncMessageBox().information(self, self.tr('Input Error'),
@@ -356,6 +357,10 @@ class InjectionDialog(QDialog):
             self._ui.particleCountParameters.hide()
             self._ui.particleVolumeParameters.show()
 
+    def _surfaceParticleVelocityTypeChanged(self):
+        velocityType: DPMParticleVelocityType = self._ui.surfaceParticleVelocityType.currentData()
+        self._ui.surfaceParticleVelocity.setEnabled(velocityType == DPMParticleVelocityType.CONSTANT)
+
     def _openSurfaceSelector(self):
         def surfaceSelected():
             self._setSurface(self._dialog.selectedItem())
@@ -367,7 +372,7 @@ class InjectionDialog(QDialog):
 
     def _coneInjectorTypeChanged(self):
         type_ = self._ui.coneInjectorType.currentData()
-        layout = self._ui.coneInjection.layout()
+        layout = cast(QFormLayout, self._ui.coneInjection.layout())
         if type_ == DPMConeInjectorType.POINT:
             layout.setRowVisible(self._ui.outerRadius, False)
             layout.setRowVisible(self._ui.innerRadius, False)
@@ -377,14 +382,14 @@ class InjectionDialog(QDialog):
 
     def _coneParticleSpeedChanged(self):
         particleSpeed = self._ui.coneParticleSpeed.currentData()
-        layout = self._ui.coneInjection.layout()
+        layout = cast(QFormLayout, self._ui.coneInjection.layout())
         layout.setRowVisible(self._ui.injectionSpeed, particleSpeed == DPMParticleSpeed.FROM_INJECTION_SPEED)
         layout.setRowVisible(self._ui.injectorPressure, particleSpeed == DPMParticleSpeed.FROM_PRESSURE)
         layout.setRowVisible(self._ui.dischargeCoeff, particleSpeed == DPMParticleSpeed.FROM_DISCHARGE_COEFF)
 
     def _diameterDistributionChanged(self):
         distribution = self._ui.diameterDistribution.currentData()
-        layout = self._ui.diameterParameters.layout()
+        layout = cast(QFormLayout, self._ui.diameterParameters.layout())
         if distribution == DPMDiameterDistribution.UNIFORM:
             layout.setRowVisible(self._ui.diameter, True)
             layout.setRowVisible(self._ui.minDiameter, False)
