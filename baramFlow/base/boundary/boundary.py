@@ -13,7 +13,7 @@ from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.libdb import nsmap
 
 
-class WallInteractionType(Enum):
+class PatchInteractionType(Enum):
     NONE    = 'none'
     REFLECT = 'reflect'
     ESCAPE  = 'escape'
@@ -45,22 +45,22 @@ class RecycleProperties:
 
 
 @dataclass
-class WallInteraction:
-    type: WallInteractionType
+class PatchInteraction:
+    type: PatchInteractionType
     reflect: CoefficientOfRestitution
     recycle: RecycleProperties
 
     @staticmethod
     def fromElement(e):
-        return WallInteraction(
-            type=WallInteractionType(e.find('type', namespaces=nsmap).text),
+        return PatchInteraction(
+            type=PatchInteractionType(e.find('type', namespaces=nsmap).text),
             reflect=CoefficientOfRestitution.fromElement(e.find('reflect/coefficientOfRestitution', namespaces=nsmap)),
             recycle=RecycleProperties.fromElement(e.find('recycle', namespaces=nsmap)))
 
     def toElement(self):
         return etree.fromstring(
             f'''
-                <wallInteraction xmlns="http://www.baramcfd.org/baram">
+                <patchInteraction xmlns="http://www.baramcfd.org/baram">
                     <type>{self.type.value}</type>
                     <reflect>
                         <coefficientOfRestitution>
@@ -72,7 +72,7 @@ class WallInteraction:
                         <recycleBoundary>{self.recycle.recycleBoundary}</recycleBoundary>
                         {self.recycle.recycleFraction.toXML('recycleFraction')}
                     </recycle>
-                </wallInteraction>
+                </patchInteraction>
             '''
         )
 
@@ -114,19 +114,19 @@ class BoundaryManager:
             return coredb.CoreDB().getElement(BoundaryDB.getXPath(bcid))
 
     @staticmethod
-    def wallInteraction(bcid):
-        return WallInteraction.fromElement(coredb.CoreDB().getElement(BoundaryDB.getXPath(bcid) + '/wall/wallInteraction'))
+    def patchInteraction(bcid):
+        return PatchInteraction.fromElement(coredb.CoreDB().getElement(BoundaryDB.getXPath(bcid) + '/patchInteraction'))
 
     @staticmethod
-    def updateWallInteraction(db, bcid, wallInteraction):
-        wall = db.getElement(BoundaryDB.getXPath(bcid) + '/wall')
+    def updatePatchInteraction(db, bcid, patchInteraction):
+        p = db.getElement(BoundaryDB.getXPath(bcid))
 
-        new: Element = wallInteraction.toElement()
+        new: Element = patchInteraction.toElement()
 
-        for i, child in enumerate(wall):
+        for i, child in enumerate(p):
             if child.tag == new.tag:
-                wall.remove(child)
-                wall.insert(i, new)
+                p.remove(child)
+                p.insert(i, new)
                 break
         else:
             assert False

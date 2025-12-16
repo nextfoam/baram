@@ -6,15 +6,15 @@ from PySide6.QtWidgets import QWidget
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog
 
-from baramFlow.base.boundary.boundary import WallInteractionType
+from baramFlow.base.boundary.boundary import PatchInteractionType
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from .wall_interaction_widget_ui import Ui_WallInteractionWidget
+from .patch_interaction_widget_ui import Ui_PatchInteractionWidget
 
 
-class WallInteractionWidget(QWidget):
+class PatchInteractionWidget(QWidget):
     def __init__(self, bcid):
         super().__init__()
-        self._ui = Ui_WallInteractionWidget()
+        self._ui = Ui_PatchInteractionWidget()
         self._ui.setupUi(self)
 
         self._typeRadios = EnumButtonGroup()
@@ -24,11 +24,11 @@ class WallInteractionWidget(QWidget):
         self._data = None
         self._recycleBoundary = None
 
-        self._typeRadios.addEnumButton(self._ui.none,       WallInteractionType.NONE)
-        self._typeRadios.addEnumButton(self._ui.reflect,    WallInteractionType.REFLECT)
-        self._typeRadios.addEnumButton(self._ui.escape,     WallInteractionType.ESCAPE)
-        self._typeRadios.addEnumButton(self._ui.trap,       WallInteractionType.TRAP)
-        self._typeRadios.addEnumButton(self._ui.recycle,    WallInteractionType.RECYCLE)
+        self._typeRadios.addEnumButton(self._ui.none,       PatchInteractionType.NONE)
+        self._typeRadios.addEnumButton(self._ui.reflect,    PatchInteractionType.REFLECT)
+        self._typeRadios.addEnumButton(self._ui.escape,     PatchInteractionType.ESCAPE)
+        self._typeRadios.addEnumButton(self._ui.trap,       PatchInteractionType.TRAP)
+        self._typeRadios.addEnumButton(self._ui.recycle,    PatchInteractionType.RECYCLE)
 
         self._connectSignalsSlots()
 
@@ -42,10 +42,10 @@ class WallInteractionWidget(QWidget):
 
     def updateData(self):
         self._data.type = self._typeRadios.checkedData()
-        if self._data.type == WallInteractionType.REFLECT:
+        if self._data.type == PatchInteractionType.REFLECT:
             self._data.reflect.normal = self._ui.normal.batchableNumber()
             self._data.reflect.tangential = self._ui.tangential.batchableNumber()
-        elif self._data.type == WallInteractionType.RECYCLE:
+        elif self._data.type == PatchInteractionType.RECYCLE:
             self._data.recycle.recycleBoundary = self._recycleBoundary
             self._data.recycle.recycleFraction = self._ui.recycleFraction.batchableNumber()
 
@@ -53,10 +53,10 @@ class WallInteractionWidget(QWidget):
 
     def validate(self):
         type_ = self._typeRadios.checkedData()
-        if type_ == WallInteractionType.REFLECT:
+        if type_ == PatchInteractionType.REFLECT:
             self._ui.normal.validate(self.tr('Normal'), low=0, high=1)
             self._ui.tangential.validate(self.tr('Tangential'), low=0, high=1)
-        elif type_ == WallInteractionType.RECYCLE:
+        elif type_ == PatchInteractionType.RECYCLE:
             if self._recycleBoundary == '0':
                 raise ValueError(self.tr('Select Recycle Boundary.'))
 
@@ -73,8 +73,8 @@ class WallInteractionWidget(QWidget):
 
     def _typeChanged(self, type_):
         # type_ = self._typeRadios.checkedData()
-        self._ui.coefficientOfResititution.setEnabled(type_ == WallInteractionType.REFLECT)
-        self._ui.recycleParameters.setEnabled(type_ == WallInteractionType.RECYCLE)
+        self._ui.coefficientOfResititution.setEnabled(type_ == PatchInteractionType.REFLECT)
+        self._ui.recycleParameters.setEnabled(type_ == PatchInteractionType.RECYCLE)
 
     def _openBoundarySelector(self):
         def boundarySelected():

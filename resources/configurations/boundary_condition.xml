@@ -196,19 +196,6 @@
             <model>none</model>
             <limit>none</limit>
         </wallAdhesions>
-        <wallInteraction>
-            <type>reflect</type>
-            <reflect>
-                <coefficientOfRestitution>
-                    <normal>1</normal>
-                    <tangential>1</tangential>
-                </coefficientOfRestitution>
-            </reflect>
-            <recycle>
-                <recycleBoundary>0</recycleBoundary>
-                <recycleFraction>1</recycleFraction>
-            </recycle>
-        </wallInteraction>
     </wall>
     <thermoCoupledWall>
         <temperature>
@@ -287,4 +274,17 @@
     <species/>
     <pressure>0</pressure>
     <fanCurveName>00000000-0000-0000-0000-000000000000</fanCurveName>
+    <patchInteraction>
+        <type>reflect</type>
+        <reflect>
+            <coefficientOfRestitution>
+                <normal>1</normal>
+                <tangential>1</tangential>
+            </coefficientOfRestitution>
+        </reflect>
+        <recycle>
+            <recycleBoundary>0</recycleBoundary>
+            <recycleFraction>1</recycleFraction>
+        </recycle>
+    </patchInteraction>
 </boundaryCondition>

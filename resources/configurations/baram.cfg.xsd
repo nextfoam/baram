@@ -1681,45 +1681,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="wallInteraction">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="type" default="none">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:string">
-                                    <xs:enumeration value="none"/>
-                                    <xs:enumeration value="reflect"/>
-                                    <xs:enumeration value="escape"/>
-                                    <xs:enumeration value="trap"/>
-                                    <xs:enumeration value="recycle"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="reflect">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="coefficientOfRestitution">
-                                        <xs:complexType>
-                                            <xs:sequence>
-                                                <xs:element name="normal" type="inputRatioType" default="1"/>
-                                                <xs:element name="tangential" type="inputRatioType" default="1"/>
-                                            </xs:sequence>
-                                        </xs:complexType>
-                                    </xs:element>
-                                </xs:sequence>
-                            </xs:complexType>
-                        </xs:element>
-                        <xs:element name="recycle">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="recycleBoundary" type="inputNumberType" default="1"/>
-                                    <xs:element name="recycleFraction" type="inputRatioType" default="1"/>
-                                </xs:sequence>
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -1879,6 +1840,45 @@
                 <xs:element name="species" type="speciesListType"/>
                 <xs:element name="pressure" type="inputNumberType" default="0"/>
                 <xs:element name="fanCurveName" type="uuidType"/>
+                <xs:element name="patchInteraction">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="type" default="none">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="none"/>
+                                        <xs:enumeration value="reflect"/>
+                                        <xs:enumeration value="escape"/>
+                                        <xs:enumeration value="trap"/>
+                                        <xs:enumeration value="recycle"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="reflect">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="coefficientOfRestitution">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="normal" type="inputRatioType" default="1"/>
+                                                    <xs:element name="tangential" type="inputRatioType" default="1"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="recycle">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="recycleBoundary" type="inputNumberType" default="1"/>
+                                        <xs:element name="recycleFraction" type="inputRatioType" default="1"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>

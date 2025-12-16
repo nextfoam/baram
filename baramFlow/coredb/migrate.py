@@ -1163,12 +1163,12 @@ def _version_11(root: etree.Element):
             ''')
             p.append(e)
 
-    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/wall', namespaces=_nsmap):
-        if p.find('wallInteraction', namespaces=_nsmap) is None:
-            logger.debug(f'    Updating "wallInteraction" to {p}')
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('patchInteraction', namespaces=_nsmap) is None:
+            logger.debug(f'    Updating "patchInteraction" to {p}')
 
             e = etree.fromstring(f'''
-                <wallInteraction xmlns="{_ns}">
+                <patchInteraction xmlns="{_ns}">
                     <type>reflect</type>
                     <reflect>
                         <coefficientOfRestitution>
@@ -1180,7 +1180,7 @@ def _version_11(root: etree.Element):
                         <recycleBoundary>0</recycleBoundary>
                         <recycleFraction>1</recycleFraction>
                     </recycle>
-                </wallInteraction>
+                </patchInteraction>
             ''')
             p.append(e)
 

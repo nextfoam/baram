@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA
 
+from baramFlow.base.boundary.boundary import PatchInteractionType
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
@@ -300,9 +301,15 @@ class PolyMeshLoader(QObject):
                             boundaryType = BoundaryType.THERMO_COUPLED_WALL
 
                 boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
+
+                xpath = BoundaryDB.getXPath(boundary['bcid'])
+
                 if coupledBoundary and 'bcid' in coupledBoundary:
-                    db.setValue(BoundaryDB.getXPath(boundary['bcid']) + '/coupledBoundary', coupledBoundary['bcid'])
+                    db.setValue(xpath + '/coupledBoundary', coupledBoundary['bcid'])
                     db.setValue(BoundaryDB.getXPath(coupledBoundary['bcid']) + '/coupledBoundary', boundary['bcid'])
+
+                interactionType = DPMModelManager.getDefaultPatchInteractionType(boundaryType)
+                db.setValue(xpath + '/patchInteraction/type', interactionType.value)
 
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 for czname in vtkMesh[rname]['zones']['cellZones']:

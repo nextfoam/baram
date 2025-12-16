@@ -5,6 +5,7 @@ import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
+from baramFlow.base.model.DPM_model import DPMModelManager
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.app import app
@@ -227,6 +228,9 @@ class BoundaryConditionsPage(ContentPage):
                 await AsyncMessageBox().information(
                     self, self.tr('Need to edit boundary condition'),
                     self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
+
+            interactionType = DPMModelManager.getDefaultPatchInteractionType(BoundaryType(bctype))
+            db.setValue(xpath + '/patchInteraction/type', interactionType.value)
 
             self._edit()
 
