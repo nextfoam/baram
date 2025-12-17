@@ -114,7 +114,7 @@ class BoundaryManager:
             return coredb.CoreDB().getElement(BoundaryDB.getXPath(bcid))
 
     @staticmethod
-    def patchInteraction(bcid):
+    def patchInteraction(bcid: str):
         return PatchInteraction.fromElement(coredb.CoreDB().getElement(BoundaryDB.getXPath(bcid) + '/patchInteraction'))
 
     @staticmethod

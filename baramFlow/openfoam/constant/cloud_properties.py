@@ -338,7 +338,7 @@ class CloudProperties(DictionaryFile):
         recycles = {}
 
         for bcid, name, ptype in self._db.getBoundaryConditions(''):
-            interaction = BoundaryManager.patchInteraction(bcid)
+            interaction = BoundaryManager.patchInteraction(str(bcid))
             type_ = interaction.type
 
             if type_ == PatchInteractionType.RECYCLE:
