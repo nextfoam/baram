@@ -209,6 +209,25 @@ class BoundaryDB:
         return bctype in cls._coupledBoundaryType
 
     @classmethod
+    def getCoupledBoundary(cls, bcid: str):
+        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/coupledBoundary')
+
+    @classmethod
+    def cyclingBoundaries(cls, rname: str)->list[tuple[str, str]]:
+        boundaries: dict[str, tuple[str, str]] = {}
+        db = coredb.CoreDB()
+        for bcid, bcname, ptype in db.getBoundaryConditions(rname):
+            if str(bcid) in boundaries:
+                continue
+
+            if BoundaryType(ptype) in [BoundaryType.POROUS_JUMP, BoundaryType.FAN, BoundaryType.INTERFACE, BoundaryType.CYCLIC]:
+                cpid = cls.getCoupledBoundary(str(bcid))
+                cpname = cls.getBoundaryName(cpid)
+                boundaries[cpid] = (bcname, cpname)
+
+        return list(boundaries.values())
+
+    @classmethod
     def dbBoundaryTypeToText(cls, dbText):
         return {
             # Inlet
