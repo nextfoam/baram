@@ -1012,7 +1012,7 @@ def _version_10(root: etree.Element):
 def _version_11(root: etree.Element):
     logger.debug('  Upgrading to v12')
 
-    # root.set('version', '12')
+    root.set('version', '12')
 
     if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
         e = p.find('flowDirection', namespaces=_nsmap)
