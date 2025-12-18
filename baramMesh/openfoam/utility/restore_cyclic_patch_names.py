@@ -6,26 +6,17 @@ from pathlib import Path
 from PyFoam.Basics.DataStructures import DictProxy
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 
-from libbaram.openfoam.constants import Directory
-
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType
 
 
 class RestoreCyclicPatchNames:
-    def __init__(self, prefix: str, time: str = '0'):
+    def __init__(self, prefix: str, fileSystem):
         self._prefix = prefix
-        self._time = time
+        self._fileSystem = fileSystem
 
     def restore(self):
-        nProcFolders = app.fileSystem.numberOfProcessorFolders()
-        if nProcFolders == 0:
-            path = app.fileSystem.timePath(self._time) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
-            self._updateCyclicPatchNames(path)
-        else:
-            for processorNo in range(nProcFolders):
-                path = app.fileSystem.timePath(self._time, processorNo) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
-                self._updateCyclicPatchNames(path)
+        self._updateCyclicPatchNames(self._fileSystem.boundaryFilePath())
 
     def _updateCyclicPatchNames(self, path: Path):
         boundaryDict: ParsedBoundaryDict = ParsedBoundaryDict(str(path), treatBinaryAsASCII=True)

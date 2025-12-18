@@ -120,6 +120,7 @@ VORTICITY           = CollateralField('vorticity', FieldType.VECTOR)
 WALL_HEAT_FLUX      = CollateralField('wallHeatFlux')
 WALL_SHEAR_STRESS   = CollateralField('wallShearStress', FieldType.VECTOR)
 WALL_Y_PLUS         = CollateralField('wallYPlus')
+CELSIUS_TEMPERATURE = CollateralField('celsiusTemperature')
 
 
 ALL_FIELDS: dict[tuple[FieldCategory, str], Field] = {
@@ -141,6 +142,7 @@ ALL_FIELDS: dict[tuple[FieldCategory, str], Field] = {
     (WALL_HEAT_FLUX.category,               WALL_HEAT_FLUX.codeName):               WALL_HEAT_FLUX,
     (WALL_SHEAR_STRESS.category,            WALL_SHEAR_STRESS.codeName):            WALL_SHEAR_STRESS,
     (WALL_Y_PLUS.category,                  WALL_Y_PLUS.codeName):                  WALL_Y_PLUS,
+    (CELSIUS_TEMPERATURE.category,          CELSIUS_TEMPERATURE.codeName):          CELSIUS_TEMPERATURE,
 }
 
 
@@ -164,6 +166,7 @@ def _getPredefinedFieldText(field: Field):
         WALL_HEAT_FLUX: QCoreApplication.translate('PostField', 'Wall Heat Flux'),
         WALL_SHEAR_STRESS: QCoreApplication.translate('PostField', 'Wall Shear Stress'),
         WALL_Y_PLUS: QCoreApplication.translate('PostField', 'Wall Y Plus'),
+        CELSIUS_TEMPERATURE: QCoreApplication.translate('PostField', 'Celsius Temperature'),
     }
 
     return FIELD_TEXTS[field]

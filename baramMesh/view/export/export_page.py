@@ -16,12 +16,15 @@ from resources import resource
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
+from baramMesh.db.configurations_schema import CFDType
 from baramMesh.openfoam.file_system import FileSystem
 from baramMesh.openfoam.constant.region_properties import RegionProperties
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.openfoam.system.collapse_dict import CollapseDict
+from baramMesh.openfoam.system.create_patch_dict import CreatePatchDict
 from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeMeshDict
 from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
+from baramMesh.openfoam.utility.restore_cyclic_patch_names import RestoreCyclicPatchNames
 from baramMesh.view.step_page import StepPage
 from .export_dialog import ExportDialog
 from .export_2D_plane_dialog import Export2DPlaneDialog
@@ -145,16 +148,35 @@ class ExportPage(StepPage):
                     p = baramSystem.processorPath(n, False)
                     p.mkdir()
                     shutil.move(fileSystem.timePath(self.OUTPUT_TIME, n), p / Directory.CONSTANT_DIRECTORY_NAME)
-                #
-                # redistributionTask = RedistributionTask(baramSystem)
-                # redistributionTask.progress.connect(progressDialog.setLabelText)
-                # await redistributionTask.reconstruct()
+
+                redistributionTask = RedistributionTask(baramSystem)
+                redistributionTask.progress.connect(progressDialog.setLabelText)
+                await redistributionTask.reconstruct()
             else:
                 if len(regions) > 1:
                     for region in regions.values():
                         shutil.move(self._outputPath() / region.value('name'), baramSystem.constantPath())
                 else:
                     shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
+
+            # Reorder faces in conformal interfaces
+            # (Faces in cyclic boundary pair should match in order)
+
+            NumberOfConformalInterfaces = app.db.elementCount(
+                'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'] and not e['nonConformal'])
+
+            if NumberOfConformalInterfaces > 0:
+                prefix = 'NFBRM_'
+                CreatePatchDict(prefix, baramSystem).build().write()
+                self._cm = RunParallelUtility('createPatch', '-allRegions', '-overwrite', '-case', baramSystem.caseRoot(),
+                                              cwd=baramSystem.caseRoot())
+                self._cm.output.connect(console.append)
+                self._cm.errorOutput.connect(console.appendError)
+                await self._cm.start()
+                await self._cm.wait()
+
+                rpn = RestoreCyclicPatchNames(prefix, baramSystem)
+                rpn.restore()
 
             if to2d:
                 progressDialog.setLabelText(self.tr('Extruding Mesh'))
@@ -190,11 +212,6 @@ class ExportPage(StepPage):
                     rc = await cm.wait()
                     if rc != 0:
                         raise ProcessError(rc)
-
-            if parallel.isParallelOn():
-                redistributionTask = RedistributionTask(baramSystem)
-                redistributionTask.progress.connect(progressDialog.setLabelText)
-                await redistributionTask.reconstruct()
 
             rmtree(self._outputPath())
 

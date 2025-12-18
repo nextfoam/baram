@@ -77,7 +77,7 @@ class StepPage(QObject):
             rmtree(path)
 
     def updateWorkingStatus(self):
-        self._updateMesh()
+        self.updateMesh()
         self._updateControlButtons()
 
     def _outputPath(self) -> Path:
@@ -95,7 +95,7 @@ class StepPage(QObject):
     def _showPreviousMesh(self):
         app.window.meshManager.show(self.OUTPUT_TIME - 1)
 
-    def _updateMesh(self):
+    def updateMesh(self):
         if self.isNextStepAvailable():
             self._showResultMesh()
         else:

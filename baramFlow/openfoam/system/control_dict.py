@@ -7,7 +7,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.app import app
 from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
 from baramFlow.base.field import HEAT_TRANSFER_COEFF, WALL_HEAT_FLUX, AGE, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY
-from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS
+from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE
 from baramFlow.base.material.material import Phase
 from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.coredb import coredb
@@ -30,7 +30,7 @@ from baramFlow.openfoam.function_objects.collateral_fields import foAgeMonitor, 
 from baramFlow.openfoam.function_objects.collateral_fields import foMachNumberMonitor, foQMonitor
 from baramFlow.openfoam.function_objects.collateral_fields import foTotalPressureMonitor, foVorticityMonitor
 from baramFlow.openfoam.function_objects.collateral_fields import foWallHeatFluxMonitor, foWallShearStressMonitor
-from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusMonitor, foCelsiusTemperatureMonitor
 from baramFlow.openfoam.function_objects.components import foComponentsMonitor
 from baramFlow.openfoam.function_objects.force_coeffs import foForceCoeffsMonitor
 from baramFlow.openfoam.function_objects.forces import foForcesMonitor
@@ -371,6 +371,8 @@ class ControlDict(DictionaryFile):
                 self._data['functions'][foName] = foHeatTransferCoefficientMonitor(rname, patches, 1)
             elif field == WALL_HEAT_FLUX:
                 self._data['functions'][foName] = foWallHeatFluxMonitor(rname, 1)
+            elif field == CELSIUS_TEMPERATURE:
+                self._data['functions'][foName] = foCelsiusTemperatureMonitor(rname, 1)
 
         if self._db.getRegionProperties(rname).isFluid():
             if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():

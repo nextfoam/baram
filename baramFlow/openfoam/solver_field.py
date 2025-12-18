@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.base.constants import VectorComponent
-from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
-from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField
+from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER
+from baramFlow.base.field import MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE
+from baramFlow.base.field import TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY
+from baramFlow.base.field import VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
+from baramFlow.base.field import CELSIUS_TEMPERATURE
+from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField
+from baramFlow.base.field import UserScalarField
 from baramFlow.base.material.material import Phase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
@@ -24,6 +29,7 @@ SOLVER_FIELDS = {
     SPECIFIC_DISSIPATION_RATE: 'omega',
     MODIFIED_TURBULENT_VISCOSITY: 'nuTilda',
     TEMPERATURE: 'T',
+    CELSIUS_TEMPERATURE: 'TCelsius',
     DENSITY: 'rho',
     AGE: 'age',
     HEAT_TRANSFER_COEFF: 'heatTransferCoeff',
@@ -105,6 +111,7 @@ def getAvailableFields(includeCoordinate=False) -> list[Field]:
     energyOn = ModelsDB.isEnergyModelOn()
     if energyOn:
         fields.append(TEMPERATURE)
+        fields.append(CELSIUS_TEMPERATURE)
         fields.append(DENSITY)
         fields.append(HEAT_TRANSFER_COEFF)
         fields.append(MACH_NUMBER)
