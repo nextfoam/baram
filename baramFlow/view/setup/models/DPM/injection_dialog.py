@@ -125,7 +125,7 @@ class InjectionDialog(QDialog):
             self._ui.flowRateSpec.findData(self._injection.injector.flowRate.specification))
         self._ui.countParcelPerSecond.setBatchableNumber(
             self._injection.injector.flowRate.particleCount.parcelPerSecond)
-        self._ui.numberOfParticlesForParcel.setBatchableNumber(
+        self._ui.numberOfParticlesPerParcel.setBatchableNumber(
             self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel)
         self._ui.volumeParcelPerSecond.setBatchableNumber(
             self._injection.injector.flowRate.particleVolume.parcelPerSecond)
@@ -190,11 +190,11 @@ class InjectionDialog(QDialog):
                 self._ui.pointParticleVelocity.validate(self.tr('Particle Velocity'))
             else:
                 if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
-                    self._ui.countParcelPerSecond.validate(self.tr('Parcel per Second'), low=0, lowInclusive=False)
-                    self._ui.numberOfParticlesForParcel.validate(self.tr('Number of Particles per Pacel'),
+                    self._ui.countParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
+                    self._ui.numberOfParticlesPerParcel.validate(self.tr('Number of Particles per Pacel'),
                                                                  low=0, lowInclusive=False)
                 elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
-                    self._ui.volumeParcelPerSecond.validate(self.tr('Parcel per Second'), low=0, lowInclusive=False)
+                    self._ui.volumeParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
                     self._ui.totalMass.validate(self.tr('Total Mass'), low=0, lowInclusive=False)
                     self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
                     self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
@@ -266,7 +266,7 @@ class InjectionDialog(QDialog):
             self._injection.injector.flowRate.specification = flowRateSpec
             if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
                 self._injection.injector.flowRate.particleCount.parcelPerSecond = self._ui.countParcelPerSecond.batchableNumber()
-                self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesForParcel.batchableNumber()
+                self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesPerParcel.batchableNumber()
             elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
                 self._injection.injector.flowRate.particleVolume.parcelPerSecond = self._ui.volumeParcelPerSecond.batchableNumber()
                 self._injection.injector.flowRate.particleVolume.totalMass = self._ui.totalMass.batchableNumber()

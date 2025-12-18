@@ -21,7 +21,7 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .wall_dialog_ui import Ui_WallDialog
-from .wall_interaction_widget import WallInteractionWidget
+from .patch_interaction_widget import PatchInteractionWidget
 
 
 class ContactAnglesWidget(QWidget):
@@ -88,7 +88,7 @@ class WallDialog(ResizableDialog):
         self._constantContactAngles = None
         self._dynamicContactAngles = None
 
-        self._wallInteractionWidget = None
+        self._patchInteractionWidget = None
 
         self._xpath = BoundaryDB.getXPath(bcid)
 
@@ -105,8 +105,8 @@ class WallDialog(ResizableDialog):
         self._shearConditionRadios.addEnumButton(self._ui.slip,     ShearCondition.SLIP)
 
         if DPMModelManager.isModelOn():
-            self._wallInteractionWidget = WallInteractionWidget(self._bcid)
-            self._ui.dialogContents.layout().addWidget(self._wallInteractionWidget)
+            self._patchInteractionWidget = PatchInteractionWidget(self._bcid)
+            self._ui.dialogContents.layout().addWidget(self._patchInteractionWidget)
 
         self._connectSignalsSlots()
 
@@ -160,8 +160,8 @@ class WallDialog(ResizableDialog):
                 self._ui.wallEmissivity.validate(self.tr('Wall Emissivity'), low=0, high=1)
                 self._ui.radiativeFluxRelaxation.validate(self.tr('Radiative Flux Relaxation'), low=0, high=1)
 
-            if self._wallInteractionWidget is not None:
-                self._wallInteractionWidget.validate()
+            if self._patchInteractionWidget is not None:
+                self._patchInteractionWidget.validate()
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
@@ -239,8 +239,8 @@ class WallDialog(ResizableDialog):
                     db.setValue(xpath + '/radiation/wallEmissivity', self._ui.wallEmissivity.text())
                     db.setValue(xpath + '/radiation/radiativeFluxRelaxation', self._ui.radiativeFluxRelaxation.text())
 
-                if self._wallInteractionWidget is not None:
-                    BoundaryManager.updateWallInteraction(db, self._bcid, self._wallInteractionWidget.updateData())
+                if self._patchInteractionWidget is not None:
+                    BoundaryManager.updatePatchInteraction(db, self._bcid, self._patchInteractionWidget.updateData())
 
                 self.accept()
         except ValueException as ve:
@@ -318,8 +318,8 @@ class WallDialog(ResizableDialog):
         else:
             self._ui.radiation.hide()
 
-        if self._wallInteractionWidget is not None:
-            self._wallInteractionWidget.setData(BoundaryManager.wallInteraction(self._bcid))
+        if self._patchInteractionWidget is not None:
+            self._patchInteractionWidget.setData(BoundaryManager.patchInteraction(self._bcid))
 
 
     def _loadContactAngles(self, rname, secondaryMaterials):

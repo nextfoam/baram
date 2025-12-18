@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from lxml import etree
 
 from baramFlow.base.base import BatchableNumber, Vector, Function1Scalar, Function1Vector
+from baramFlow.base.boundary.boundary import PatchInteractionType
 from baramFlow.coredb import coredb
+from baramFlow.coredb.boundary_db import BoundaryType
 from baramFlow.coredb.libdb import nsmap, dbTextToBool, boolToDBText, ns
 from .model import MODELS_XPATH, DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from .model import DPMTurbulentDispersion, DPMHeatTransferSpeicification, DPMEvaporationModel, DPMEnthalpyTransferType
@@ -693,3 +695,20 @@ class DPMModelManager:
     @staticmethod
     def removeInertParticle(db):
         db.setValue(DPM_MODELS_XPATH + '/properties/inert/inertParticle', '0')
+
+    @staticmethod
+    def getDefaultPatchInteractionType(type_: BoundaryType)->PatchInteractionType:
+        if type_ in [BoundaryType.WALL,
+                     BoundaryType.THERMO_COUPLED_WALL,
+                     BoundaryType.SYMMETRY,
+                     ]:
+            return PatchInteractionType.REFLECT
+        elif type_ in [BoundaryType.POROUS_JUMP,
+                       BoundaryType.FAN,
+                       BoundaryType.INTERFACE,
+                       BoundaryType.EMPTY,
+                       BoundaryType.WEDGE,
+                       ]:
+            return PatchInteractionType.NONE
+        else:
+            return PatchInteractionType.ESCAPE

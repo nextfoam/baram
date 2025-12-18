@@ -6,7 +6,7 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
-from baramFlow.base.boundary.boundary import BoundaryManager, WallInteractionType
+from baramFlow.base.boundary.boundary import BoundaryManager, PatchInteractionType
 from baramFlow.base.model.DPM_model import DPMModelManager, KinematicModel, FlowRate, DiameterDistribution, Injection
 from baramFlow.base.model.DPM_model import ConeInjection, PointInjection, SurfaceInjection
 from baramFlow.base.model.model import DPMEvaporationModel, DPMTrackingScheme, DPMParticleType, DPMTurbulentDispersion, DPMFlowRateSpec
@@ -335,44 +335,40 @@ class CloudProperties(DictionaryFile):
         }
 
         localPatches = []
+        recycles = {}
+
         for bcid, name, ptype in self._db.getBoundaryConditions(''):
-            if ptype == BoundaryType.WALL.value:
-                interaction = BoundaryManager.wallInteraction(bcid)
-                type_ = interaction.type
+            interaction = BoundaryManager.patchInteraction(str(bcid))
+            type_ = interaction.type
 
-                if type_ == WallInteractionType.RECYCLE:
-                    data['model_' + name] = {
-                        'patchInteractionModel': 'recycleInteraction',
-                        'recycleInteractionCoeffs': {
-                            'recyclePatches': [[name, BoundaryDB.getBoundaryName(interaction.recycle.recycleBoundary)]],
-                            'recycleFraction': self._helper.pFloatValue(interaction.recycle.recycleFraction),
-                        }
+            if type_ == PatchInteractionType.RECYCLE:
+                recycles['model_' + name] = {
+                    'patchInteractionModel': 'recycleInteraction',
+                    'recycleInteractionCoeffs': {
+                        'recyclePatches': [[name, BoundaryDB.getBoundaryName(interaction.recycle.recycleBoundary)]],
+                        'recycleFraction': self._helper.pFloatValue(interaction.recycle.recycleFraction),
                     }
-
-                    type_ = WallInteractionType.NONE
-            else:
-                interaction = None
-                type_ = WallInteractionType.NONE
-
-            localPatches.append(name)
-            if type_ == WallInteractionType.NONE:
-                localPatches.append({
-                    'type': 'none'
-                })
-            elif interaction.type == WallInteractionType.REFLECT:
-                localPatches.append({
-                    'type': 'rebound',
-                    'e': self._helper.pFloatValue(interaction.reflect.normal),
-                    'mu': (1 - float(self._helper.pFloatValue(interaction.reflect.tangential))),
-                })
-            elif interaction.type == WallInteractionType.ESCAPE:
-                localPatches.append({
-                    'type': 'escape'
-                })
-            elif interaction.type == WallInteractionType.TRAP:
-                localPatches.append({
-                    'type': 'stick'
-                })
+                }
+            else:  # localInteraction
+                localPatches.append(name)
+                if interaction.type == PatchInteractionType.REFLECT:
+                    localPatches.append({
+                        'type': 'rebound',
+                        'e': self._helper.pFloatValue(interaction.reflect.normal),
+                        'mu': (1 - float(self._helper.pFloatValue(interaction.reflect.tangential))),
+                    })
+                elif interaction.type == PatchInteractionType.ESCAPE:
+                    localPatches.append({
+                        'type': 'escape'
+                    })
+                elif interaction.type == PatchInteractionType.TRAP:
+                    localPatches.append({
+                        'type': 'stick'
+                    })
+                else:  # type_ == PatchInteractionType.NONE
+                    localPatches.append({
+                        'type': 'none'
+                    })
 
         if localPatches:
             data['localInteractionModel'] = {
@@ -381,6 +377,9 @@ class CloudProperties(DictionaryFile):
                     'patches': localPatches
                 }
             }
+
+        if recycles:
+            data.update(recycles)
 
         return data
 
