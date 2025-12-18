@@ -11,7 +11,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, QApplication
-from PySide6.QtCore import Signal, QEvent, QMargins
+from PySide6.QtCore import Signal, QEvent, QMargins, Qt
 from PySide6QtAds import CDockManager, DockWidgetArea
 
 from libbaram.simple_db.simple_schema import ValidationError
@@ -70,7 +70,6 @@ class MainWindow(QMainWindow):
 
         self._startDialog = ProjectDialog()
         self._dialog = None
-        self._currentWindow = self._startDialog
 
         self._readyToQuit = False
 
@@ -88,7 +87,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._dockManager)
 
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
-        
+
         self._ui.regionValidationMessage.hide()
 
         geometry = app.settings.getLastMainWindowGeometry()
@@ -191,16 +190,19 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self._currentWindow, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
+        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
                                         app.properties.projectSuffix)
         self._dialog.accepted.connect(self._createProject)
-        self._dialog.open()
+        self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        # QDialog.open() makes the dialog window modal.
+        self._dialog.show()
 
     def _actionOpen(self):
-        self._dialog = QFileDialog(self._currentWindow, self.tr('Select Project Directory'), app.settings.getRecentLocation())
+        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         self._dialog.fileSelected.connect(self._openProject)
-        self._dialog.open()
+        self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self._dialog.show()
 
     @qasync.asyncSlot()
     async def _actionSave(self):
@@ -263,7 +265,7 @@ class MainWindow(QMainWindow):
                                                 self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                    self.tr(f'{path.name} is already open in another program.'))
+                                                self.tr(f'{path.name} is already open in another program.'))
         except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                                 self.tr(f'configurations error : {e.path} - {e.name}'))
@@ -354,7 +356,6 @@ class MainWindow(QMainWindow):
 
         if self._startDialog is not None:
             self._startDialog.close()
-            self._currentWindow = self
             self.show()
             self._startDialog = None
 
