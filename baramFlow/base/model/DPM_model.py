@@ -362,7 +362,7 @@ class ConeInjection:
     innerRadius: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0'))
     swirlVelocity: Function1Scalar      = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
     particleSpeed: DPMParticleSpeed     = DPMParticleSpeed.FROM_INJECTION_SPEED
-    injectionSpeed: BatchableNumber     = field(default_factory=lambda: BatchableNumber('100'))
+    injectionSpeed: BatchableNumber     = field(default_factory=lambda: BatchableNumber('1'))
     injectorPressure: Function1Scalar   = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
     dischargeCoeff: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
 
@@ -523,7 +523,7 @@ class Injection:
                                 <constant>0</constant>
                             </swirlVelocity>
                             <particleSpeed>fromInjectionSpeed</particleSpeed>
-                            <injectionSpeed>100</injectionSpeed>
+                            <injectionSpeed>1</injectionSpeed>
                             <injectorPressure>
                                 <type>constant</type>
                                 <constant>0</constant>
