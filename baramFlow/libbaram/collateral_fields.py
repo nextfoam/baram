@@ -4,15 +4,22 @@
 import os
 from pathlib import Path
 import uuid
+
+from libbaram.run import runParallelUtility
+
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.base.field import AGE, HEAT_TRANSFER_COEFF, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS, CollateralField, Field
+from baramFlow.base.field import AGE, HEAT_TRANSFER_COEFF, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY, WALL_HEAT_FLUX
+from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CollateralField, Field, CELSIUS_TEMPERATURE
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict
-from baramFlow.openfoam.function_objects.collateral_fields import foAgeReport, foHeatTransferCoefficientReport, foMachNumberReport, foQReport, foTotalPressureReport, foVorticityReport, foWallHeatFluxReport, foWallShearStressReport, foWallYPlusReport
+from baramFlow.openfoam.function_objects.collateral_fields import foAgeReport, foHeatTransferCoefficientReport
+from baramFlow.openfoam.function_objects.collateral_fields import foMachNumberReport, foQReport, foTotalPressureReport
+from baramFlow.openfoam.function_objects.collateral_fields import foVorticityReport, foWallHeatFluxReport
+from baramFlow.openfoam.function_objects.collateral_fields import foWallShearStressReport, foWallYPlusReport
+from baramFlow.openfoam.function_objects.collateral_fields import foCelsiusTemperatureReport
 from baramFlow.openfoam.solver import findSolver
-from libbaram.run import runParallelUtility
 
 
 def collateralFieldDict(fields: list[Field]) -> dict:
@@ -57,6 +64,10 @@ def collateralFieldDict(fields: list[Field]) -> dict:
 
         if WALL_Y_PLUS in fields:
             functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
+
+        if CELSIUS_TEMPERATURE in fields:
+            print('collateralFieldDict')
+            functions[f'celsiusTemperature_{rname}'] = foCelsiusTemperatureReport(rname)
 
     return functions
 

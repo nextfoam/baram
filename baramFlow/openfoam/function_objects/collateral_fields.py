@@ -112,6 +112,21 @@ def _foWallYPlusBase():
     return data
 
 
+def _foCelsiusTemperatureBase():
+    data = {
+        'type': 'exprField',
+        'libs': ['fieldFunctionObjects'],
+        'field': 'TCelsius',
+        'expression': '"T - 273.15"',
+        'dimensions': '[0 0 0 1 0 0 0]',
+        'autowrite': 'true',
+
+        'writeToFile': 'false'
+    }
+
+    return data
+
+
 def _additionalEntriesForMonitor(rname: str, interval):
     if GeneralDB.isTimeTransient():
         data =  {
@@ -215,6 +230,13 @@ def foWallYPlusMonitor(rname: str, interval):
     return data
 
 
+def foCelsiusTemperatureMonitor(rname: str, interval):
+    data = _foCelsiusTemperatureBase()
+    data.update(_additionalEntriesForMonitor(rname, interval))
+
+    return data
+
+
 def foAgeReport(rname: str):
     data = _foAgeBase()
     data.update(_additionalEntriesForReport(rname))
@@ -273,6 +295,13 @@ def foWallShearStressReport(rname: str):
 
 def foWallYPlusReport(rname: str):
     data = _foWallYPlusBase()
+    data.update(_additionalEntriesForReport(rname))
+
+    return data
+
+
+def foCelsiusTemperatureReport(rname: str):
+    data = _foCelsiusTemperatureBase()
     data.update(_additionalEntriesForReport(rname))
 
     return data
