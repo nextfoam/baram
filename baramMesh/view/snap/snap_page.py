@@ -177,17 +177,19 @@ class SnapPage(StepPage):
 
         self._ui.snap.hide()
         self._ui.snapCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.snapCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -245,7 +247,6 @@ class SnapPage(StepPage):
     @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -263,7 +264,5 @@ class SnapPage(StepPage):
 
         if not result:
             self.clearResult()
-            self._enableEdit()
-            self._enableMenubarForSettings()
 
         return result

@@ -173,18 +173,20 @@ class CastellationPage(StepPage):
 
         self._ui.refine.hide()
         self._ui.castellationCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Castellation refinement is completed.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.castellationCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -276,7 +278,6 @@ class CastellationPage(StepPage):
 
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -291,5 +292,8 @@ class CastellationPage(StepPage):
         except Exception as e:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
                                                 self.tr('Castellation refinement Failed:') + str(e))
+
+        if not result:
+            self.clearResult()
 
         return result

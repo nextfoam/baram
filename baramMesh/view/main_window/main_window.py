@@ -23,6 +23,7 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.openfoam.redistribution_task import RedistributionTask
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from baramMesh.view.display_control.display_control import DisplayControl
 from baramMesh.view.widgets.project_dialog import ProjectDialog
 from baramMesh.view.widgets.settings_scaling_dialog import SettingScalingDialog
@@ -173,6 +174,9 @@ class MainWindow(QMainWindow):
         self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
         self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
 
+        snappyHexMesh.snappyStarted.connect(self._disableMenubar)
+        snappyHexMesh.snappyStopped.connect(self._enableMenubar)
+
         self._closeTriggered.connect(self._closeProject)
 
     def _setRenderingEnabled(self, enabled):
@@ -292,6 +296,16 @@ class MainWindow(QMainWindow):
             QApplication.instance().quit()
         else:
             self._ui.menubar.repaint()
+
+    def _disableMenubar(self):
+        self._ui.menuFile.setEnabled(False)
+        self._ui.menuMesh_Quality.setEnabled(False)
+        self._ui.menuParallel.setEnabled(False)
+
+    def _enableMenubar(self):
+        self._ui.menuFile.setEnabled(True)
+        self._ui.menuMesh_Quality.setEnabled(True)
+        self._ui.menuParallel.setEnabled(True)
 
     @qasync.asyncSlot()
     async def _closeProject(self, toQuit=False):

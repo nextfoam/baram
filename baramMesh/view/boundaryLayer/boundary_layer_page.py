@@ -153,18 +153,20 @@ class BoundaryLayerPage(StepPage):
 
         self._ui.boundaryLayerApply.hide()
         self._ui.boundaryLayerCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Boundary layers are applied.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.boundaryLayerCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -229,7 +231,6 @@ class BoundaryLayerPage(StepPage):
     @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -247,7 +248,5 @@ class BoundaryLayerPage(StepPage):
 
         if not result:
             self.clearResult()
-            self._enableEdit()
-            self._enableMenubarForSettings()
 
         return result

@@ -206,6 +206,8 @@ class StepManager(QObject):
         self._batchRunning = True
         self._buttons.showButton(ButtonID.CANCEL)
 
+        snappyHexMesh.snappyStarted.emit()
+
         while self._workingStep < Step.EXPORT:
             # Only change workingStep
             self._pages[self._workingStep].load()
@@ -228,6 +230,8 @@ class StepManager(QObject):
         self._updateControlButtons(displayStep)
         if displayStep < self._workingStep:
             self.currentPage().lock()
+
+        snappyHexMesh.snappyStopped.emit()
 
         self.currentPage().updateWorkingStatus()
 

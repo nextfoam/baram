@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges, vtkAppendPolyData, vtkTriangleFilter, vtkPolyDataPlaneCutter
 from vtkmodules.vtkFiltersCore import vtkCleanPolyData
@@ -81,8 +82,12 @@ def _writeFeatureFile(path: Path, pd):
     writer.Write()
 
 
-class SnappyHexMesh:
+class SnappyHexMesh(QObject):
+    snappyStarted = Signal()
+    snappyStopped = Signal()
+
     def __init__(self):
+        super().__init__()
         self._cm = None
 
     async def castellation(self):
