@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _openTutorials(self):
-        webbrowser.open('https://baramcfd.org/en/tutorial/baram-mesh/tutorial-mesh-dashboard-en/')
+        webbrowser.open('https://baramcfd.org/en/tutorials-en/tutorial-barammesh-en/tutorial-barammesh-en/')
 
     @qasync.asyncSlot()
     async def _createProject(self):
