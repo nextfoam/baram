@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QDialog, QListWidgetItem
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from .copy_dialog_ui import Ui_CopyDialog
 
 
@@ -72,7 +72,7 @@ class CopyDialog(QDialog):
             for bcid, bcname, bctype in db.getBoundaryConditions(rname):
                 self._items[bcid] = BoundaryListItem(self._ui.targets, bcid, bcname, rname)
 
-                if not BoundaryDB.needsCoupledBoundary(bctype):
+                if not BoundaryDB.needsCoupledBoundary(BoundaryType(bctype)):
                     item = BoundaryListItem(self._ui.source, bcid, bcname, rname)
 
                     if bcid == self._sourceId:

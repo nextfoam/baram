@@ -384,7 +384,7 @@ class InitializationWidget(QWidget):
 
     def _computeFromBoundary(self, bcid: int):
         db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
-        bctype = BoundaryType(BoundaryDB.getBoundaryType(bcid))
+        bctype = BoundaryDB.getBoundaryType(bcid)
         xpath = BoundaryDB.getXPath(bcid)
 
         v = float(self._ui.scaleOfVelocity.text())

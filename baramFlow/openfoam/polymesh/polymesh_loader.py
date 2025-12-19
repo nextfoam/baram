@@ -67,7 +67,7 @@ typesByName = {
 }
 
 
-def defaultBoundaryType(name, geometricalType):
+def defaultBoundaryType(name, geometricalType: GeometricalType)->BoundaryType:
     if name == emptyBoundaryName:
         return BoundaryType.EMPTY
 
@@ -282,7 +282,7 @@ class PolyMeshLoader(QObject):
                 boundaryType = boundary['bctype']
 
                 coupledBoundary = None
-                if BoundaryDB.needsCoupledBoundary(boundaryType.value):
+                if BoundaryDB.needsCoupledBoundary(boundaryType):
                     if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
                         sampleRegion, samplePatch = getSamplePatch(rname, bcname)
                         if samplePatch and getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
