@@ -353,10 +353,11 @@ class PODCase(Case):
             if pathZeroBatch.exists():
                 shutil.copytree(pathZeroBatch, pathZeroPod)
 
-    async def runGenerateROM(self, listCaseName):
+    async def runGenerateROM(self, listCaseName, isBatchRunning=False):
         try:
             await self.rmtreePodDirectory()
             await self.initializeGenerateROM(listCaseName)
+            if isBatchRunning: self._name = "__POD__"
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
@@ -379,6 +380,7 @@ class PODCase(Case):
     async def runReconstruct(self, caseName, listSnapshot, paramsToReconstruct, isBatchRunning=False):
         try:
             await self.initializeReconstruct(caseName, listSnapshot, paramsToReconstruct)
+            if isBatchRunning: self._name = "__POD__"
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
@@ -390,7 +392,6 @@ class PODCase(Case):
             self._process = None
 
             if result == 0:
-                if isBatchRunning: self._name = "__POD__"
                 self._setStatus(SolverStatus.ENDED)
             else:
                 self._setStatus(SolverStatus.ERROR)
@@ -591,11 +592,11 @@ class CaseManager(QObject):
 
         await GraphicsDB().updatePolyMeshAll()
 
-    async def podRunGenerateROM(self, listCaseName):
+    async def podRunGenerateROM(self, listCaseName, isBatchRunning=False):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
-        await tempPodCase.runGenerateROM(listCaseName)
+        await tempPodCase.runGenerateROM(listCaseName, isBatchRunning)
 
     async def podInitReconstructedCase(self, caseName, paramsToReconstructFloat):
         paramsToReconstruct = {key: str(value) for key, value in paramsToReconstructFloat.items()}

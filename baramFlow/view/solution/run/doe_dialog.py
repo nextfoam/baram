@@ -112,6 +112,7 @@ class DoEDialog(ResizableDialog):
 
             comboScale = QComboBox()
             comboScale.addItems(["linear", "log"])
+            comboScale.currentIndexChanged.connect(self._refreshPreview)
             tbl.setCellWidget(r, 4, comboScale)
 
         tbl.resizeColumnsToContents()
@@ -217,7 +218,7 @@ class DoEDialog(ResizableDialog):
         names: List[str] = []
         for r in rows:
             names.append(r["name"])
-            L = max(2, r["levels"])
+            L = max(1, r["levels"])
             if r["scale"] == "log":
                 a, b = math.log(r["vmin"]), math.log(r["vmax"])
                 vals = np.exp(np.linspace(a, b, L))

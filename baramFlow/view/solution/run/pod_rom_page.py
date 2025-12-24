@@ -11,7 +11,7 @@ import uuid
 from pathlib import Path
 import pandas as pd
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSlider, QLineEdit, QSizePolicy, QMessageBox, QTableWidgetItem, QHeaderView
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSlider, QLineEdit, QSizePolicy, QMessageBox, QTableWidgetItem, QHeaderView, QFileDialog
 from PySide6.QtCore import Qt
 
 from widgets.async_message_box import AsyncMessageBox
@@ -118,6 +118,7 @@ class PODROMPage(ContentPage):
         self._ui.buildROM.clicked.connect(self._selectCasesToBuildROM)
         self._ui.ROMReconstruct.clicked.connect(self._ROMReconstruct)
         self._ui.EvalNEnhanceROM.clicked.connect(self._setEvalNEnhanceROM)
+        self._ui.exportEvalROM.clicked.connect(self._openExportDialog)
 
     def _disconnectSignalsSlots(self):
         pass
@@ -463,17 +464,20 @@ class PODROMPage(ContentPage):
 
     def _loadEvalResultTable(self):
         table = self._ui.tblRomEval
+        button = self._ui.exportEvalROM
 
         df = self._project.fileDB().getDataFrame(ROM_EVAL_RESULTS_KEY)
         if df is None or df.empty:
             table.setRowCount(0)
             table.setVisible(False)
+            button.setVisible(False)
             return
 
         self._updateEvalResultTableFromDataFrame(df)
 
     def _updateEvalResultTableFromDataFrame(self, df):
         table = self._ui.tblRomEval
+        button = self._ui.exportEvalROM
 
         table.setColumnCount(3)
         table.setHorizontalHeaderLabels([
@@ -502,6 +506,7 @@ class PODROMPage(ContentPage):
             table.setItem(i, 2, QTableWidgetItem(f"{rel_val:.{4}g}"))
 
         table.setVisible(nrow > 0)
+        button.setVisible(nrow > 0)
 
     async def _computeForceCoeffsForCurrentCase(self, cfg: dict) -> dict:
         rname = cfg.get("region")
@@ -902,6 +907,7 @@ class PODROMPage(ContentPage):
             if not item.get("enabled", True):
                 continue
 
+            item_id = str(item.get("id") or "")
             category = item.get("category")
             cfg = item.get("config") or {}
 
@@ -942,7 +948,7 @@ class PODROMPage(ContentPage):
 
                     results.append({
                         "metricCategory": "forceCoeff",
-                        "metricKey": key,
+                        "metricKey": f"{item_id}:{key}",
                         "metricLabel": label,
                         "value": float(val),
                     })
@@ -959,7 +965,7 @@ class PODROMPage(ContentPage):
 
                 results.append({
                     "metricCategory": "point",
-                    "metricKey": uuid.uuid4(),
+                    "metricKey": item_id,
                     "metricLabel": "P",
                     "value": float(val),
                 })
@@ -977,7 +983,7 @@ class PODROMPage(ContentPage):
 
                 results.append({
                     "metricCategory": "surface",
-                    "metricKey": uuid.uuid4(),
+                    "metricKey": item_id,
                     "metricLabel": "S",
                     "value": float(val),
                 })
@@ -995,7 +1001,7 @@ class PODROMPage(ContentPage):
 
                 results.append({
                     "metricCategory": "volume",
-                    "metricKey": uuid.uuid4(),
+                    "metricKey": item_id,
                     "metricLabel": "V",
                     "value": float(val),
                 })
@@ -1042,7 +1048,7 @@ class PODROMPage(ContentPage):
             else:
                 rel_err = 0.0
 
-            label = f"{caseName} / {m['metricLabel']}"
+            label = f"{caseName}/{m['metricLabel']}"
 
             rows.append({
                 "case": caseName,
@@ -1100,10 +1106,8 @@ class PODROMPage(ContentPage):
             if not listParam:
                 raise RuntimeError("No parameters found in snapshot case list.")
 
-            # active parameter selection tbd
-            # using all parameter by default
-            self._paramActive = {p: True for p in listParam}
-            activeNames = listParam
+            activeNames = self._project.fileDB().getText("ROMparams").decode("utf-8").split("\n")
+            self._paramActive = {name: True for name in activeNames}
 
             for iEnh in range(num):
                 progressDialog.setLabelText(
@@ -1119,18 +1123,18 @@ class PODROMPage(ContentPage):
 
                 candidateActive = self._pickAdditionalSampleSimpleGP(activeNames)
 
-                # inferredInactive = self._inferInactiveParamsLinear(
-                    # listSnapshotCase=listSnapshotCase,
-                    # allParams=listParam,
-                    # activeMask=self._paramActive,
-                    # userActiveValues=candidateActive
-                # )
+                inferredInactive = self._inferInactiveParamsLinear(
+                    listSnapshotCase=listSnapshotCase,
+                    allParams=listParam,
+                    activeMask=self._paramActive,
+                    userActiveValues=candidateActive
+                )
 
                 paramsAll = {}
                 for k, v in candidateActive.items():
                     paramsAll[k] = float(v)
-                # for k, v in inferredInactive.items():
-                    # paramsAll[k] = float(v)
+                for k, v in inferredInactive.items():
+                    paramsAll[k] = float(v)
 
                 caseName = self._nextEnhancementCaseName()
 
@@ -1170,7 +1174,7 @@ class PODROMPage(ContentPage):
                     self.tr(f'ROM Enhancement: rebuilding ROM ({iEnh+1}/{num})')
                 )
                 listSnapshotNames = snapshotDF.index.astype(str).tolist()
-                await self._caseManager.podRunGenerateROM(listSnapshotNames)
+                await self._caseManager.podRunGenerateROM(listSnapshotNames, isBatchRunning=True)
 
                 ROMdate = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
                 ROMaccuracy = self._caseManager.podGetROMAccuracy()
@@ -1281,6 +1285,29 @@ class PODROMPage(ContentPage):
                     maxIdx = idx
 
         return f"case_{maxIdx+1:04d}"
+
+    @qasync.asyncSlot()
+    async def _openExportDialog(self):
+        self._dialog = QFileDialog(self, self.tr('Export Evaluation Result'), '', self.tr('Excel (*.xlsx);; CSV (*.csv)'))
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.fileSelected.connect(self._exportEvaluationResult)
+        self._dialog.open()
+
+    def _exportEvaluationResult(self, file):
+        df = self._project.fileDB().getDataFrame(ROM_EVAL_RESULTS_KEY)
+        if df is None or df.empty:
+            AsyncMessageBox().warning(self, self.tr("Export"), self.tr("No evaluation results to export."))
+            return
+
+        out = df.copy()
+
+        if "case" in out.columns:
+            out = out.set_index("case")
+
+        if file.lower().endswith('xlsx'):
+            out.to_excel(file, index_label='Case Name')
+        else:
+            out.to_csv(file, sep=',', index_label='Case Name')
 
     def closeEvent(self, event):
         self._disconnectSignalsSlots()
