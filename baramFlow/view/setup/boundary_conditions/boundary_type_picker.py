@@ -21,7 +21,7 @@ def setListHeight(widget):
 
 
 class BoundaryTypePicker(QWidget):
-    picked = Signal(int, str)
+    picked = Signal(int, BoundaryType)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -101,5 +101,5 @@ class BoundaryTypePicker(QWidget):
         self._ui.buttonGroup.buttonClicked.connect(self._typePicked)
 
     def _typePicked(self, button):
-        self.picked.emit(self._bcid, self._types[button].value)
+        self.picked.emit(self._bcid, self._types[button])
         self.hide()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WallInteractionWidget</class>
- <widget class="QWidget" name="WallInteractionWidget">
+ <class>PatchInteractionWidget</class>
+ <widget class="QWidget" name="PatchInteractionWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

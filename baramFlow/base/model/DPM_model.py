@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from lxml import etree
 
 from baramFlow.base.base import BatchableNumber, Vector, Function1Scalar, Function1Vector
+from baramFlow.base.boundary.boundary import PatchInteractionType
 from baramFlow.coredb import coredb
+from baramFlow.coredb.boundary_db import BoundaryType
 from baramFlow.coredb.libdb import nsmap, dbTextToBool, boolToDBText, ns
 from .model import MODELS_XPATH, DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from .model import DPMTurbulentDispersion, DPMHeatTransferSpeicification, DPMEvaporationModel, DPMEnthalpyTransferType
@@ -284,7 +286,7 @@ class DPMModelProperties:
 @dataclass
 class PointInjection:
     numberOfParticlesPerPoint: BatchableNumber  = field(default_factory=lambda: BatchableNumber('100'))
-    injectionTime: BatchableNumber              = field(default_factory=lambda: BatchableNumber('100'))
+    injectionTime: BatchableNumber              = field(default_factory=lambda: BatchableNumber('0'))
     particleVelocity: Vector                    = field(default_factory=lambda: Vector.new('1', '1', '1'))
     positions: list                             = field(default_factory=list)
 
@@ -336,8 +338,8 @@ class FlowRate:
     specification: DPMFlowRateSpec              = DPMFlowRateSpec.PARTICLE_COUNT
     particleCount: ParticleCountParameters      = field(default_factory=ParticleCountParameters)
     particleVolume: ParticleVolumeParameters    = field(default_factory=ParticleVolumeParameters)
-    startTime: BatchableNumber                  = field(default_factory=lambda: BatchableNumber('1'))
-    stopTime: BatchableNumber                   = field(default_factory=lambda: BatchableNumber('100'))
+    startTime: BatchableNumber                  = field(default_factory=lambda: BatchableNumber('0'))
+    stopTime: BatchableNumber                   = field(default_factory=lambda: BatchableNumber('1'))
 
     @staticmethod
     def fromElement(e):
@@ -360,7 +362,7 @@ class ConeInjection:
     innerRadius: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0'))
     swirlVelocity: Function1Scalar      = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
     particleSpeed: DPMParticleSpeed     = DPMParticleSpeed.FROM_INJECTION_SPEED
-    injectionSpeed: BatchableNumber     = field(default_factory=lambda: BatchableNumber('100'))
+    injectionSpeed: BatchableNumber     = field(default_factory=lambda: BatchableNumber('1'))
     injectorPressure: Function1Scalar   = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
     dischargeCoeff: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
 
@@ -462,7 +464,7 @@ class Injection:
                     <injectorProperties>
                         <pointInjection>
                             <numberOfParticlesPerPoint>100</numberOfParticlesPerPoint>
-                            <injectionTime>1</injectionTime>
+                            <injectionTime>0</injectionTime>
                             <particleVelocity>
                                 <x>1</x>
                                 <y>1</y>
@@ -485,7 +487,7 @@ class Injection:
                                 </volumeFlowRate>
                                 <massFlowRate>1e-6</massFlowRate>
                             </particleVolume>
-                            <startTime>0.01</startTime>
+                            <startTime>0</startTime>
                             <stopTime>1</stopTime>
                         </flowRate>
                         <coneInjection>
@@ -521,7 +523,7 @@ class Injection:
                                 <constant>0</constant>
                             </swirlVelocity>
                             <particleSpeed>fromInjectionSpeed</particleSpeed>
-                            <injectionSpeed>100</injectionSpeed>
+                            <injectionSpeed>1</injectionSpeed>
                             <injectorPressure>
                                 <type>constant</type>
                                 <constant>0</constant>
@@ -693,3 +695,20 @@ class DPMModelManager:
     @staticmethod
     def removeInertParticle(db):
         db.setValue(DPM_MODELS_XPATH + '/properties/inert/inertParticle', '0')
+
+    @staticmethod
+    def getDefaultPatchInteractionType(type_: BoundaryType)->PatchInteractionType:
+        if type_ in [BoundaryType.WALL,
+                     BoundaryType.THERMO_COUPLED_WALL,
+                     BoundaryType.SYMMETRY,
+                     ]:
+            return PatchInteractionType.REFLECT
+        elif type_ in [BoundaryType.POROUS_JUMP,
+                       BoundaryType.FAN,
+                       BoundaryType.INTERFACE,
+                       BoundaryType.EMPTY,
+                       BoundaryType.WEDGE,
+                       ]:
+            return PatchInteractionType.NONE
+        else:
+            return PatchInteractionType.ESCAPE

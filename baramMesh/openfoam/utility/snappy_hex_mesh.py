@@ -3,13 +3,12 @@
 
 from pathlib import Path
 
+from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges, vtkAppendPolyData, vtkTriangleFilter, vtkPolyDataPlaneCutter
 from vtkmodules.vtkFiltersCore import vtkCleanPolyData
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 
-from baramMesh.openfoam.system.create_patch_dict import CreatePatchDict
-from baramMesh.view.boundaryLayer.restore_cyclic_patch_names import RestoreCyclicPatchNames
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 
@@ -83,8 +82,12 @@ def _writeFeatureFile(path: Path, pd):
     writer.Write()
 
 
-class SnappyHexMesh:
+class SnappyHexMesh(QObject):
+    snappyStarted = Signal()
+    snappyStopped = Signal()
+
     def __init__(self):
+        super().__init__()
         self._cm = None
 
     async def castellation(self):
@@ -213,25 +216,6 @@ class SnappyHexMesh:
 
             else:
                 self._createOutputPath(time)
-
-            # Reorder faces in conformal interfaces
-            # (Faces in cyclic boundary pair should match in order)
-
-            NumberOfConformalInterfaces = app.db.elementCount(
-                'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'] and not e['nonConformal'])
-
-            if NumberOfConformalInterfaces > 0:
-                prefix = 'NFBRM_'
-                CreatePatchDict(prefix).build().write()
-                self._cm = RunParallelUtility('createPatch', '-allRegions', '-overwrite', '-case', app.fileSystem.caseRoot(),
-                                              cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                self._cm.output.connect(console.append)
-                self._cm.errorOutput.connect(console.appendError)
-                await self._cm.start()
-                await self._cm.wait()
-
-                rpn = RestoreCyclicPatchNames(prefix, str(time))
-                rpn.restore()
 
             if boundaryLayersAdded:
                 self._cm = RunParallelUtility('checkMesh',

@@ -15,7 +15,7 @@ from baramFlow.app import app
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import DPMParticleType
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
@@ -144,10 +144,10 @@ class CaseGenerator(QObject):
             boundaries = self._db.getBoundaryConditions(rname)
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
-                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
+                if BoundaryDB.needsCoupledBoundary(BoundaryType(bctype)) and self._db.getValue(xpath + '/coupledBoundary') == '0':
                     errors += QCoreApplication.translate(
                         'CaseGenerator',
-                        f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
+                        f'{BoundaryDB.dbBoundaryTypeToText(BoundaryType(bctype))} boundary "{bcname}" needs a coupled boundary.\n')
 
         return errors
 

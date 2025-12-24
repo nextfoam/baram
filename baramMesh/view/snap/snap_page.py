@@ -177,17 +177,19 @@ class SnapPage(StepPage):
 
         self._ui.snap.hide()
         self._ui.snapCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.snapCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -239,14 +241,12 @@ class SnapPage(StepPage):
         self._ui.snapContents.setEnabled(True)
 
     def _disableEdit(self):
-        print('disabled')
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
 
     @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -254,14 +254,15 @@ class SnapPage(StepPage):
             result = True
         except ProcessError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Snapping Failed. [') + str(e.returncode) + ']')
+                                                self.tr('Snapping Failed [') + str(e.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Snapping has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Snapping Failed:') + str(e))
 
         if not result:
             self.clearResult()
-            self._enableEdit()
-            self._enableMenubarForSettings()
 
         return result

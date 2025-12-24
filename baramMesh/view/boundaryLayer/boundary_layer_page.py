@@ -77,10 +77,10 @@ class BoundaryLayerPage(StepPage):
             return False
 
     def load(self):
+        self._db = app.db.checkout()
+
         if self._loaded:
             return
-
-        self._db = app.db.checkout()
 
         self._ui.boundaryLayerConfigurations.clear()
 
@@ -153,18 +153,20 @@ class BoundaryLayerPage(StepPage):
 
         self._ui.boundaryLayerApply.hide()
         self._ui.boundaryLayerCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Boundary layers are applied.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.boundaryLayerCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -229,7 +231,6 @@ class BoundaryLayerPage(StepPage):
     @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -237,14 +238,15 @@ class BoundaryLayerPage(StepPage):
             result = True
         except ProcessError as exc:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Failed to apply boundary layers. [') + str(exc.returncode) + ']')
+                                                self.tr('Failed to apply boundary layers [') + str(exc.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Boundary layers application has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Failed to apply boundary layers:') + str(e))
 
         if not result:
             self.clearResult()
-            self._enableEdit()
-            self._enableMenubarForSettings()
 
         return result

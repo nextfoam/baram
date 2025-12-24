@@ -87,7 +87,7 @@ class RedistributionTask(QObject):
 
             tempPath.mkdir()
 
-            DecomposeParDict(self._fileSystem.caseRoot(), numCores).build().write()
+            DecomposeParDict(self._fileSystem.caseRoot(), '', numCores).build().write()
             cm = RunUtility('decomposePar', '-time', 'none', '-case', caseRoot, cwd=caseRoot)
             await cm.start()
             result = await cm.wait()

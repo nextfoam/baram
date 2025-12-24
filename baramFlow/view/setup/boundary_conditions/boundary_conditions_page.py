@@ -5,12 +5,14 @@ import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.openfoam import parallel
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, GeometricalType
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
@@ -42,32 +44,32 @@ from .wall_dialog import WallDialog
 
 
 DIALOGS = {
-    BoundaryType.VELOCITY_INLET.value: VelocityInletDialog,
-    BoundaryType.FLOW_RATE_INLET.value: FlowRateInletDialog,
-    BoundaryType.PRESSURE_INLET.value: PressureInletDialog,
-    BoundaryType.INTAKE_FAN.value: IntakeFanDialog,
-    BoundaryType.ABL_INLET.value: ABLInletDialog,
-    BoundaryType.OPEN_CHANNEL_INLET.value: OpenChannelInletDialog,
-    BoundaryType.FREE_STREAM.value: FreeStreamDialog,
-    BoundaryType.FAR_FIELD_RIEMANN.value: FarfieldRiemannDialog,
-    BoundaryType.SUBSONIC_INLET.value: SubsonicInletDialog,
-    BoundaryType.SUPERSONIC_INFLOW.value: SupersonicInflowDialog,
-    BoundaryType.FLOW_RATE_OUTLET.value: FlowRateOutletDialog,
-    BoundaryType.PRESSURE_OUTLET.value: PressureOutletDialog,
-    BoundaryType.EXHAUST_FAN.value: ExhaustFanDialog,
-    BoundaryType.OPEN_CHANNEL_OUTLET.value: OpenChannelOutletDialog,
-    BoundaryType.OUTFLOW.value: None,
-    BoundaryType.SUBSONIC_OUTFLOW.value: SubsonicOutflowDialog,
-    BoundaryType.SUPERSONIC_OUTFLOW.value: None,
-    BoundaryType.WALL.value: WallDialog,
-    BoundaryType.THERMO_COUPLED_WALL.value: ThermoCoupledWallDialog,
-    BoundaryType.POROUS_JUMP.value: PorousJumpDialog,
-    BoundaryType.FAN.value: FanDialog,
-    BoundaryType.SYMMETRY.value: None,
-    BoundaryType.INTERFACE.value: InterfaceDialog,
-    BoundaryType.EMPTY.value: None,
-    BoundaryType.CYCLIC.value: CyclicDialog,
-    BoundaryType.WEDGE.value: None,
+    BoundaryType.VELOCITY_INLET: VelocityInletDialog,
+    BoundaryType.FLOW_RATE_INLET: FlowRateInletDialog,
+    BoundaryType.PRESSURE_INLET: PressureInletDialog,
+    BoundaryType.INTAKE_FAN: IntakeFanDialog,
+    BoundaryType.ABL_INLET: ABLInletDialog,
+    BoundaryType.OPEN_CHANNEL_INLET: OpenChannelInletDialog,
+    BoundaryType.FREE_STREAM: FreeStreamDialog,
+    BoundaryType.FAR_FIELD_RIEMANN: FarfieldRiemannDialog,
+    BoundaryType.SUBSONIC_INLET: SubsonicInletDialog,
+    BoundaryType.SUPERSONIC_INFLOW: SupersonicInflowDialog,
+    BoundaryType.FLOW_RATE_OUTLET: FlowRateOutletDialog,
+    BoundaryType.PRESSURE_OUTLET: PressureOutletDialog,
+    BoundaryType.EXHAUST_FAN: ExhaustFanDialog,
+    BoundaryType.OPEN_CHANNEL_OUTLET: OpenChannelOutletDialog,
+    BoundaryType.OUTFLOW: None,
+    BoundaryType.SUBSONIC_OUTFLOW: SubsonicOutflowDialog,
+    BoundaryType.SUPERSONIC_OUTFLOW: None,
+    BoundaryType.WALL: WallDialog,
+    BoundaryType.THERMO_COUPLED_WALL: ThermoCoupledWallDialog,
+    BoundaryType.POROUS_JUMP: PorousJumpDialog,
+    BoundaryType.FAN: FanDialog,
+    BoundaryType.SYMMETRY: None,
+    BoundaryType.INTERFACE: InterfaceDialog,
+    BoundaryType.EMPTY: None,
+    BoundaryType.CYCLIC: CyclicDialog,
+    BoundaryType.WEDGE: None,
 }
 
 
@@ -185,7 +187,7 @@ class BoundaryConditionsPage(ContentPage):
         db = coredb.CoreDB()
         boundaries = db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
-            widget = BoundaryWidget(rname, bcid, bcname, bctype)
+            widget = BoundaryWidget(rname, bcid, bcname, BoundaryType(bctype))
             widget.rightClicked.connect(self._showTypePicker)
             self._boundaries[bcid] = BoundaryItem(parent, widget)
 
@@ -202,12 +204,12 @@ class BoundaryConditionsPage(ContentPage):
             self._edit()
 
     @qasync.asyncSlot()
-    async def _changeBoundaryType(self, bcid, bctype):
+    async def _changeBoundaryType(self, bcid, bctype: BoundaryType):
         db = coredb.CoreDB()
         currentType = BoundaryDB.getBoundaryType(bcid)
         if currentType != bctype:
             xpath = BoundaryDB.getXPath(bcid)
-            db.setValue(xpath + '/physicalType', bctype)
+            db.setValue(xpath + '/physicalType', bctype.value)
             self._boundaries[bcid].reloadType()
             self._updateEditEnabled()
 
@@ -216,7 +218,7 @@ class BoundaryConditionsPage(ContentPage):
                 if (BoundaryDB.needsCoupledBoundary(bctype)
                         and BoundaryDB.getBoundaryType(cpid) == currentType
                         and bcid == int(db.getValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary'))):
-                    db.setValue(BoundaryDB.getXPath(cpid) + '/physicalType', bctype)
+                    db.setValue(BoundaryDB.getXPath(cpid) + '/physicalType', bctype.value)
                     self._boundaries[int(cpid)].reloadType()
                 else:
                     db.setValue(xpath + '/coupledBoundary', '0')
@@ -224,9 +226,17 @@ class BoundaryConditionsPage(ContentPage):
                     cpid = '0'
 
             if cpid == '0'and BoundaryDB.needsCoupledBoundary(bctype):
-                await AsyncMessageBox().information(
-                    self, self.tr('Need to edit boundary condition'),
-                    self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
+                if parallel.getNP() > 1 and BoundaryDB.getGeometryType(bctype) in [GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI]:
+                    message = self.tr('1. This boundary type requires a coupled boundary. It is configured in the next dialog.\n\n' \
+                                      '2. The current decomposed mesh could potentially be incompatible with this boundary type change.' \
+                                      ' It is recommended to work in serial mode (single processor) when making this change.')
+                else:
+                    message = self.tr('This boundary type requires a coupled boundary.\nIt is configured in the next dialog.')
+
+                await AsyncMessageBox().information(self, self.tr('Warning for ')+BoundaryDB.dbBoundaryTypeToText(bctype), message)
+
+            interactionType = DPMModelManager.getDefaultPatchInteractionType(bctype)
+            db.setValue(xpath + '/patchInteraction/type', interactionType.value)
 
             self._edit()
 

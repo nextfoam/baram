@@ -105,6 +105,7 @@ class InjectionDialog(QDialog):
         self._ui.injectionType.currentIndexChanged.connect(self._injectionTypeChanged)
         self._ui.editPosition.clicked.connect(self._opePositionEditor)
         self._ui.flowRateSpec.currentIndexChanged.connect(self._flowRateSpecChanged)
+        self._ui.surfaceParticleVelocityType.currentIndexChanged.connect(self._surfaceParticleVelocityTypeChanged)
         self._ui.surfaceSelect.clicked.connect(self._openSurfaceSelector)
         self._ui.coneInjectorType.currentIndexChanged.connect(self._coneInjectorTypeChanged)
         self._ui.coneParticleSpeed.currentIndexChanged.connect(self._coneParticleSpeedChanged)
@@ -124,7 +125,7 @@ class InjectionDialog(QDialog):
             self._ui.flowRateSpec.findData(self._injection.injector.flowRate.specification))
         self._ui.countParcelPerSecond.setBatchableNumber(
             self._injection.injector.flowRate.particleCount.parcelPerSecond)
-        self._ui.numberOfParticlesForParcel.setBatchableNumber(
+        self._ui.numberOfParticlesPerParcel.setBatchableNumber(
             self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel)
         self._ui.volumeParcelPerSecond.setBatchableNumber(
             self._injection.injector.flowRate.particleVolume.parcelPerSecond)
@@ -185,20 +186,20 @@ class InjectionDialog(QDialog):
         try:
             if injectionType == DPMInjectionType.POINT:
                 self._ui.numberOfParticlesPerPoint.validate(self.tr('Number of Particles per Point'))
-                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0)
+                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0, lowInclusive=True)
                 self._ui.pointParticleVelocity.validate(self.tr('Particle Velocity'))
             else:
                 if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
-                    self._ui.countParcelPerSecond.validate(self.tr('Parcel per Second'), low=0, lowInclusive=False)
-                    self._ui.numberOfParticlesForParcel.validate(self.tr('Number of Particles per Pacel'),
+                    self._ui.countParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
+                    self._ui.numberOfParticlesPerParcel.validate(self.tr('Number of Particles per Pacel'),
                                                                  low=0, lowInclusive=False)
                 elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
-                    self._ui.volumeParcelPerSecond.validate(self.tr('Parcel per Second'), low=0, lowInclusive=False)
+                    self._ui.volumeParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
                     self._ui.totalMass.validate(self.tr('Total Mass'), low=0, lowInclusive=False)
                     self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
                     self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
 
-                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=False)
+                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=True)
                 self._ui.stopTime.validate(self.tr('Stop Time'))
                 if self._ui.startTime.validatedFloat() >= self._ui.stopTime.validatedFloat():
                     await AsyncMessageBox().information(self, self.tr('Input Error'),
@@ -244,12 +245,6 @@ class InjectionDialog(QDialog):
                     return
                 if diameterDistribution != DPMDiameterDistribution.LINEAR:
                     self._ui.meanDiameter.validate(self.tr('Mean Diameter'))
-                    if (self._ui.meanDiameter.validatedFloat() < self._ui.minDiameter.validatedFloat()
-                            or self._ui.meanDiameter.validatedFloat() > self._ui.maxDiameter.validatedFloat()):
-                        await AsyncMessageBox().information(
-                            self, self.tr('Input Error'),
-                            self.tr('Mean. Diameter must be Between Min. Diameter and Max. Diameter.'))
-                        return
                     if diameterDistribution in (
                             DPMDiameterDistribution.ROSIN_RAMMLER, DPMDiameterDistribution.MASS_ROSIN_RAMMLER):
                         self._ui.spreadParameter.validate(self.tr('Spread Parameter'), low=0, lowInclusive=False)
@@ -271,7 +266,7 @@ class InjectionDialog(QDialog):
             self._injection.injector.flowRate.specification = flowRateSpec
             if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
                 self._injection.injector.flowRate.particleCount.parcelPerSecond = self._ui.countParcelPerSecond.batchableNumber()
-                self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesForParcel.batchableNumber()
+                self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesPerParcel.batchableNumber()
             elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
                 self._injection.injector.flowRate.particleVolume.parcelPerSecond = self._ui.volumeParcelPerSecond.batchableNumber()
                 self._injection.injector.flowRate.particleVolume.totalMass = self._ui.totalMass.batchableNumber()
@@ -355,6 +350,10 @@ class InjectionDialog(QDialog):
         else:
             self._ui.particleCountParameters.hide()
             self._ui.particleVolumeParameters.show()
+
+    def _surfaceParticleVelocityTypeChanged(self):
+        velocityType: DPMParticleVelocityType = self._ui.surfaceParticleVelocityType.currentData()
+        self._ui.surfaceParticleVelocity.setEnabled(velocityType == DPMParticleVelocityType.CONSTANT)
 
     def _openSurfaceSelector(self):
         def surfaceSelected():

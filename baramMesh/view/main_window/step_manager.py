@@ -39,7 +39,7 @@ class StepControlButtons(QObject):
     def __init__(self, ui):
         super().__init__()
 
-        self._batchButton = ui.finishSteps
+        self._cancelClicked = False
 
         self._buttons = {
             ButtonID.NEXT:      ui.next,
@@ -50,10 +50,15 @@ class StepControlButtons(QObject):
 
         ui.next.clicked.connect(self.nextButtonClicked)
         ui.finishSteps.clicked.connect(self.finishButtonClicked)
-        ui.finishCancel.clicked.connect(self.cancelButtonClicked)
+        ui.finishCancel.clicked.connect(self._onCancelButtonClicked)
         ui.unlock.clicked.connect(self.unlockButtonClicked)
 
+    def isCancelClicked(self):
+        return self._cancelClicked
+
     def showButton(self, id_, enabled=True):
+        self._cancelClicked = False
+
         for i, button in self._buttons.items():
             if i == id_:
                 button.show()
@@ -66,6 +71,10 @@ class StepControlButtons(QObject):
 
     def disableNextButton(self):
         self._buttons[ButtonID.NEXT].setEnabled(False)
+
+    def _onCancelButtonClicked(self):
+        self._cancelClicked = True
+        self.cancelButtonClicked.emit()
 
 
 class StepManager(QObject):
@@ -139,7 +148,7 @@ class StepManager(QObject):
         self._navigation.currentStepChanged.connect(self._moveToStep)
         self._buttons.nextButtonClicked.connect(self.openNextStep)
         self._buttons.finishButtonClicked.connect(self._finishSteps)
-        self._buttons.cancelButtonClicked.connect(snappyHexMesh.cancel)
+        self._buttons.cancelButtonClicked.connect(self._cancelFinishSteps)
         self._buttons.unlockButtonClicked.connect(self._unlockCurrentStep)
 
         for step in range(Step.GEOMETRY, Step.CASTELLATION):
@@ -197,29 +206,37 @@ class StepManager(QObject):
         self._batchRunning = True
         self._buttons.showButton(ButtonID.CANCEL)
 
+        snappyHexMesh.snappyStarted.emit()
+
         while self._workingStep < Step.EXPORT:
             # Only change workingStep
             self._pages[self._workingStep].load()
             self._navigation.setWorkingStep(self._workingStep)
 
-            await self._pages[self._workingStep].runInBatchMode()
+            if self._buttons.isCancelClicked() or not await self._pages[self._workingStep].runInBatchMode():
+                break
 
             self._workingStep += 1
+        else:
+            await AsyncMessageBox().information(self._contentStack, self.tr('Process Completed'),
+                                                self.tr('All steps complete.'))
 
         # Apply current workingStep
         self._setWorkingStep(self._workingStep)
 
         self._batchRunning = False
 
-        await AsyncMessageBox().information(self._contentStack, self.tr('Process Completed'),
-                                            self.tr('All steps complete.'))
-
         displayStep = self._navigation.currentStep()
         self._updateControlButtons(displayStep)
         if displayStep < self._workingStep:
             self.currentPage().lock()
 
+        snappyHexMesh.snappyStopped.emit()
+
         self.currentPage().updateWorkingStatus()
+
+    def _cancelFinishSteps(self):
+        snappyHexMesh.cancel()
 
     @qasync.asyncSlot()
     async def _unlockCurrentStep(self):

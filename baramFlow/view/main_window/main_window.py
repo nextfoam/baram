@@ -591,7 +591,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._dialog.open()
 
     def _openTutorials(self):
-        webbrowser.open('https://baramcfd.org/en/tutorial/baram-flow/tutorial-dashboard-en/')
+        webbrowser.open('https://baramcfd.org/en/tutorials-en/tutorial-baramflow-en/tutorial-baramflow-dashboard-en/')
 
     def meshUpdated(self):
         if RegionDB.isMultiRegion():

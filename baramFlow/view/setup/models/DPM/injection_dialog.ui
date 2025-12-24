@@ -54,7 +54,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="injectionType"/>
+              <widget class="PythonComboBox" name="injectionType"/>
              </item>
             </layout>
            </widget>
@@ -149,7 +149,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QComboBox" name="flowRateSpec"/>
+                 <widget class="PythonComboBox" name="flowRateSpec"/>
                 </item>
                </layout>
               </widget>
@@ -157,13 +157,13 @@
              <item>
               <widget class="QGroupBox" name="particleCountParameters">
                <property name="title">
-                <string>Particle Count Pamameters</string>
+                <string>Particle Count Parameters</string>
                </property>
                <layout class="QFormLayout" name="formLayout_4">
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_12">
                   <property name="text">
-                   <string>Parcel per Second</string>
+                   <string>Parcels per Second</string>
                   </property>
                  </widget>
                 </item>
@@ -173,12 +173,12 @@
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_13">
                   <property name="text">
-                   <string>Number of Particles for Parcel</string>
+                   <string>Number of Particles per Parcel</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="BatchableFloatEdit" name="numberOfParticlesForParcel"/>
+                 <widget class="BatchableFloatEdit" name="numberOfParticlesPerParcel"/>
                 </item>
                </layout>
               </widget>
@@ -192,7 +192,7 @@
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_14">
                   <property name="text">
-                   <string>Parcel per Second</string>
+                   <string>Parcels per Second</string>
                   </property>
                  </widget>
                 </item>
@@ -264,31 +264,31 @@
           <item>
            <widget class="QWidget" name="surfaceInjection" native="true">
             <layout class="QFormLayout" name="formLayout_10">
-             <item row="0" column="0">
+             <item row="1" column="0">
               <widget class="QLabel" name="label_39">
                <property name="text">
                 <string>Particle Velocity (m/s)</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
+             <item row="1" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
-                <widget class="QComboBox" name="surfaceParticleVelocityType"/>
+                <widget class="PythonComboBox" name="surfaceParticleVelocityType"/>
                </item>
                <item>
                 <widget class="VectorWidget" name="surfaceParticleVelocity" native="true"/>
                </item>
               </layout>
              </item>
-             <item row="1" column="0">
+             <item row="0" column="0">
               <widget class="QLabel" name="label_40">
                <property name="text">
                 <string>Surface</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
+             <item row="0" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
                 <widget class="QLineEdit" name="surface">
@@ -320,7 +320,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="coneInjectorType"/>
+              <widget class="PythonComboBox" name="coneInjectorType"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_7">
@@ -400,7 +400,7 @@
               </widget>
              </item>
              <item row="8" column="1">
-              <widget class="QComboBox" name="coneParticleSpeed"/>
+              <widget class="PythonComboBox" name="coneParticleSpeed"/>
              </item>
              <item row="9" column="0">
               <widget class="QLabel" name="label_34">
@@ -621,6 +621,11 @@
    <extends>QWidget</extends>
    <header>baramFlow.view.setup.models.DPM.function1_widget</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <resources/>

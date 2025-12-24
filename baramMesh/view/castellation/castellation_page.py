@@ -80,10 +80,10 @@ class CastellationPage(StepPage):
             return False
 
     def load(self):
+        self._db = app.db.checkout()
+
         if self._loaded:
             return
-
-        self._db = app.db.checkout()
 
         castellation = self._db.getElement('castellation')
         self._setConfigurastions(castellation)
@@ -173,18 +173,20 @@ class CastellationPage(StepPage):
 
         self._ui.refine.hide()
         self._ui.castellationCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
         app.consoleView.clear()
 
         if await self._run():
-            self._enableEdit()
-            self._enableMenubarForSettings()
             self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Castellation refinement is completed.'))
 
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
         self._ui.castellationCancel.hide()
+
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -276,7 +278,6 @@ class CastellationPage(StepPage):
 
     async def _run(self):
         self._disableEdit()
-        self._disableMenubarForRunning()
 
         result = False
         try:
@@ -284,12 +285,15 @@ class CastellationPage(StepPage):
             result = True
         except ProcessError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
+                                                self.tr('Castellation refinement Failed [') + str(e.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Castellation refinement has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Castellation refinement Failed:') + str(e))
 
         if not result:
-            await app.window.meshManager.load(self.OUTPUT_TIME)
+            self.clearResult()
 
         return result

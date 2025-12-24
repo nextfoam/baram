@@ -77,7 +77,7 @@ class StepPage(QObject):
             rmtree(path)
 
     def updateWorkingStatus(self):
-        self._updateMesh()
+        self.updateMesh()
         self._updateControlButtons()
 
     def _outputPath(self) -> Path:
@@ -95,7 +95,7 @@ class StepPage(QObject):
     def _showPreviousMesh(self):
         app.window.meshManager.show(self.OUTPUT_TIME - 1)
 
-    def _updateMesh(self):
+    def updateMesh(self):
         if self.isNextStepAvailable():
             self._showResultMesh()
         else:
@@ -103,16 +103,6 @@ class StepPage(QObject):
 
     def _updateControlButtons(self):
         return
-
-    def _disableMenubarForRunning(self):
-        self._ui.menuFile.setEnabled(False)
-        self._ui.menuMesh_Quality.setEnabled(False)
-        self._ui.menuParallel.setEnabled(False)
-
-    def _enableMenubarForSettings(self):
-        self._ui.menuFile.setEnabled(True)
-        self._ui.menuMesh_Quality.setEnabled(True)
-        self._ui.menuParallel.setEnabled(True)
 
     def _enableStep(self):
         self._widget.setEnabled(True)
