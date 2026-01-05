@@ -10,7 +10,7 @@ import qasync
 from libbaram.openfoam.constants import Directory
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.process import ProcessError
-from libbaram.run import RunParallelUtility
+from libbaram.run import RunParallelUtility, RunUtility
 from libbaram.utils import rmtree
 from resources import resource
 from widgets.progress_dialog import ProgressDialog
@@ -186,8 +186,8 @@ class ExportPage(StepPage):
                     for rname, p1, p2 in regionBoundaries:
                         await baramSystem.createRegionSystemDirectory(rname)
                         ExtrudeMeshDict(baramSystem).build(p1, p2, options).write()
-                        cm = RunParallelUtility('extrudeMesh', '-region', rname, '-dict', 'system/extrudeMeshDict',
-                                                cwd=baramSystem.caseRoot(), parallel=parallel)
+                        cm = RunUtility('extrudeMesh', '-region', rname, '-dict', 'system/extrudeMeshDict',
+                                                cwd=baramSystem.caseRoot())
                         cm.output.connect(console.append)
                         cm.errorOutput.connect(console.appendError)
                         await cm.start()
@@ -196,7 +196,7 @@ class ExportPage(StepPage):
                             raise ProcessError(rc)
                 else:
                     ExtrudeMeshDict(baramSystem).build(regionBoundaries[0][1], regionBoundaries[0][2], options).write()
-                    cm = RunParallelUtility('extrudeMesh', cwd=baramSystem.caseRoot(), parallel=parallel)
+                    cm = RunUtility('extrudeMesh', cwd=baramSystem.caseRoot())
                     cm.output.connect(console.append)
                     cm.errorOutput.connect(console.appendError)
                     await cm.start()
@@ -205,7 +205,7 @@ class ExportPage(StepPage):
                         raise ProcessError(rc)
 
                     CollapseDict(baramSystem).create()
-                    cm = RunParallelUtility('collapseEdges', '-overwrite', cwd=baramSystem.caseRoot(), parallel=parallel)
+                    cm = RunUtility('collapseEdges', '-overwrite', cwd=baramSystem.caseRoot())
                     cm.output.connect(console.append)
                     cm.errorOutput.connect(console.appendError)
                     await cm.start()
