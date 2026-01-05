@@ -34,12 +34,12 @@ class BaseGridPage(StepPage):
         return app.fileSystem.boundaryFilePath().exists()
     #
     # def open(self):
-    #     self._load()
+    #     self.load()
     #     self._updatePage()
 
     async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
-            self._load()
+            self.load()
 
         self._updatePage()
         self.updateWorkingStatus()
@@ -108,7 +108,7 @@ class BaseGridPage(StepPage):
         self._updateCellY()
         self._updateCellZ()
 
-    def _load(self):
+    def load(self):
         self._boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
 
         self._ui.numCellsX.setText(app.db.getValue('baseGrid/numCellsX'))

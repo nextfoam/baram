@@ -102,7 +102,24 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>GeometryAddDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>182</x>
+     <y>169</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>118</x>
+     <y>99</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
   <buttongroup name="shapeRadios"/>
  </buttongroups>

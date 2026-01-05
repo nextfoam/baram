@@ -76,11 +76,11 @@ class RegionPage(StepPage):
         if self._loaded:
             self._updateBounds()
         else:
-            self._load()
+            self.load()
 
     async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
-            self._load()
+            self.load()
 
         app.window.meshManager.unload()
 
@@ -123,7 +123,7 @@ class RegionPage(StepPage):
         self._form.regionEdited.connect(self._update)
         self._form.canceled.connect(self._formCanceled)
 
-    def _load(self):
+    def load(self):
         self._updateBounds()
 
         regions = app.db.getElements('region')
@@ -133,8 +133,10 @@ class RegionPage(StepPage):
         self._loaded = True
 
     def _updateBounds(self):
-        self._bounds = app.window.geometryManager.getBounds()
-        self._form.setBounds(self._bounds)
+        bounds = app.window.geometryManager.getBounds()
+        if bounds is not None:
+            self._bounds = bounds
+            self._form.setBounds(self._bounds)
 
     def _showFormForAdding(self):
         layout = self._ui.regionList.layout()

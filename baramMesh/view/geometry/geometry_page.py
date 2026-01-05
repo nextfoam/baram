@@ -70,14 +70,17 @@ class GeometryPage(StepPage):
 
     async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
-            self._geometryManager = app.window.geometryManager
-            self._list.load()
-
-            self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
-
-            self._loaded = True
+            self.load()
 
         app.window.meshManager.unload()
+
+    def load(self):
+        self._geometryManager = app.window.geometryManager
+        self._list.load()
+
+        self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
+
+        self._loaded = True
 
     async def hide(self):
         self._geometryManager.disableSyncingToDisplay()
@@ -318,6 +321,9 @@ class GeometryPage(StepPage):
     def _disableStep(self):
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self._ui.geometryButtons.setEnabled(False)
+
+    def _clear(self):
+        self._list.clear()
 
     def _newVolumeDialog(self):
         dialog = VolumeDialog(self._widget, self._ui.renderingView)

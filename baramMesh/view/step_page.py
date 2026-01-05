@@ -60,6 +60,9 @@ class StepPage(QObject):
         self._locked = False
         self._clear()
 
+    def load(self):
+        pass
+    
     def retranslate(self):
         return
 
