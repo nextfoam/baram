@@ -126,11 +126,6 @@ class ModelsPage(ContentPage):
                            lambda: self.tr('Defined') if UserDefinedScalarsDB.hasDefined() else self.tr('Not Defined'),
                            UserDefinedScalarsDialog if GeneralDB.isPressureBased() else None)
 
-        self._addModelItem(Models.DPM,
-                           self.tr('DPM'),
-                           lambda: DPMParticleTypeTexts[DPMModelManager.particleType()],
-                           DPMDialog if not ModelsDB.isMultiphaseModelOn() else None)
-
         for i in range(self._ui.list.count()):
             self._ui.list.item(i).load()
 
