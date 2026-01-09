@@ -51,11 +51,14 @@ def isRunning(pid, startTime):
     return False
 
 
-async def runExternalScript(program: str, *args, cwd=None, useVenv=True, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+async def runExternalCommand(program: str, *args, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
     ENV = os.environ.copy()
-    if not useVenv:
-        excluding = [os.path.join('venv', 'bin'), os.path.join('venv', 'Lib'), os.path.join('venv', 'Scripts')]
-        ENV['PATH'] = os.pathsep.join([path for path in ENV['PATH'].split(os.pathsep) if not any([pattern in path for pattern in excluding])])
+
+    if platform.system() == 'Darwin':
+        PATH = '/opt/homebrew/bin' + os.pathsep + os.environ['PATH']
+        ENV.update({
+            'PATH': PATH
+        })
 
     creationflags = 0
     startupinfo = None
