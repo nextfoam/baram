@@ -5,7 +5,7 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunUtility, RunParallelUtility
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
@@ -32,17 +32,17 @@ class BaseGridPage(StepPage):
 
     def isNextStepAvailable(self):
         return app.fileSystem.boundaryFilePath().exists()
+    #
+    # def open(self):
+    #     self.load()
+    #     self._updatePage()
 
-    def open(self):
-        self._load()
-        self._updatePage()
-
-    async def selected(self):
+    async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
-            self._load()
+            self.load()
 
         self._updatePage()
-        self.updateMesh()
+        self.updateWorkingStatus()
 
     async def save(self):
         try:
@@ -70,6 +70,14 @@ class BaseGridPage(StepPage):
 
     def _outputPath(self):
         return app.fileSystem.polyMeshPath()
+
+    def _enableStep(self):
+        self._widget.setEnabled(True)
+        self._ui.baseGridReset.setEnabled(True)
+
+    def _disableStep(self):
+        self._widget.setEnabled(False)
+        self._ui.baseGridReset.setEnabled(False)
 
     def _connectSignalsSlots(self):
         self._ui.useHex6.toggled.connect(self._useHex6Toggled)
@@ -100,7 +108,7 @@ class BaseGridPage(StepPage):
         self._updateCellY()
         self._updateCellZ()
 
-    def _load(self):
+    def load(self):
         self._boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
 
         self._ui.numCellsX.setText(app.db.getValue('baseGrid/numCellsX'))
@@ -217,10 +225,14 @@ class BaseGridPage(StepPage):
         await app.window.meshManager.load(self.OUTPUT_TIME)
         self._updatePage()
 
+        if self.isNextStepAvailable():
+            self.stepCompleted.emit()
+
     def _reset(self):
         self._showPreviousMesh()
         self.clearResult()
         self._updatePage()
+        self.stepReset.emit()
 
     def _updatePage(self):
         self._ui.useHex6.toggled.disconnect(self._useHex6Toggled)
@@ -252,11 +264,10 @@ class BaseGridPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.generate.hide()
             self._ui.baseGridReset.show()
-            self._setNextStepEnabled(True)
+            self._ui.baseGridReset.setEnabled(not self._locked)
         else:
             self._ui.generate.show()
             self._ui.baseGridReset.hide()
-            self._setNextStepEnabled(False)
 
     def _showPreviousMesh(self):
         app.window.meshManager.unload()

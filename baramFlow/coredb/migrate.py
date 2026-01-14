@@ -5,6 +5,7 @@ from __future__ import annotations
 from math import sqrt
 
 import logging
+from uuid import UUID
 
 from lxml import etree
 import pandas as pd
@@ -913,6 +914,361 @@ def _version_9(root: etree.Element):
             p.insert(8, e)
 
 
+def _version_10(root: etree.Element):
+    logger.debug('  Upgrading to v11')
+
+    root.set('version', '11')
+
+    for p in root.findall('materials/material/specificHeat', namespaces=_nsmap):
+        if (e := p.find('piecewisePolynomial', namespaces=_nsmap)) is not None:  # it was a temporary name, which has changed to "janaf"
+            p.remove(e)
+
+        if p.find('janaf', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "janaf" to {p}')
+
+            e = etree.fromstring('<janaf xmlns="http://www.baramcfd.org/baram">'
+                                 f' <lowTemperature>200</lowTemperature>'
+                                 f' <commonTemperature>1000</commonTemperature>'
+                                 f' <highTemperature>6000</highTemperature>'
+                                 f' <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>'
+                                 f' <highCoefficients>0 0 0 0 0 0 0</highCoefficients>'
+                                 '</janaf>')
+            p.append(e)
+
+    for p in root.findall('materials/material', namespaces=_nsmap):
+        phase = p.find('phase', namespaces=_nsmap).text
+        density = p.find('density', namespaces=_nsmap)
+
+        if phase == 'gas' and density.find('boussinesq', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "boussinesq" to {p}')
+
+            e = etree.fromstring('<boussinesq xmlns="http://www.baramcfd.org/baram">'
+                                 f' <rho0>1</rho0>'
+                                 f' <T0>300</T0>'
+                                 f' <beta>3e-03</beta>'
+                                 '</boussinesq>')
+            density.append(e)
+
+        if phase == 'liquid' and density.find('perfectFluid', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "perfectFluid" to {p}')
+
+            e = etree.fromstring('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
+                                 f' <rho0>998</rho0>'
+                                 f' <T>288</T>'
+                                 f' <beta>4.609e-10</beta>'
+                                 '</perfectFluid>')
+            density.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('pressure', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "pressure" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}pressure')
+            e.text = '0'
+            p.append(e)
+
+        if p.find('fanCurveName', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "fanCurveName" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}fanCurveName')
+            e.text = str(UUID(int = 0))
+            p.append(e)
+
+        if p.find('thermoCoupledWall', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "thermoCoupledWall" to {p}')
+            e = etree.fromstring('''
+                <thermoCoupledWall xmlns="http://www.baramcfd.org/baram">
+                    <temperature>
+                        <wallLayers disabled="true">
+                            <thicknessLayers>0.001</thicknessLayers>
+                            <thermalConductivityLayers>10</thermalConductivityLayers>
+                        </wallLayers>
+                    </temperature>
+                </thermoCoupledWall>
+            ''')
+            p.insert(17, e)
+
+        if p.find('flowRateOutlet', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "flowRateOutlet" to {p}')
+            e = etree.fromstring('''
+                <flowRateOutlet xmlns="http://www.baramcfd.org/baram">
+                    <flowRate>
+                        <specification>massFlowRate</specification>
+                        <volumeFlowRate>1</volumeFlowRate>
+                        <massFlowRate>1</massFlowRate>
+                    </flowRate>
+                </flowRateOutlet>
+            ''')
+            p.insert(7, e)
+
+        if (e := p.find('fan', namespaces=_nsmap)) is not None:
+            p.remove(e)
+
+            type_ = p.find('physicalType', namespaces=_nsmap)
+            if type_.text == 'fan':
+                type_.text = 'cyclic'
+
+
+def _version_11(root: etree.Element):
+    logger.debug('  Upgrading to v12')
+
+    root.set('version', '12')
+
+    if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
+        e = p.find('flowDirection', namespaces=_nsmap)
+        if e.find('specMethod', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "specMethod" to {e}')
+
+            x = e.find('x', namespaces=_nsmap).text
+            y = e.find('y', namespaces=_nsmap).text
+            z = e.find('z', namespaces=_nsmap).text
+
+            p.remove(e)
+
+            e = etree.fromstring(f'''
+                <flowDirection xmlns="http://www.baramcfd.org/baram">
+                    <specMethod>direct</specMethod>
+                    <value>
+                        <x>{x}</x>
+                        <y>{y}</y>
+                        <z>{z}</z>
+                    </value>
+                </flowDirection>
+            ''')
+
+            p.insert(0, e)
+
+        if p.find('pasquillStability', namespaces=_nsmap) is None:
+            e = etree.fromstring('''
+                <pasquillStability xmlns="http://www.baramcfd.org/baram" disabled="true">
+                    <stabilityClass>D</stabilityClass>
+                    <latitude>37</latitude>
+                    <surfaceHeatFlux>0</surfaceHeatFlux>
+                    <referenceDensity>1.225</referenceDensity>
+                    <referenceSpecificHeat>1006.0</referenceSpecificHeat>
+                    <referenceTemperature>298.15</referenceTemperature>
+                </pasquillStability>
+            ''')
+
+            p.append(e)
+
+    for e in root.findall('monitors/*/*/field', namespaces=_nsmap):
+        logger.debug(f'    Replacing text of {e} to "fieldCategory", "fieldCodeName' and "fieldComponent")
+
+        p = e.getparent()
+        fieldCategory = 'basic'
+        fieldCodeName = e.find('field', namespaces=_nsmap).text
+        fieldID = e.find('fieldID', namespaces=_nsmap).text
+        fieldComponent = '1'
+
+        if fieldCodeName == 'speed':
+            fieldCodeName = 'Velocity'
+        elif fieldCodeName == 'xVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '2'
+        elif fieldCodeName == 'yVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '4'
+        elif fieldCodeName == 'zVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '8'
+        elif fieldCodeName == 'material':
+            if root.find('/models/multiphaseModels/model', namespaces=_nsmap).text != 'off':
+                fieldCategory = 'phase'
+                fieldCodeName = fieldID
+            elif root.find('/models/speciesModels', namespaces=_nsmap).text == 'on':
+                fieldCategory = 'specie'
+                fieldCodeName = fieldID
+        elif fieldCodeName == 'scalar':
+            fieldCategory = 'userScalar'
+            fieldCodeName = fieldID
+
+        categoryElement = etree.Element(f'{{{_ns}}}fieldCategory')
+        categoryElement.text = fieldCategory
+
+        codeNameElement = etree.Element(f'{{{_ns}}}fieldCodeName')
+        codeNameElement.text = fieldCodeName
+
+        componentElement = etree.Element(f'{{{_ns}}}fieldComponent')
+        componentElement.text = fieldComponent
+
+        p.remove(e)
+
+        index = 3 if p.find('reportType', namespaces=_nsmap) is None else 4
+
+        for child in [categoryElement, codeNameElement, componentElement]:
+            p.insert(index, child)
+            index += 1
+
+    if (p := root.find('models', namespaces=_nsmap)) is not None:
+        if p.find('DPMModels', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "DPMModels" to {p}')
+
+            e = etree.fromstring('''
+                <DPMModels xmlns="http://www.baramcfd.org/baram">
+                    <properties>
+                        <particleType>none</particleType>
+                        <inert>
+                            <inertParticle>0</inertParticle>
+                        </inert>
+                        <droplet>
+                            <composition/>
+                            <temperature>300</temperature>
+                        </droplet>
+                        <numericalConditions>
+                            <interactionWithContinuousPhase>true</interactionWithContinuousPhase>
+                            <maxParticleCourantNumber>0.3</maxParticleCourantNumber>
+                            <DPMIterationInterval>10</DPMIterationInterval>
+                            <nodeBasedAveraging>true</nodeBasedAveraging>
+                            <trackingScheme>implicit</trackingScheme>
+                        </numericalConditions>
+                        <kinematicModel>
+                            <dragForce>
+                                <specification>sphereDrag</specification>
+                                <nonSphereDrag>
+                                    <shapeFactor>0.9</shapeFactor>
+                                </nonSphereDrag>
+                                <TomiyamaDrag>
+                                    <surfaceTension>0.9</surfaceTension>
+                                    <contamination>pure</contamination>
+                                </TomiyamaDrag>
+                            </dragForce>
+                            <liftForce>
+                                <specification>none</specification>
+                                <TomiyamaLift>
+                                    <surfaceTension>0.9</surfaceTension>
+                                </TomiyamaLift>
+                            </liftForce>
+                            <gravity>false</gravity>
+                            <pressureGradient>false</pressureGradient>
+                            <brownianMotionForce disabled="true">
+                                <molecularFreePathLength>0.9</molecularFreePathLength>
+                                <useTurbulence>false</useTurbulence>
+                            </brownianMotionForce>
+                        </kinematicModel>
+                        <turbulentDispersion>none</turbulentDispersion>
+                        <heatTransfer>
+                            <specification>none</specification>
+                            <ranzMarshall>
+                                <birdCorrection>true</birdCorrection>
+                            </ranzMarshall>
+                        </heatTransfer>
+                        <evaporation>
+                            <model>none</model>
+                            <enthalpyTransferType>enthalpyDifference</enthalpyTransferType>
+                        </evaporation>
+                    </properties>
+                    <injections/>
+                </DPMModels>
+            ''')
+            p.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('patchInteraction', namespaces=_nsmap) is None:
+            logger.debug(f'    Updating "patchInteraction" to {p}')
+
+            e = etree.fromstring(f'''
+                <patchInteraction xmlns="{_ns}">
+                    <type>reflect</type>
+                    <reflect>
+                        <coefficientOfRestitution>
+                            <normal>1</normal>
+                            <tangential>1</tangential>
+                        </coefficientOfRestitution>
+                    </reflect>
+                    <recycle>
+                        <recycleBoundary>0</recycleBoundary>
+                        <recycleFraction>1</recycleFraction>
+                    </recycle>
+                </patchInteraction>
+            ''')
+            p.append(e)
+
+    for materialNode in root.findall('materials/material', namespaces=_nsmap):
+        chemicalFormulaNode = materialNode.find('chemicalFormula', namespaces=_nsmap)
+        if chemicalFormulaNode is None:
+            name = materialNode.find('name', namespaces=_nsmap).text
+            materialNode.insert(2, etree.fromstring(f'<chemicalFormula xmlns="{_ns}">{name}</chemicalFormula>'))
+
+        # Values for water
+        criticalPressure= '22100000.0'
+        criticalTemperature = '647.096'
+        criticalSpecificVolume = '0.00317'
+        acentricFactor = '0.344292'
+        densityNode = materialNode.find('density', namespaces=_nsmap)
+        if densityNode is not None:
+            pengRobinsonNode = densityNode.find('pengRobinsonParameters', namespaces=_nsmap)
+            if pengRobinsonNode is not None:
+                criticalTemperatureNode = pengRobinsonNode.find('criticalTemperature', namespaces=_nsmap)
+                if criticalTemperatureNode is not None:
+                    criticalTemperature = criticalTemperatureNode.text
+
+                criticalPressureNode = pengRobinsonNode.find('criticalPressure', namespaces=_nsmap)
+                if criticalPressureNode is not None:
+                    criticalPressure = criticalPressureNode.text
+
+                criticalSpecificVolumeNode = pengRobinsonNode.find('criticalSpecificVolume', namespaces=_nsmap)
+                if criticalSpecificVolumeNode is not None:
+                    criticalSpecificVolume = criticalSpecificVolumeNode.text
+
+                acentricFactorNode = pengRobinsonNode.find('acentricFactor', namespaces=_nsmap)
+                if acentricFactorNode is not None:
+                    acentricFactor = acentricFactorNode.text
+
+                densityNode.remove(pengRobinsonNode)
+
+        if materialNode.find('transport', namespaces=_nsmap) is None:
+            conductivityNode = materialNode.find('thermalConductivity', namespaces=_nsmap)
+            conductivitySpecNode = conductivityNode.find('specification', namespaces=_nsmap)
+            conductivityConstantNode = conductivityNode.find('constant', namespaces=_nsmap)
+            conductivityPolynomialNode = conductivityNode.find('polynomial', namespaces=_nsmap)
+            materialNode.remove(conductivityNode)
+
+            viscosityNode = materialNode.find('viscosity', namespaces=_nsmap)
+            if viscosityNode is None:  # Solid
+                materialNode.insert(6, etree.fromstring(
+                    f'<transport xmlns="{_ns}">'
+                    f'   <specification>{conductivitySpecNode.text}</specification>'
+                    '    <viscosity>1</viscosity>'
+                    f'   <thermalConductivity>{conductivityConstantNode.text}</thermalConductivity>'
+                    '    <polynomial>'
+                    '        <viscosity>0</viscosity>'
+                    f'       <thermalConductivity>{conductivityPolynomialNode.text or "0"}</thermalConductivity>'
+                    '    </polynomial>'
+                    '</transport>'
+                ))
+            else:
+                viscosityNode.tag = f'{{{_ns}}}transport'
+                viscosityConstantNode = viscosityNode.find('constant', namespaces=_nsmap)
+                viscosityPolynomicalNode = viscosityNode.find('polynomial', namespaces=_nsmap)
+                viscosityConstantNode.tag = f'{{{_ns}}}viscosity'
+                viscosityNode.remove(viscosityPolynomicalNode)
+                viscosityNode.insert(2, etree.fromstring(f'<thermalConductivity xmlns="{_ns}">{conductivityConstantNode.text}</thermalConductivity>'))
+                viscosityNode.insert(3, etree.fromstring(
+                    f'<polynomial xmlns="{_ns}">'
+                    f'    <viscosity>{viscosityPolynomicalNode.text or "0"}</viscosity>'
+                    f'   <thermalConductivity>{conductivityPolynomialNode.text or "0"}</thermalConductivity>'
+                    '</polynomial>'
+                ))
+
+                saturationPressureNode = materialNode.find('saturationPressure', namespaces=_nsmap)
+                if saturationPressureNode is not None:
+                    materialNode.remove(saturationPressureNode)
+
+                materialNode.append(etree.fromstring(f'<criticalTemperature xmlns="{_ns}">{criticalTemperature}</criticalTemperature>'))
+                materialNode.append(etree.fromstring(f'<criticalPressure xmlns="{_ns}">{criticalPressure}</criticalPressure>'))
+                materialNode.append(etree.fromstring(f'<criticalSpecificVolume xmlns="{_ns}">{criticalSpecificVolume}</criticalSpecificVolume>'))
+                materialNode.append(etree.fromstring(f'<tripleTemperature xmlns="{_ns}">273.16</tripleTemperature>'))
+                materialNode.append(etree.fromstring(f'<triplePressure xmlns="{_ns}">611657</triplePressure>'))
+                materialNode.append(etree.fromstring(f'<normalBoilingTemperature xmlns="{_ns}">373.15</normalBoilingTemperature>'))
+                materialNode.append(etree.fromstring(f'<standardStateEnthalpy xmlns="{_ns}">0</standardStateEnthalpy>'))
+                materialNode.append(etree.fromstring(f'<referenceTemperature xmlns="{_ns}">298.15</referenceTemperature>'))
+                materialNode.append(etree.fromstring(f'<acentricFactor xmlns="{_ns}">{acentricFactor}</acentricFactor>'))
+                materialNode.append(etree.fromstring(f'<saturationPressure xmlns="{_ns}"><type>constant</type><constant>3169</constant></saturationPressure>'))
+                materialNode.append(etree.fromstring(f'<enthalpyOfVaporization xmlns="{_ns}"><type>constant</type><constant>2442000</constant></enthalpyOfVaporization>'))
+                materialNode.append(etree.fromstring(f'<dropletSurfaceTension xmlns="{_ns}"><type>constant</type><constant>0.0</constant></dropletSurfaceTension>'))
+
+
 _fTable = [
     None,
     _version_1,
@@ -924,6 +1280,8 @@ _fTable = [
     _version_7,
     _version_8,
     _version_9,
+    _version_10,
+    _version_11
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

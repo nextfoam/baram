@@ -6,9 +6,9 @@ from typing import Optional
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
+from baramFlow.base.material.material import DensitySpecification, TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import ViscositySpecification
 from baramFlow.coredb.region_db import RegionDB, CavitationModel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
@@ -45,16 +45,18 @@ class TransportProperties(DictionaryFile):
         self._data = {}
 
         mid = RegionDB.getMaterial(self._rname)
-        dSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
-        vSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
-        if dSpec == 'constant' and vSpec == 'constant':
+        dSpec = DensitySpecification(self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification'))
+        tSpec = TransportSpecification(self._db.getValue(f'{MaterialDB.getXPath(mid)}/transport/specification'))
+        if dSpec == DensitySpecification.CONSTANT and tSpec == TransportSpecification.CONSTANT:
             self._data['transportModel'] = 'Newtonian'
 
-            density = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')
-            viscosity = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/constant')
+            density = float(self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant'))
+            viscosity = float(self._db.getValue(f'{MaterialDB.getXPath(mid)}/transport/viscosity'))
 
-            nu = float(viscosity) / float(density)
+            nu = viscosity / density
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
+
+        self._data['rhoInf'] = 1.2
 
         return self
 
@@ -198,59 +200,62 @@ class TransportProperties(DictionaryFile):
         xpath = MaterialDB.getXPath(mid)
 
         density = self._db.getDensity([(mid, 1)], 0, 0)
-        viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
+        transportSpec = TransportSpecification(self._db.getValue(xpath + '/transport/specification'))
 
-        if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
+        if transportSpec == TransportSpecification.CROSS_POWER_LAW:
             return {
                 'transportModel': 'CrossPowerLaw',
                 'CrossPowerLawCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/cross/zeroShearViscosity'),
-                    'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
-                    'm': self._db.getValue(xpath + '/viscosity/cross/naturalTime'),
-                    'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex')
+                    'nu0': self._db.getValue(xpath + '/transport/cross/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/transport/cross/infiniteShearViscosity'),
+                    'm': self._db.getValue(xpath + '/transport/cross/naturalTime'),
+                    'n': self._db.getValue(xpath + '/transport/cross/powerLawIndex')
                 },
                 'rho': density
             }
 
-        if viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
+        elif transportSpec == TransportSpecification.HERSCHEL_BULKLEY:
             return {
                 'transportModel': 'HerschelBulkley',
                 'HerschelBulkleyCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'),
-                    'tau0': self._db.getValue(xpath + '/viscosity/herschelBulkley/yieldStressThreshold'),
-                    'k': self._db.getValue(xpath + '/viscosity/herschelBulkley/consistencyIndex'),
-                    'n': self._db.getValue(xpath + '/viscosity/herschelBulkley/powerLawIndex')
+                    'nu0': self._db.getValue(xpath + '/transport/herschelBulkley/zeroShearViscosity'),
+                    'tau0': self._db.getValue(xpath + '/transport/herschelBulkley/yieldStressThreshold'),
+                    'k': self._db.getValue(xpath + '/transport/herschelBulkley/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/transport/herschelBulkley/powerLawIndex')
                 },
                 'rho': density
             }
 
-        if viscositySpecification == ViscositySpecification.BIRD_CARREAU:
+        elif transportSpec == TransportSpecification.BIRD_CARREAU:
             return {
                 'transportModel': 'BirdCarreau',
                 'BirdCarreauCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'),
-                    'nuInf': self._db.getValue(xpath + '/viscosity/carreau/infiniteShearViscosity'),
-                    'k': self._db.getValue(xpath + '/viscosity/carreau/relaxationTime'),
-                    'n': self._db.getValue(xpath + '/viscosity/carreau/powerLawIndex'),
-                    'a': self._db.getValue(xpath + '/viscosity/carreau/linearityDeviation')
+                    'nu0': self._db.getValue(xpath + '/transport/carreau/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/transport/carreau/infiniteShearViscosity'),
+                    'k': self._db.getValue(xpath + '/transport/carreau/relaxationTime'),
+                    'n': self._db.getValue(xpath + '/transport/carreau/powerLawIndex'),
+                    'a': self._db.getValue(xpath + '/transport/carreau/linearityDeviation')
                 },
                 'rho': density
             }
 
-        if viscositySpecification == ViscositySpecification.POWER_LAW:
+        elif transportSpec == TransportSpecification.POWER_LAW:
             return {
                 'transportModel': 'powerLaw',
                 'powerLawCoeffs': {
-                    'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosity'),
-                    'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosity'),
-                    'k': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'),
-                    'n': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/powerLawIndex')
+                    'nuMax': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/maximumViscosity'),
+                    'nuMin': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/minimumViscosity'),
+                    'k': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/powerLawIndex')
                 },
                 'rho': density
             }
 
         viscosity = self._db.getViscosity([(mid, 1)], 0)
-        nu = viscosity / density
+        if density > 0:
+            nu = viscosity / density
+        else:  # To prevent device-by-zero exception. Some configurations may be inconsistent.
+            nu = viscosity
 
         return {
             'transportModel': 'Newtonian',

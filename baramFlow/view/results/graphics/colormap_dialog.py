@@ -6,9 +6,10 @@ from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator, QRegularExpre
 from PySide6.QtWidgets import QColorDialog, QHBoxLayout
 import qasync
 
+from baramFlow.base.constants import FieldType
+from baramFlow.base.field import VECTOR_COMPONENT_TEXTS
 from baramFlow.base.graphic.color_scheme import ColorbarWidget, ColormapScheme
 from baramFlow.base.graphic.graphic import Graphic
-from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog

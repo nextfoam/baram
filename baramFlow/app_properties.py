@@ -1,28 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
+
 from PySide6.QtGui import QIcon, QPixmap
 
 from resources import resource
 
-
+@dataclass
 class AppProperties:
-    def __init__(self, properties):
-        self._name = properties['name']
-        self._fullName = properties['fullName']
-        self._iconFile = str(resource.file(properties['iconResource']))
-        self._logoFile = str(resource.file(properties['logoResource']))
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def fullName(self):
-        return self._fullName
+    name: str
+    fullName: str
+    iconResource: str
+    logoResource: str
+    projectSuffix: str = None
 
     def icon(self):
-        return QIcon(self._iconFile)
+        return QIcon(str(resource.file(self.iconResource)))
 
     def logo(self):
-        return QPixmap(self._logoFile)
+        return QPixmap(str(resource.file(self.logoResource)))

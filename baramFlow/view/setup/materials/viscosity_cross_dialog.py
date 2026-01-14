@@ -20,7 +20,7 @@ class ViscosityCrossDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._xpath = xpath + '/viscosity/cross'
+        self._xpath = xpath + '/transport/cross'
         self._load(data)
 
     def getValues(self):

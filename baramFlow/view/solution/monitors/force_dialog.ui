@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>364</width>
-    <height>642</height>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="monitor">
      <property name="title">
       <string>Force Monitor</string>
      </property>
@@ -71,7 +71,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="writeInterval">
+          <widget class="FloatEdit" name="writeInterval">
            <property name="text">
             <string/>
            </property>
@@ -132,7 +132,7 @@
                   <string>Z</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
                  </property>
                 </widget>
                </item>
@@ -142,12 +142,12 @@
                   <string>X</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="dragDirectionX"/>
+                <widget class="FloatEdit" name="dragDirectionX"/>
                </item>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_10">
@@ -155,15 +155,15 @@
                   <string>Y</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
                  </property>
                 </widget>
                </item>
                <item row="1" column="3">
-                <widget class="QLineEdit" name="dragDirectionZ"/>
+                <widget class="FloatEdit" name="dragDirectionZ"/>
                </item>
                <item row="1" column="2">
-                <widget class="QLineEdit" name="dragDirectionY"/>
+                <widget class="FloatEdit" name="dragDirectionY"/>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_11">
@@ -180,13 +180,13 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="liftDirectionX"/>
+                <widget class="FloatEdit" name="liftDirectionX"/>
                </item>
                <item row="2" column="2">
-                <widget class="QLineEdit" name="liftDirectionY"/>
+                <widget class="FloatEdit" name="liftDirectionY"/>
                </item>
                <item row="2" column="3">
-                <widget class="QLineEdit" name="liftDirectionZ"/>
+                <widget class="FloatEdit" name="liftDirectionZ"/>
                </item>
               </layout>
              </widget>
@@ -211,7 +211,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="AoA"/>
+             <widget class="BatchableFloatEdit" name="AoA"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_23">
@@ -221,7 +221,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="AoS"/>
+             <widget class="BatchableFloatEdit" name="AoS"/>
             </item>
            </layout>
           </widget>
@@ -255,7 +255,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="centerOfRotationX"/>
+             <widget class="FloatEdit" name="centerOfRotationX"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_15">
@@ -265,7 +265,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="centerOfRotationY"/>
+             <widget class="FloatEdit" name="centerOfRotationY"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_16">
@@ -275,7 +275,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="centerOfRotationZ"/>
+             <widget class="FloatEdit" name="centerOfRotationZ"/>
             </item>
            </layout>
           </widget>
@@ -308,7 +308,7 @@
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -331,7 +331,7 @@
       <item>
        <widget class="QListWidget" name="boundaries">
         <property name="selectionMode">
-         <enum>QAbstractItemView::MultiSelection</enum>
+         <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
         </property>
        </widget>
       </item>
@@ -339,13 +339,39 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
+    <widget class="QWidget" name="widget_6" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>208</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ok">
+        <property name="text">
+         <string>OK</string>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -360,6 +386,16 @@
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>BatchableFloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -383,34 +419,18 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ForceDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
+   <sender>cancel</sender>
+   <signal>clicked()</signal>
    <receiver>ForceDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>308</x>
+     <y>611</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
+     <x>181</x>
+     <y>320</y>
     </hint>
    </hints>
   </connection>

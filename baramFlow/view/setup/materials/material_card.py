@@ -4,11 +4,10 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
+from baramFlow.base.material.material import Phase, MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, MaterialType
-from baramFlow.coredb.material_schema import Specification, DensitySpecification, ViscositySpecification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
@@ -54,44 +53,42 @@ class MaterialCard(QWidget):
 
         energyModelOn = ModelsDB.isEnergyModelOn()
 
-        specification = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
-        if specification == DensitySpecification.CONSTANT or not energyModelOn:
+        densitySpec = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
+        if densitySpec == DensitySpecification.CONSTANT or not energyModelOn:
             self._ui.density.setText(db.getValue(self._xpath + '/density/constant') + ' kg/m<sup>3</sup>')
         else:
-            self._ui.density.setText(MaterialDB.specificationToText(specification))
+            self._ui.density.setText(MaterialDB.densitySpecToText(densitySpec))
 
-        viscositySpec = None
+        transportSpec = TransportSpecification(db.getValue(self._xpath + '/transport/specification'))
         if phase == Phase.SOLID or TurbulenceModelsDB.getModel() == TurbulenceModel.INVISCID:
             self._ui.viscosistyWidget.hide()
         else:
             self._ui.viscosistyWidget.show()
-            viscositySpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
-            if (MaterialDB.isNonNewtonianSpecification(viscositySpec)
-                    or (viscositySpec != ViscositySpecification.CONSTANT and energyModelOn)):
-                self._ui.viscosity.setText(MaterialDB.specificationToText(viscositySpec))
+            if (MaterialDB.isNonNewtonianSpecification(transportSpec)
+                    or (transportSpec != TransportSpecification.CONSTANT and energyModelOn)):
+                self._ui.viscosity.setText(MaterialDB.transportSpecToText(transportSpec))
             else:
-                self._ui.viscosity.setText(db.getValue(self._xpath + '/viscosity/constant') + ' kg/m·s')
+                self._ui.viscosity.setText(db.getValue(self._xpath + '/transport/viscosity') + ' kg/m·s')
 
         if energyModelOn:
             self._ui.specificHeatWidget.show()
-            specification = Specification(db.getValue(self._xpath + '/specificHeat/specification'))
-            if specification == Specification.CONSTANT:
+            specificHeatSpec = SpecificHeatSpecification(db.getValue(self._xpath + '/specificHeat/specification'))
+            if specificHeatSpec == SpecificHeatSpecification.CONSTANT:
                 self._ui.specificHeat.setText(db.getValue(self._xpath + '/specificHeat/constant') + ' J/kg·K')
             else:
-                self._ui.specificHeat.setText(MaterialDB.specificationToText(specification))
+                self._ui.specificHeat.setText(MaterialDB.specificHeatSpecToText(specificHeatSpec))
 
             if phase != Phase.SOLID \
                     and (TurbulenceModelsDB.getModel() == TurbulenceModel.INVISCID
-                         or viscositySpec == ViscositySpecification.SUTHERLAND):
+                         or transportSpec == TransportSpecification.SUTHERLAND):
                 self._ui.thermalConductivityWidget.hide()
             else:
                 self._ui.thermalConductivityWidget.show()
-                specification = Specification(db.getValue(self._xpath + '/thermalConductivity/specification'))
-                if specification == Specification.CONSTANT:
+                if transportSpec == TransportSpecification.CONSTANT:
                     self._ui.thermalConductivity.setText(
-                        db.getValue(self._xpath + '/thermalConductivity/constant') + ' W/m·K')
+                        db.getValue(self._xpath + '/transport/thermalConductivity') + ' W/m·K')
                 else:
-                    self._ui.thermalConductivity.setText(MaterialDB.specificationToText(specification))
+                    self._ui.thermalConductivity.setText(MaterialDB.transportSpecToText(transportSpec))
         else:
             self._ui.specificHeatWidget.hide()
             self._ui.thermalConductivityWidget.hide()

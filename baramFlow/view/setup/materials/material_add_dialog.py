@@ -4,10 +4,10 @@
 import qasync
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
+from baramFlow.base.material.database import materialsBase
+from baramFlow.base.material.material import Phase, MaterialType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, MaterialType
-from baramFlow.coredb.materials_base import MaterialsBase
 from baramFlow.coredb.models_db import ModelsDB
 from widgets.async_message_box import AsyncMessageBox
 from .material_add_dialog_ui import Ui_MaterialAddDialog
@@ -61,7 +61,7 @@ class MaterialAddDialog(QDialog):
         phase = None if self._mixture is None else MaterialDB.getPhase(self._mixture).value
 
         self._ui.list.clear()
-        for name, values in MaterialsBase.getMaterials().items():
+        for name, values in materialsBase.getMaterials().items():
             if phase is None or values['phase'] == phase:
                 MaterialItem(self._ui.list, name, Phase(values['phase']))
 

@@ -3,7 +3,7 @@
 
 from enum import IntEnum, auto
 
-from PySide6.QtWidgets import QTreeWidgetItem, QHeaderView
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QHeaderView
 from PySide6.QtCore import Signal, QObject, QCoreApplication, Qt
 from PySide6.QtGui import QIcon
 
@@ -71,7 +71,7 @@ class GeometryList(QObject):
     volumeIcon = QIcon(VOLUME_ICON_FILE)
     surfaceIcon = QIcon(SURFACE_ICON_FILE)
 
-    def __init__(self, tree):
+    def __init__(self, tree: QTreeWidget):
         super().__init__()
 
         self._tree = tree
@@ -130,6 +130,10 @@ class GeometryList(QObject):
             del self._items[str(gId)]
             del item
 
+    def clear(self):
+        self._tree.clear()
+        self._items = {}
+        
     def selectedIDs(self):
         return [str(item.gId()) for item in self._tree.selectedItems()]
 

@@ -3,11 +3,14 @@
 
 from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 
+from libbaram.pfloat import PFloat
+from widgets.async_message_box import AsyncMessageBox
+
+from baramFlow.base.boundary.boundary import SpecieValue, SpecieRatios
+from baramFlow.base.material.material import MaterialType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import boolToDBText
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType
-from widgets.async_message_box import AsyncMessageBox
 
 
 class SpeciesWidget(QGroupBox):
@@ -38,6 +41,29 @@ class SpeciesWidget(QGroupBox):
 
     def species(self):
         return self._species.keys()
+
+    def data(self):
+        if not self._on:
+            return None
+
+        if self._optional and not self.isChecked():
+            return None
+
+        totalRatio = 0
+        ratios = []
+        for mid, row in self._species.items():
+            fieldName, editor = row
+            value = PFloat(editor.text(), self.tr('Speicie '+ fieldName))
+            ratios.append(SpecieValue(mid, str(value)))
+            totalRatio += float(value)
+
+        if totalRatio == 0:
+            raise ValueError(
+                self.tr(
+                    'The sum of the composition ratios of the mixture "{}" is 0.').format(MaterialDB.getName(self._mid)))
+
+        return SpecieRatios(mid=self._mid,
+                            ratios=ratios)
 
     def on(self):
         return self._on

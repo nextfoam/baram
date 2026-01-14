@@ -14,6 +14,7 @@ from libbaram.run import launchSolver, runParallelUtility, STDOUT_FILE_NAME, STD
 from .coredb import coredb
 from .coredb.project import Project
 from .coredb.coredb_reader import CoreDBReader
+from .coredb.filedb import FileDB
 from .openfoam import parallel
 from .openfoam.case_generator import CaseGenerator
 from .openfoam.file_system import FileSystem
@@ -21,9 +22,13 @@ from .openfoam.solver import findSolver
 from .openfoam.system.control_dict import ControlDict
 from .solver_status import SolverStatus, RunType, SolverProcess
 
+import shutil # remove later
+import os
+
 
 SOLVER_CHECK_INTERVAL = 500
 BATCH_DIRECTORY_NAME = 'batch'
+POD_DIRECTORY_NAME = 'pod'
 
 _mutex = Lock()
 
@@ -79,7 +84,7 @@ class Case(QObject):
         self._setStatus(SolverStatus.NONE)
         FileSystem.deleteCalculationResults()
         await self._generator.setupCase()
-        await self._generator.initialize()
+        # await self._generator.initialize()
         self._generator = None
 
     def cancel(self):
@@ -124,12 +129,13 @@ class LiveCase(Case):
         self._status = SolverStatus.NONE
         FileSystem.createCase(self._path)
 
-    async def run(self):
+    async def run(self, skipCaseGeneration=False):
         if FileSystem.caseRoot() != self._path:
             raise RuntimeError
 
         try:
-            await self._generateCase()
+            if not skipCaseGeneration:
+                await self._generateCase()
 
             process = launchSolver(findSolver(), self._path, self._project.uuid, parallel.getEnvironment())
             if process:
@@ -198,12 +204,12 @@ class BatchCase(Case):
 
         super().load()
 
-    async def run(self):
+    async def run(self, skipCaseGeneration=False):
         try:
             if FileSystem.caseRoot() != self._path:
                 raise RuntimeError
 
-            await self.initialize()
+            await self._generateCase()
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
@@ -222,6 +228,256 @@ class BatchCase(Case):
     def kill(self):
         if self._process:
             self._process.terminate()
+
+
+class PODCase(Case):
+    def __init__(self):
+        super().__init__()
+
+        self._path = self._project.path / POD_DIRECTORY_NAME
+
+        self._process = None
+
+    def process(self) -> SolverProcess:
+        return self._process
+
+    def kill(self):
+        if self._process:
+            self._process.kill()
+
+    async def rmtreePodDirectory(self):
+        if self._path.exists(): shutil.rmtree(self._path)
+
+    async def initializeGenerateROM(self, listCaseName):
+        self._path.mkdir(parents=True, exist_ok=True)
+
+        source = self._path / "constant"
+        if not source.exists():
+            target = self._project.path / "case" / "constant"
+            source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+
+        source = self._path / "system"
+        if not source.exists():
+            target = self._project.path / "case" / "system"
+            source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+
+        # reconstructed case
+        caseIndex = 1
+        fieldListDone = False
+        firstCaseDone = False
+        for caseName in listCaseName:
+            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
+            time = FileSystem.latestTime(snapshotPath)
+            if time != '0':
+                source = self._path / f"{caseIndex}"
+                target = snapshotPath / time
+                if not source.exists():
+                    source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+                if not fieldListDone:
+                    self.writeFieldList(self._path)
+                    fieldListDone = True
+                if not firstCaseDone:
+                    source = self._path / "1"
+                    target = self._path / "0"
+                    shutil.copytree(source, target)
+                    firstCaseDone = True
+            caseIndex += 1
+
+        # decomposed case
+        caseIndex = 1
+        fieldListDone = False
+        firstCaseDone = False
+        for caseName in listCaseName:
+            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
+            subfoldersProcessor = FileSystem.processorFolders(snapshotPath)
+            for pProc in subfoldersProcessor:
+                procPathBatch = pProc
+                procPathPod = self._path / pProc.name
+                procPathPod.mkdir(parents=True, exist_ok=True)
+
+                # constant (polyMesh)
+                source = procPathPod / "constant"
+                target = procPathBatch / "constant"
+                if not source.exists():
+                    source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+
+                # time
+                time = FileSystem.latestTime(procPathBatch)
+                if time != '0':
+                    source = procPathPod / f"{caseIndex}"
+                    target = procPathBatch / time
+                    if not source.exists():
+                        source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+
+                self.writeFieldList(procPathPod)
+                if not fieldListDone:
+                    source = self._path / "listField.dat"
+                    target = procPathPod / "listField.dat"
+                    if not source.exists():
+                        source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)
+                    fieldListDone = True
+                if not firstCaseDone:
+                    source = procPathPod / "1"
+                    target = procPathPod / "0"
+                    shutil.copytree(source, target)
+
+            caseIndex += 1
+            firstCaseDone = True
+
+    async def initializeReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
+        with open(self._path / "constant" / "Vinput.dat", 'w') as f:
+            f.write(f"{len(listSnapshot)} {len(paramsToReconstruct)}\n")
+            for _, case in listSnapshot.items():
+                valueActive = [case[param] for param in paramsToReconstruct if param in case]
+                f.write(f"{' '.join(valueActive)}\n")
+
+        with open(self._path / "constant" / "CurrentInput.dat", 'w') as f:
+            f.write(f"1 {len(paramsToReconstruct)}\n")
+            f.write(f"{' '.join(map(str, paramsToReconstruct.values()))}\n")
+
+        # reconstructed case
+        pathZeroBatch = self._project.path / BATCH_DIRECTORY_NAME / caseName / "0"
+        pathZeroPod = self._path / "0"
+        if pathZeroPod.exists():
+            shutil.rmtree(pathZeroPod)
+        if pathZeroBatch.exists():
+            shutil.copytree(pathZeroBatch, pathZeroPod)
+
+        # decomposed case
+        subfoldersProcessor = FileSystem.processorFolders(self._path)
+        for pProc in subfoldersProcessor:
+            pathZeroBatch = self._project.path / BATCH_DIRECTORY_NAME / caseName / pProc.name / "0"
+            pathZeroPod = pProc / "0"
+            if pathZeroPod.exists():
+                shutil.rmtree(pathZeroPod)
+            if pathZeroBatch.exists():
+                shutil.copytree(pathZeroBatch, pathZeroPod)
+
+    async def runGenerateROM(self, listCaseName, isBatchRunning=False):
+        try:
+            await self.rmtreePodDirectory()
+            await self.initializeGenerateROM(listCaseName)
+            if isBatchRunning: self._name = "__POD__"
+
+            stdout = open(self._path / STDOUT_FILE_NAME, 'w')
+            stderr = open(self._path / STDERR_FILE_NAME, 'w')
+
+            self._process = await runParallelUtility('baramPODbuildROM', parallel=parallel.getEnvironment(), cwd=self._path,
+                                                     stdout=stdout, stderr=stderr)
+            self._setStatus(SolverStatus.RUNNING)
+            result = await self._process.wait()
+            self._process = None
+
+            if result == 0:
+                self._setStatus(SolverStatus.ENDED)
+            else:
+                self._setStatus(SolverStatus.ERROR)
+                raise Exception(f"Process failed with return code {result}")
+        except Exception as e:
+            self._setStatus(SolverStatus.ERROR)
+            raise e
+
+    async def runReconstruct(self, caseName, listSnapshot, paramsToReconstruct, isBatchRunning=False):
+        try:
+            await self.initializeReconstruct(caseName, listSnapshot, paramsToReconstruct)
+            if isBatchRunning: self._name = "__POD__"
+
+            stdout = open(self._path / STDOUT_FILE_NAME, 'w')
+            stderr = open(self._path / STDERR_FILE_NAME, 'w')
+
+            self._process = await runParallelUtility('baramPODreconstruct', parallel=parallel.getEnvironment(), cwd=self._path,
+                                                     stdout=stdout, stderr=stderr)
+            self._setStatus(SolverStatus.RUNNING)
+            result = await self._process.wait()
+            self._process = None
+
+            if result == 0:
+                self._setStatus(SolverStatus.ENDED)
+            else:
+                self._setStatus(SolverStatus.ERROR)
+                raise Exception(f"Process failed with return code {result}")
+        except Exception as e:
+            self._setStatus(SolverStatus.ERROR)
+            raise e
+
+    def getROMAccuracy(self):
+        dirConstant = self._project.path / POD_DIRECTORY_NAME / "constant"
+        filesEigenvalue = [f for f in dirConstant.iterdir() if f.is_file() and f.name.startswith("EigenValues_") and f.name.endswith(".dat")]
+
+        ratios = []
+
+        for file in filesEigenvalue:
+            with file.open("r") as f:
+                header = f.readline()
+                lines = [float(line.strip()) for line in f if line.strip()]
+                if not lines: continue
+                eps = 1.e-16
+                maxEigenvalue = lines[0]
+                minEigenvalue = next((val for val in reversed(lines) if abs(val) > eps), eps)
+                ratio = abs(maxEigenvalue / minEigenvalue)
+                ratios.append(ratio)
+
+        return sum(ratios) / len(ratios)
+
+    def writeFieldList(self, fieldPath):
+        entries = []
+        oneDir = fieldPath / "1"
+
+        def isNotVolumeField(name: str) -> bool:
+            lower = name.lower()
+            return (
+                lower in ("phi", "phi0", "phif")
+                or lower.startswith("face")
+                or lower.startswith("point")
+            )
+
+        # single region
+        for fp in oneDir.iterdir():
+            if not fp.is_file(): continue
+            fieldName = fp.name[:-3] if fp.name.endswith(".gz") else fp.name
+            if isNotVolumeField(fieldName): continue
+            kind = "vector" if fieldName == "U" else "scalar"
+            entries.append(f"{fieldName} {kind} -")
+
+        # multi region
+        for fp2 in oneDir.iterdir():
+            if fp2.is_file(): continue
+            if fp2.name in ("uniform", "polyMesh", "sets"):
+                continue
+            regionDir = fp2
+            for fp in regionDir.iterdir():
+                if not fp.is_file(): continue
+                fieldName = fp.name[:-3] if fp.name.endswith(".gz") else fp.name
+                if isNotVolumeField(fieldName): continue
+                kind = "vector" if fieldName == "U" else "scalar"
+                entries.append(f"{fieldName} {kind} {regionDir.name}")
+
+        with open(str(fieldPath / "listField.dat"), 'w') as f:
+            f.write("\n".join(entries))
+
+    def saveToBatchCase(self, caseName):
+        batchPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
+        casePath = self._project.path / "case"
+
+        # reconstructed case
+        pathReconPod = self._path / "10001"
+        if pathReconPod.exists():
+            pathReconBatch = batchPath / "1"
+            if pathReconBatch.exists(): rmtree(pathReconBatch)
+            shutil.copytree(pathReconPod, pathReconBatch)
+
+        # decomposed case
+        subfoldersProcPod = [f for f in self._path.iterdir() if f.is_dir() and f.name.startswith("processor")]
+        for pProc in subfoldersProcPod:
+            subfoldersProcBatch = batchPath / pProc.name
+            if not subfoldersProcBatch.exists():
+                subfoldersProcBatch.mkdir(parents=True, exist_ok=True)
+
+            pathReconPod = pProc / "10001"
+            if pathReconPod.exists():
+                pathReconBatch = subfoldersProcBatch / "1"
+                if pathReconBatch.exists(): rmtree(pathReconBatch)
+                shutil.copytree(pathReconPod, pathReconBatch)
 
 
 class CaseManager(QObject):
@@ -258,7 +514,7 @@ class CaseManager(QObject):
         self._batchStop = False
 
     def currentCaseName(self):
-        return self._caseName
+        return self._currentCase.name if self._currentCase else None
 
     def liveCase(self):
         return self._liveCase
@@ -316,9 +572,9 @@ class CaseManager(QObject):
     def liveProcess(self):
         return self._liveCase.process()
 
-    async def liveRun(self):
+    async def liveRun(self, skipCaseGeneration=False):
         case = await self.loadLiveCase()
-        await case.run()
+        await case.run(skipCaseGeneration)
 
     async def batchRun(self, cases):
         self._batchStop = False
@@ -335,6 +591,45 @@ class CaseManager(QObject):
             await reader.setupReader()
 
         await GraphicsDB().updatePolyMeshAll()
+
+    async def podRunGenerateROM(self, listCaseName, isBatchRunning=False):
+        tempPodCase = PODCase()
+        tempPodCase.load()
+        self._setCurrentCase(tempPodCase)
+        await tempPodCase.runGenerateROM(listCaseName, isBatchRunning)
+
+    async def podInitReconstructedCase(self, caseName, paramsToReconstructFloat):
+        paramsToReconstruct = {key: str(value) for key, value in paramsToReconstructFloat.items()}
+        caseToReconstruct = BatchCase(caseName, paramsToReconstruct)
+        caseToReconstruct.load()
+        await caseToReconstruct.initialize()
+
+    async def podRunReconstruct(self, caseName, listSnapshot, paramsToReconstruct, isBatchRunning=False):
+        tempPodCase = PODCase()
+        tempPodCase.load()
+        self._setCurrentCase(tempPodCase)
+        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct, isBatchRunning)
+
+    async def podSaveToBatchCase(self, caseName):
+        tempPodCase = PODCase()
+        tempPodCase.load()
+        self._setCurrentCase(tempPodCase)
+        tempPodCase.saveToBatchCase(caseName)
+
+    async def podAddToBatchList(self, caseName, paramsToReconstruct):
+        batchStatuses = self._project.loadBatchStatuses()
+        batchStatuses[caseName] = 'ENDED'
+        batchDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        batchDataFrame.loc[caseName] = {key: str(value) for key, value in paramsToReconstruct.items()}
+
+        self._project.updateBatchStatuses(batchStatuses)
+        self._project.setBatchStatus(caseName, SolverStatus.ENDED)
+        self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES.value, batchDataFrame)
+
+    def podGetROMAccuracy(self):
+        tempPodCase = PODCase()
+        self._setCurrentCase(tempPodCase)
+        return tempPodCase.getROMAccuracy()
 
     async def initialize(self):
         case = await self.loadLiveCase()

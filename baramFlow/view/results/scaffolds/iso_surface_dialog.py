@@ -7,7 +7,8 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.base.field import COORDINATE, CollateralField, Field, FieldType, VectorComponent
+from baramFlow.base.constants import FieldType, VectorComponent
+from baramFlow.base.field import CollateralField, Field
 from baramFlow.openfoam.solver_field import getAvailableFields
 from baramFlow.base.scaffold.iso_surface import IsoSurface
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
@@ -34,7 +35,7 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface = surface
 
-        self._fields = getAvailableFields()
+        self._fields = getAvailableFields(includeCoordinate=True)
 
         for f in self._fields:
             self._ui.field.addItem(f.text, f)

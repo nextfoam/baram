@@ -3,7 +3,7 @@
 
 import glob
 import re
-from typing import TextIO, Optional
+from typing import Final, TextIO, Optional
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass
@@ -14,6 +14,15 @@ import pandas as pd
 from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 
 from baramFlow.case_manager import CaseManager
+
+
+# One solverInfo file per "Region" is updated by solver during calculation.
+# By the way, there can be a region where the solverInfo is not updated.
+# It is a case when there is no field to calculate since calculation is disabled in Advanced numerical condition.
+# (Typically in solid region when energy equation is configured not to be solved)
+# When identifying these changing files, once a file in a region is detected as changing, charting can start.
+# Yet we need to wait for a while until the writing is settled.
+CHANGING_FILE_CHEKING_THRESHOLD_COUNT: Final[int] = 2
 
 
 # "solverInfo.dat" sample
@@ -86,6 +95,9 @@ def readOutFile(f: TextIO):
 def mergeDataFrames(data: [pd.DataFrame]):
     merged = None
     for df in data:
+        if df is None:
+            continue
+        
         if merged is None:
             merged = df
         else:
@@ -130,7 +142,7 @@ class Worker(QObject):
         self.changingFiles = None
         self.data = None
 
-        self.collectionReady = False
+        self.collectionReady = 0
 
         self.infoFiles = None
 
@@ -146,7 +158,7 @@ class Worker(QObject):
 
         self.running = CaseManager().isRunning()
 
-        self.collectionReady = False
+        self.collectionReady = 0
 
         self.changingFiles = {r: None for r in self.regions}
         self.data = {r: None for r in self.regions}
@@ -188,12 +200,15 @@ class Worker(QObject):
             if self.changingFiles[s.rname] is None or self.infoFiles[p].time > self.changingFiles[s.rname].time:
                 self.changingFiles[s.rname] = self.infoFiles[p]
 
-        if not self.collectionReady:
-            collectionReady = all(self.changingFiles.values())
+        if self.collectionReady < CHANGING_FILE_CHEKING_THRESHOLD_COUNT:
+            collectionReady = any(self.changingFiles.values())
             if not collectionReady:
                 return
-            else:  # Now, Ready to collect
-                self.collectionReady = True
+            else:
+                self.collectionReady += 1
+                if self.collectionReady < CHANGING_FILE_CHEKING_THRESHOLD_COUNT:
+                    return
+
                 hasUpdate = False
                 for s in self.infoFiles.values():
                     if s not in self.changingFiles.values():  # not-changing files
@@ -202,6 +217,9 @@ class Worker(QObject):
                             self.data[s.rname] = updateData(self.data[s.rname], df)
 
                 for s in self.changingFiles.values():
+                    if s is None:
+                        continue
+
                     s.f = open(s.path, 'r')
                     updated, df = self._updateDataFromFile(self.data[s.rname], s.rname, s.f)
                     if updated:

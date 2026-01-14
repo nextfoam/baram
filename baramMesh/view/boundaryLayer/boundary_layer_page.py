@@ -4,28 +4,21 @@
 import qasync
 
 from libbaram.exception import CanceledException
-from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
-from libbaram.validation import ValidationError
-from libbaram.utils import copyOrLink
+from libbaram.simple_db.simple_schema import ValidationError
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
-from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import CFDType
-from baramMesh.openfoam.system.create_patch_dict import CreatePatchDict
-from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
+from baramMesh.db.configurations import defaultsDB
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh, BOUNDARY_LAYER_OUTPUT_TIME
 from baramMesh.view.step_page import StepPage
-
 from .boundary_setting_dialog import BoundarySettingDialog
-from .restore_cyclic_patch_names import RestoreCyclicPatchNames
-from ...db.configurations import defaultsDB
 
 
 class BoundaryLayerPage(StepPage):
-    OUTPUT_TIME = 3
+    OUTPUT_TIME = BOUNDARY_LAYER_OUTPUT_TIME
 
     def __init__(self, ui):
         super().__init__(ui, ui.boundaryLayerPage)
@@ -41,17 +34,15 @@ class BoundaryLayerPage(StepPage):
 
         ui.boundaryLayerAdvancedConfigurationHeader.setContents(ui.boundaryLayerAdvancedConfiguration)
 
+        ui.boundaryLayerCancel.hide()
+
         self._connectSignalsSlots()
 
-    def open(self):
-        self._load()
+    async def show(self, isCurrentStep, batchRunning):
+        self.load()
+        self.updateWorkingStatus()
 
-    async def selected(self):
-        if not self._loaded:
-            self._load()
-
-        self._updateControlButtons()
-        self.updateMesh()
+        self._ui.boundaryLayerApply.setEnabled(isCurrentStep and not batchRunning)
 
     async def save(self):
         try:
@@ -85,15 +76,11 @@ class BoundaryLayerPage(StepPage):
 
             return False
 
-    def _connectSignalsSlots(self):
-        self._ui.loadBoundaryLayerDefaults.clicked.connect(self._loadDefaults)
-        self._ui.boundaryLayerConfigurationsAdd.clicked.connect(lambda: self._openLayerEditDialog())
-        # self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
-        self._ui.boundaryLayerApply.clicked.connect(self._apply)
-        self._ui.boundaryLayerReset.clicked.connect(self._reset)
-
-    def _load(self):
+    def load(self):
         self._db = app.db.checkout()
+
+        if self._loaded:
+            return
 
         self._ui.boundaryLayerConfigurations.clear()
 
@@ -113,7 +100,22 @@ class BoundaryLayerPage(StepPage):
         self._setConfigurastions(self._db.getElement('addLayers'))
 
         self._loaded = True
-        self._updateControlButtons()
+
+    async def runInBatchMode(self):
+        if not await self.save():
+            return False
+
+        self._ui.boundaryLayerApply.setEnabled(False)
+
+        return await self._run()
+
+    def _connectSignalsSlots(self):
+        self._ui.loadBoundaryLayerDefaults.clicked.connect(self._loadDefaults)
+        self._ui.boundaryLayerConfigurationsAdd.clicked.connect(lambda: self._openLayerEditDialog())
+        # self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
+        self._ui.boundaryLayerApply.clicked.connect(self._apply)
+        self._ui.boundaryLayerCancel.clicked.connect(snappyHexMesh.cancel)
+        self._ui.boundaryLayerReset.clicked.connect(self._reset)
 
     @qasync.asyncSlot()
     async def _loadDefaults(self):
@@ -146,117 +148,33 @@ class BoundaryLayerPage(StepPage):
 
     @qasync.asyncSlot()
     async def _apply(self):
-        if self._cm:
-            self._cm.cancel()
+        if not await self.save():
             return
 
-        buttonText = self._ui.boundaryLayerApply.text()
-        try:
-            if not await self.save():
-                return
+        self._ui.boundaryLayerApply.hide()
+        self._ui.boundaryLayerCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
-            self._disableEdit()
-            self._disableControlsForRunning()
-            self._ui.boundaryLayerApply.setText(self.tr('Cancel'))
+        app.consoleView.clear()
 
-            console = app.consoleView
-            console.clear()
-
-            #
-            #  Add Boundary Layers
-            #
-
-            boundaryLayersAdded = False
-
-            if self._ui.boundaryLayerConfigurations.count():
-                progressDialog = ProgressDialog(self._widget, self.tr('Boundary Layers Applying'))
-                progressDialog.setLabelText(self.tr('Updating Configurations'))
-                progressDialog.open()
-
-                SnappyHexMeshDict(addLayers=True).build().write()
-
-                progressDialog.close()
-
-                self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                self._cm.output.connect(console.append)
-                self._cm.errorOutput.connect(console.appendError)
-                await self._cm.start()
-                rc = await self._cm.wait()
-                if rc != 0:
-                    raise ProcessError(rc)
-
-                boundaryLayersAdded = True
-
-            else:
-                self.createOutputPath()
-
-            # Reorder faces in conformal interfaces
-            # (Faces in cyclic boundary pair should match in order)
-
-            NumberOfConformalInterfaces = app.db.elementCount(
-                'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'] and not e['nonConformal'])
-
-            if NumberOfConformalInterfaces > 0:
-                prefix = 'NFBRM_'
-                CreatePatchDict(prefix).build().write()
-                self._cm = RunParallelUtility('createPatch', '-allRegions', '-overwrite', '-case', app.fileSystem.caseRoot(),
-                                              cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                self._cm.output.connect(console.append)
-                self._cm.errorOutput.connect(console.appendError)
-                await self._cm.start()
-                await self._cm.wait()
-
-                rpn = RestoreCyclicPatchNames(prefix, str(self.OUTPUT_TIME))
-                rpn.restore()
-
-            if boundaryLayersAdded:
-                self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
-                                              cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                self._cm.output.connect(console.append)
-                self._cm.errorOutput.connect(console.appendError)
-                await self._cm.start()
-                await self._cm.wait()
-            else:  # Mesh Quality information should be in this time folder
-                nProcFolders = app.fileSystem.numberOfProcessorFolders()
-                if nProcFolders == 0:
-                    source = app.fileSystem.timePath(self.OUTPUT_TIME-1)
-                    target = app.fileSystem.timePath(self.OUTPUT_TIME)
-                    copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
-                    copyOrLink(source / 'cellVolume', target / 'cellVolume')
-                    copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
-                    copyOrLink(source / 'skewness', target / 'skewness')
-                else:
-                    for processorNo in range(nProcFolders):
-                        source = app.fileSystem.timePath(self.OUTPUT_TIME-1, processorNo)
-                        target = app.fileSystem.timePath(self.OUTPUT_TIME, processorNo)
-                        copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
-                        copyOrLink(source / 'cellVolume', target / 'cellVolume')
-                        copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
-                        copyOrLink(source / 'skewness', target / 'skewness')
-
-            await app.window.meshManager.load(self.OUTPUT_TIME)
-            self._updateControlButtons()
+        if await self._run():
+            self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Boundary layers are applied.'))
-        except ProcessError as exc:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Failed to apply boundary layers. [') + str(exc.returncode) + ']')
-        except CanceledException:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
-                                                self.tr('Boundary layers application has been canceled.'))
-        finally:
-            self._enableEdit()
-            self._enableControlsForSettings()
-            self._ui.boundaryLayerApply.setText(buttonText)
-            self._cm = None
+
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
+        self._ui.boundaryLayerCancel.hide()
+
+        self.updateWorkingStatus()
 
     def _reset(self):
         self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
+        self._ui.boundaryLayerApply.setEnabled(True)
+        self.stepReset.emit()
 
     def _updateLayerConfiguration(self):
         element = self._dialog.dbElement()
@@ -285,11 +203,10 @@ class BoundaryLayerPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.boundaryLayerApply.hide()
             self._ui.boundaryLayerReset.show()
-            self._setNextStepEnabled(True)
         else:
             self._ui.boundaryLayerApply.show()
+            self._ui.boundaryLayerApply.setEnabled(True)
             self._ui.boundaryLayerReset.hide()
-            self._setNextStepEnabled(False)
 
     def _enableStep(self):
         self._enableEdit()
@@ -310,3 +227,26 @@ class BoundaryLayerPage(StepPage):
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
         self._ui.boundaryLayerConfigurations.disableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
+
+    @qasync.asyncSlot()
+    async def _run(self):
+        self._disableEdit()
+
+        result = False
+        try:
+            await snappyHexMesh.addLayers()
+            result = True
+        except ProcessError as exc:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Failed to apply boundary layers [') + str(exc.returncode) + ']')
+        except CanceledException:
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Boundary layers application has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Failed to apply boundary layers:') + str(e))
+
+        if not result:
+            self.clearResult()
+
+        return result

@@ -423,7 +423,7 @@
                   </sizepolicy>
                  </property>
                  <property name="currentIndex">
-                  <number>5</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="geometryPage">
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -483,7 +483,7 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QWidget" name="buttons" native="true">
+                    <widget class="QWidget" name="geometryButtons" native="true">
                      <layout class="QHBoxLayout" name="horizontalLayout_4">
                       <property name="leftMargin">
                        <number>0</number>
@@ -994,8 +994,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>449</width>
-                        <height>708</height>
+                        <width>272</width>
+                        <height>592</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1489,6 +1489,13 @@
                        </widget>
                       </item>
                       <item>
+                       <widget class="QPushButton" name="castellationCancel">
+                        <property name="text">
+                         <string>Cancel</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QPushButton" name="castellationReset">
                         <property name="text">
                          <string>&amp;Reset</string>
@@ -1582,7 +1589,7 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>432</width>
+                        <width>375</width>
                         <height>736</height>
                        </rect>
                       </property>
@@ -1908,6 +1915,13 @@
                        </widget>
                       </item>
                       <item>
+                       <widget class="QPushButton" name="snapCancel">
+                        <property name="text">
+                         <string>Cancel</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QPushButton" name="snapReset">
                         <property name="text">
                          <string>&amp;Reset</string>
@@ -2001,8 +2015,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>449</width>
-                        <height>708</height>
+                        <width>263</width>
+                        <height>661</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -2390,6 +2404,13 @@
                        </widget>
                       </item>
                       <item>
+                       <widget class="QPushButton" name="boundaryLayerCancel">
+                        <property name="text">
+                         <string>Cancel</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QPushButton" name="boundaryLayerReset">
                         <property name="text">
                          <string>&amp;Reset</string>
@@ -2565,6 +2586,20 @@
                    <widget class="QPushButton" name="unlock">
                     <property name="text">
                      <string>Unlock</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="finishSteps">
+                    <property name="text">
+                     <string>Finish All Steps</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="finishCancel">
+                    <property name="text">
+                     <string>Cancel</string>
                     </property>
                    </widget>
                   </item>

@@ -215,6 +215,44 @@ Calculation stops as soon as possible</string>
                  </widget>
                 </item>
                 <item>
+                 <widget class="QWidget" name="runSolverOnlyWidget" native="true">
+                  <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <spacer name="horizontalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="runSolverOnly">
+                     <property name="text">
+                      <string>Run Solver only</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="saveAndStopCalculation">
                   <property name="enabled">
                    <bool>true</bool>
@@ -449,6 +487,13 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
               </spacer>
              </item>
              <item>
+              <widget class="QPushButton" name="generateSamples">
+               <property name="text">
+                <string>Generate</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="exportBatchCase">
                <property name="text">
                 <string>Export</string>
@@ -496,7 +541,7 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
             </property>
             <column>
              <property name="text">
-              <string> </string>
+              <string/>
              </property>
             </column>
             <column>

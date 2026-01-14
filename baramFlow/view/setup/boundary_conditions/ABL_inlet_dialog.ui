@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>339</width>
-    <height>430</height>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,56 +34,102 @@
         <property name="title">
          <string>Flow Direction</string>
         </property>
-        <layout class="QFormLayout" name="formLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>X-Component</string>
-           </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QWidget" name="widget_2" native="true">
+           <layout class="QFormLayout" name="formLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Spec. Method</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="PythonComboBox" name="flowDirectionSpecMethod"/>
+            </item>
+           </layout>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="flowDirectionXComponent">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Y-Component</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="flowDirectionYComponent">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Z-Component</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="flowDirectionZComponent">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+         <item>
+          <widget class="QWidget" name="flowDirection" native="true">
+           <layout class="QFormLayout" name="formLayout_5">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>X-Component</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="BatchableFloatEdit" name="flowDirectionXComponent">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Y-Component</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="BatchableFloatEdit" name="flowDirectionYComponent">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Z-Component</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="BatchableFloatEdit" name="flowDirectionZComponent">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
@@ -103,7 +149,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="groundNormalDirectionXComponent">
+          <widget class="BatchableFloatEdit" name="groundNormalDirectionXComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -120,7 +166,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="groundNormalDirectionYComponent">
+          <widget class="BatchableFloatEdit" name="groundNormalDirectionYComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -137,7 +183,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="groundNormalDirectionZComponent">
+          <widget class="BatchableFloatEdit" name="groundNormalDirectionZComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -160,7 +206,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="referenceFlowSpeed">
+          <widget class="BatchableFloatEdit" name="referenceFlowSpeed">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -177,7 +223,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="referenceHeight">
+          <widget class="BatchableFloatEdit" name="referenceHeight">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -194,7 +240,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="surfaceRoughnessLength">
+          <widget class="BatchableFloatEdit" name="surfaceRoughnessLength">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -211,9 +257,119 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="minimumZCoordinate"/>
+          <widget class="BatchableFloatEdit" name="minimumZCoordinate"/>
          </item>
         </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pasquillStability">
+     <property name="title">
+      <string>Pasquill Stability</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Latitude (Degree)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="BatchableFloatEdit" name="latitude">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>Surface Heat Flux (W/m&lt;sup&gt;2&lt;/sup&gt;)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="BatchableFloatEdit" name="surfaceHeatFlux">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>Reference Density (kg/m&lt;sup&gt;3&lt;/sup&gt;)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="BatchableFloatEdit" name="referenceDensity">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>Stability Class</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="PythonComboBox" name="stabilityClass"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>Reference Specific Heat (J/kg·K)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>Reference Temperature (K)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="BatchableFloatEdit" name="referenceSpecificHeat">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="BatchableFloatEdit" name="referenceTemperature">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
        </widget>
       </item>
      </layout>
@@ -257,6 +413,18 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>BatchableFloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header>baramFlow.view.widgets.batchable_float_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widgets.python_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

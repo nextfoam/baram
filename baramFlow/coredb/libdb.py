@@ -64,3 +64,11 @@ def dbErrorToMessage(exception: ValueException):
         return QCoreApplication.translate('CoreDBError', '{0} is referenced by other configurations.').format(name)
     else:
         return QCoreApplication.translate('CoreDBError', '{} is invalid. {1}').format(name, error)
+
+
+def dbTextToBool(text):
+    return text == 'true'
+
+
+def boolToDBText(value):
+    return 'true' if value else 'false'

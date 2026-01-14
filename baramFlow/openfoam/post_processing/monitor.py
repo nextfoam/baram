@@ -6,17 +6,19 @@ import time
 import pandas as pd
 from PySide6.QtCore import QThread, QObject, QTimer, Signal, Qt
 
+from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.post_processing.post_file_reader import PostFileReader
+from baramFlow.view.widgets.chart_wigdet import ChartWidget
 
 
 def calculateMaxX():
@@ -162,7 +164,7 @@ class Monitor(QObject):
 
 
 class ForceMonitor(Monitor):
-    def __init__(self, name, chart1, chart2, chart3):
+    def __init__(self, name, chart1: ChartWidget, chart2: ChartWidget, chart3: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -194,7 +196,7 @@ class ForceMonitor(Monitor):
 
 
 class PointMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -204,16 +206,18 @@ class PointMonitor(Monitor):
         self._rname = db.getValue(self._xpath + '/region')
         self._chart = chart
 
-        self._legend = FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
-                                                    db.getValue(self._xpath + '/field/fieldID'))
+        self._field = getMonitorField(MonitorDB.getPointMonitorXPath(name))
+        self._legend = self._field.displayText()
 
         self._chart.setTitle(name)
 
     @property
     def fileName(self):
-        db = coredb.CoreDB()
-        return FieldHelper.DBFieldKeyToField(Field(db.getValue(self._xpath + '/field/field')),
-                                             db.getValue(self._xpath + '/field/fieldID'))
+        return self._field.openfoamField()
+        # field = self._field
+        # if field.type == FieldType.VECTOR:
+        #     return getSolverComponentName(field, self._field.component)
+        # return getSolverFieldName(field)
 
     @property
     def extension(self):
@@ -228,7 +232,7 @@ class PointMonitor(Monitor):
 
 
 class SurfaceMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -238,13 +242,10 @@ class SurfaceMonitor(Monitor):
         self._rname = BoundaryDB.getBoundaryRegion(db.getValue(xpath + '/surface'))
         self._chart = chart
 
-        self._legend = None
-
         reportType = SurfaceReportType(db.getValue(xpath + '/reportType'))
         self._legend = MonitorDB.surfaceReportTypeToText(reportType)
         if reportType not in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
-            self._legend += ' ' + FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
-                                                               db.getValue(xpath + '/field/fieldID'))
+            self._legend += ' ' + getMonitorField(MonitorDB.getSurfaceMonitorXPath(name)).displayText()
 
         self._chart.setTitle(name)
 
@@ -261,7 +262,7 @@ class SurfaceMonitor(Monitor):
 
 
 class VolumeMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -272,7 +273,7 @@ class VolumeMonitor(Monitor):
         self._chart = chart
 
         self._legend = (f"{MonitorDB.volumeReportTypeToText(VolumeReportType(db.getValue(xpath + '/reportType')))}"
-                        f" {FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')), db.getValue(xpath + '/field/fieldID'))}")
+                        f" {getMonitorField(MonitorDB.getVolumeMonitorXPath(name)).displayText()}")
 
         self._chart.setTitle(name)
 

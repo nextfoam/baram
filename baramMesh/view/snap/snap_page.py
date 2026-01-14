@@ -5,8 +5,7 @@ import qasync
 
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
-from libbaram.run import RunParallelUtility
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
@@ -14,13 +13,12 @@ from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from baramMesh.app import app
 from baramMesh.db.configurations import defaultsDB
 from baramMesh.db.configurations_schema import CFDType, FeatureSnapType, BufferLayerPointSmoothingMethod, GeometryType
-from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
-from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh, SNAP_OUTPUT_TIME
 from baramMesh.view.step_page import StepPage
 
 
 class SnapPage(StepPage):
-    OUTPUT_TIME = 2
+    OUTPUT_TIME = SNAP_OUTPUT_TIME
 
     def __init__(self, ui):
         super().__init__(ui, ui.snapPage)
@@ -43,13 +41,15 @@ class SnapPage(StepPage):
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerLaplacian, BufferLayerPointSmoothingMethod.LAPLACIAN)
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerGETMe, BufferLayerPointSmoothingMethod.GETME)
 
+        self._ui.snapCancel.hide()
+
         self._connectSignalsSlots()
 
-    async def selected(self):
-        if not self._loaded:
-            self._load()
+    async def show(self, isCurrentStep, batchRunning):
+        self.load()
+        self.updateWorkingStatus()
 
-        self.updateMesh()
+        self._ui.snap.setEnabled(isCurrentStep and not batchRunning)
 
     async def save(self):
         try:
@@ -102,18 +102,13 @@ class SnapPage(StepPage):
 
             return False
 
-    def _connectSignalsSlots(self):
-        self._ui.loadSnapDefaults.clicked.connect(self._loadDefaults)
-        self._ui.snap.clicked.connect(self._snap)
-        self._ui.snapReset.clicked.connect(self._reset)
-        self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
-        self._smoothingMethod.dataChecked.connect(self._smootingMethodChanged)
-        self._ui.bufferLayerSurfacesSelect.clicked.connect(self._selectSurfaces)
+    def load(self):
+        if self._loaded:
+            return
 
-    def _load(self):
         dbElement = app.db.checkout()
 
-        self._setConfigurastions(dbElement.getElement('snap'))
+        self._setConfigurations(dbElement.getElement('snap'))
 
         self._availableSurfaces = []
         self._surfaces = []
@@ -131,16 +126,33 @@ class SnapPage(StepPage):
 
         self._oldSurfaces = self._surfaces
 
-        self._updateControlButtons()
+        self._loaded = True
+
+    async def runInBatchMode(self):
+        if not await self.save():
+            return False
+
+        self._ui.snap.setEnabled(False)
+
+        return await self._run()
+
+    def _connectSignalsSlots(self):
+        self._ui.loadSnapDefaults.clicked.connect(self._loadDefaults)
+        self._ui.snap.clicked.connect(self._snap)
+        self._ui.snapCancel.clicked.connect(snappyHexMesh.cancel)
+        self._ui.snapReset.clicked.connect(self._reset)
+        self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
+        self._smoothingMethod.dataChecked.connect(self._smootingMethodChanged)
+        self._ui.bufferLayerSurfacesSelect.clicked.connect(self._selectSurfaces)
 
     @qasync.asyncSlot()
     async def _loadDefaults(self):
         if await AsyncMessageBox().confirm(
                 self._widget, self.tr('Reset Settings'),
                 self.tr('Would you like to reset all Snap settings to default, excluding the Buffer Layer Surfaces?')):
-            self._setConfigurastions(defaultsDB.getElement('snap'))
+            self._setConfigurations(defaultsDB.getElement('snap'))
 
-    def _setConfigurastions(self, snap):
+    def _setConfigurations(self, snap):
         self._ui.smoothingForSurface.setText(snap.value('nSmoothPatch'))
         self._ui.smoothingForInternal.setText(snap.value('nSmoothInternal'))
         self._ui.meshDisplacementRelaxation.setText(snap.value('nSolveIter'))
@@ -160,90 +172,32 @@ class SnapPage(StepPage):
 
     @qasync.asyncSlot()
     async def _snap(self):
-        if self._cm:
-            self._cm.cancel()
+        if not await self.save():
             return
 
-        buttonText = self._ui.snap.text()
+        self._ui.snap.hide()
+        self._ui.snapCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
-        try:
-            if not await self.save():
-                return
+        app.consoleView.clear()
 
-            self._disableEdit()
-            self._disableControlsForRunning()
-            self._ui.snap.setText(self.tr('Cancel'))
-
-            console = app.consoleView
-            console.clear()
-
-            parallel = app.project.parallelEnvironment()
-
-            snapDict = SnappyHexMeshDict(snap=True).build()
-            if app.db.elementCount('region') > 1:
-                snapDict.write()
-            else:
-                snapDict.updateForCellZoneInterfacesSnap().write()
-
-            self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-            self._cm.output.connect(console.append)
-            self._cm.errorOutput.connect(console.appendError)
-            await self._cm.start()
-            rc = await self._cm.wait()
-            if rc != 0:
-                raise ProcessError(rc)
-
-            if app.db.elementCount('region') > 1:
-                TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
-
-                self._cm = RunParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-                self._cm.output.connect(console.append)
-                self._cm.errorOutput.connect(console.appendError)
-                await self._cm.start()
-                rc = await self._cm.wait()
-                if rc != 0:
-                    raise ProcessError(rc)
-
-                if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
-                    snapDict.updateForCellZoneInterfacesSnap().removeBufferLayers().write()
-
-                    self._cm = RunParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-                    self._cm.output.connect(console.append)
-                    self._cm.errorOutput.connect(console.appendError)
-                    await self._cm.start()
-                    rc = await self._cm.wait()
-                    if rc != 0:
-                        raise ProcessError(rc)
-
-            self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
-                                    cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            self._cm.output.connect(console.append)
-            self._cm.errorOutput.connect(console.appendError)
-            await self._cm.start()
-            await self._cm.wait()
-
-            await app.window.meshManager.load(self.OUTPUT_TIME)
-            self._updateControlButtons()
+        if await self._run():
+            self.stepCompleted.emit()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
-        except ProcessError as e:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Snapping Failed. [') + str(e.returncode) + ']')
-        except CanceledException:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
-                                                self.tr('Snapping has been canceled.'))
-        finally:
-            self._enableEdit()
-            self._enableControlsForSettings()
-            self._ui.snap.setText(buttonText)
-            self._cm = None
+
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
+        self._ui.snapCancel.hide()
+
+        self.updateWorkingStatus()
 
     def _reset(self):
         self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
+        self._ui.snap.setEnabled(True)
+        self.stepReset.emit()
 
     def _featureSnapTypeChanged(self, type_):
         self._ui.multiSurfaceFeatureSnap.setEnabled(type_ == FeatureSnapType.EXPLICIT)
@@ -268,11 +222,11 @@ class SnapPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.snap.hide()
             self._ui.snapReset.show()
-            self._setNextStepEnabled(True)
+            print(self._locked)
         else:
             self._ui.snap.show()
+            self._ui.snap.setEnabled(True)
             self._ui.snapReset.hide()
-            self._setNextStepEnabled(False)
 
     def _enableStep(self):
         super()._enableStep()
@@ -289,3 +243,26 @@ class SnapPage(StepPage):
     def _disableEdit(self):
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
+
+    @qasync.asyncSlot()
+    async def _run(self):
+        self._disableEdit()
+
+        result = False
+        try:
+            await snappyHexMesh.snap()
+            result = True
+        except ProcessError as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Snapping Failed [') + str(e.returncode) + ']')
+        except CanceledException:
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Snapping has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Snapping Failed:') + str(e))
+
+        if not result:
+            self.clearResult()
+
+        return result

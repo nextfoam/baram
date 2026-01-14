@@ -9,7 +9,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
-from libbaram.mpi import ParallelEnvironment, ParallelType
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
@@ -86,14 +86,14 @@ class _Project(QObject):
             # End
             else:
                 parallelEnvironment = AppSettings.getParallenEnvironment()
-                
+
                 self._settings = {
                     SettingKey.FORMAT_VERSION.value : FORMAT_VERSION,
                     SettingKey.NP.value             : parallelEnvironment.np(),
                     SettingKey.PARALLEL_TYPE.value  : parallelEnvironment.type().name,
                     SettingKey.HOSTFILE.value       : parallelEnvironment.hosts()
                 }
-                
+
 
     def __init__(self):
         super().__init__()
@@ -105,7 +105,7 @@ class _Project(QObject):
         self._projectSettings: Optional[ProjectSettings] = None
         self._projectLock = None
 
-        self._fileDB: Optional[FileDB] = None
+        self._fileDB: FileDB  # This is set when the project is open, and a project is open as soon as it's constructed.
         self._coreDB = None
 
         self._timer = None
@@ -130,7 +130,7 @@ class _Project(QObject):
     @property
     def pType(self):
         return self._settings.get(SettingKey.PARALLEL_TYPE)
-    
+
     @property
     def hostfile(self):
         return self._settings.get(SettingKey.HOSTFILE, '')
@@ -165,15 +165,15 @@ class _Project(QObject):
     def save(self):
         self._fileDB.save()
 
-    def saveAs(self, directory):
+    async def saveAs(self, directory):
         self._fileDB.saveAs(directory)
-        self._close()
-        self._open(directory, ProjectOpenType.SAVE_AS)
+        await self._close()
+        await self._open(directory, ProjectOpenType.SAVE_AS)
         self.projectOpened.emit()
 
     def opened(self):
         self.projectOpened.emit()
-    
+
     def setParallelEnvironment(self, environment):
         self._settings.set(SettingKey.NP, environment.np())
         self._settings.set(SettingKey.PARALLEL_TYPE, environment.type().name)
@@ -224,7 +224,7 @@ class _Project(QObject):
     def clearBatchStatuses(self):
         self.updateBatchStatuses({})
 
-    def _open(self, path: Path, route=ProjectOpenType.EXISTING):
+    async def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)
         if route != ProjectOpenType.SAVE_AS:
             self._projectSettings = ProjectSettings()
@@ -271,7 +271,7 @@ class _Project(QObject):
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
             self._coreDB = coredb.CoreDB()
-            
+
             if route == ProjectOpenType.MESH:
                 self._settings.set(SettingKey.NP, 1)
         else:
@@ -279,8 +279,11 @@ class _Project(QObject):
 
         CoreDBReader().reloadCoreDB()
 
-    def _close(self):
+    async def _close(self):
         coredb.destroy()
+
+        await GraphicsDB().close()
+
         self.projectClosed.emit()
         if self._projectLock:
             self._projectLock.release()
@@ -290,16 +293,16 @@ class Project:
     _instance: Optional[_Project] = None
 
     @classmethod
-    def open(cls, directory, openType):
+    async def open(cls, directory, openType):
         assert(cls._instance is None)
         cls._instance = _Project()
-        cls._instance._open(directory, openType)
+        await cls._instance._open(directory, openType)
         return cls._instance
 
     @classmethod
-    def close(cls):
+    async def close(cls):
         if cls._instance:
-            cls._instance._close()
+            await cls._instance._close()
 
         cls._instance = None
 

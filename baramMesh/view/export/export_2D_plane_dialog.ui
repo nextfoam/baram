@@ -6,75 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>600</width>
     <height>201</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>2D Plane Export</string>
+   <string>Export as 2D Plane BaramFlow Project</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QFrame" name="frame">
+    <widget class="QFrame" name="path">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Project Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="projectName">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Project Location</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLineEdit" name="projectLocation">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="locationSelect">
-          <property name="minimumSize">
-           <size>
-            <width>20</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>20</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
     </widget>
    </item>
    <item>
@@ -106,7 +53,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="thickness">
+          <widget class="FloatEdit" name="thickness">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -125,13 +72,20 @@
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
+       <widget class="QCheckBox" name="run">
+        <property name="text">
+         <string>Run BaramFlow on Exported Project</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>217</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -156,6 +110,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.typed_edit</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../../resource.qrc"/>
   <include location="../../../resource.qrc"/>

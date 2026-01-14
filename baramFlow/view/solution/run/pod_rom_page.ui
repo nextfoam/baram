@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PODROMPage</class>
+ <widget class="QWidget" name="PODROMPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>466</width>
+    <height>815</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
+   <property name="rightMargin">
+    <number>9</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="title">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Reduced Order Model</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>448</width>
+        <height>768</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_PODROMpage">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+         <widget class="QGroupBox" name="groupBox_ROMBuildAndSnapshots">
+           <property name="title">
+             <string>Build Model</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_ROMGroup">
+             <item>
+               <widget class="QWidget" name="widgetBuildROM" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayoutBuildRom">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                   <widget class="QLabel" name="labelBuildROM">
+                     <property name="text">
+                       <string>ROM Status</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_31">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="buildROM">
+                   <property name="styleSheet">
+                    <string notr="true">padding: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string>Build ROM</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="snapshotCases">
+                <property name="title">
+                 <string>Snapshot Cases</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <item>
+                  <widget class="QTreeWidget" name="snapshotCaseList">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="contextMenuPolicy">
+                    <enum>Qt::CustomContextMenu</enum>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="horizontalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="autoScroll">
+                    <bool>false</bool>
+                   </property>
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::ExtendedSelection</enum>
+                   </property>
+                   <property name="indentation">
+                    <number>0</number>
+                   </property>
+                   <property name="columnCount">
+                    <number>4</number>
+                   </property>
+                   <column>
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>Case</string>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>Calc.</string>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>Result</string>
+                    </property>
+                   </column>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+           </layout>
+         </widget>
+       </item>
+       <item>
+         <widget class="QGroupBox" name="groupBox_Reconstruction">
+           <property name="title">
+             <string>Reconstruct from Model</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_ReconstructGroup">
+             <item>
+               <widget class="QWidget" name="runningMode" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                   <widget class="QLineEdit" name="nameCaseToReconstruct">
+                     <property name="text">
+                       <string></string>
+                     </property>
+                     <property name="placeholderText">
+                       <string>Case name</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="ROMReconstruct">
+                   <property name="styleSheet">
+                    <string notr="true">padding: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string>Reconstruct case with ROM</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+           </layout>
+         </widget>
+       </item>
+       <item>
+         <widget class="QGroupBox" name="groupBox_Enhance">
+           <property name="title">
+             <string>Model Enhancement</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_EnhanceGroup">
+             <item>
+               <widget class="QWidget" name="enhanceWidget" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_333">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="horizontalSpacer_333">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="EvalNEnhanceROM">
+                   <property name="styleSheet">
+                    <string notr="true">padding: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string>Evaluate / Enhance ROM</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+             <item>
+               <widget class="QWidget" name="EnhanceReport" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_33">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QTableWidget" name="tblRomEval">
+                   <property name="visible">
+                    <bool>true</bool>
+                   </property>
+                   <property name="columnCount">
+                    <number>3</number>
+                   </property>
+                   <property name="rowCount">
+                    <number>6</number>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>1</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="editTriggers">
+                    <set>QAbstractItemView::NoEditTriggers</set>
+                   </property>
+                   <property name="minimumHeight">
+                     <number>200</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+             <item>
+               <widget class="QWidget" name="enhanceWidget2" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_3333">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="horizontalSpacer_3333">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="exportEvalROM">
+                   <property name="styleSheet">
+                    <string notr="true">padding: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string>Export</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+           </layout>
+         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../../../../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>

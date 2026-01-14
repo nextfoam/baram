@@ -3,8 +3,6 @@
 
 from enum import Enum
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 class VolumeReportType(Enum):
     VOLUME_AVERAGE = 'volumeAverage'
@@ -31,7 +29,7 @@ class VolumeType(Enum):
 def _foVolFieldValueBase(volumeType: VolumeType, volumeName: str, field: str, reportType: VolumeReportType, rname: str) -> dict:
     data = {
         'type': 'volFieldValue',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'fields': [field],
         'operation': VOLUME_MONITOR_OPERATION[reportType],

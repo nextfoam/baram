@@ -7,7 +7,7 @@ from enum import IntEnum, auto
 from pathlib import Path
 
 import asyncio
-from libbaram.process import runExternalScript
+from libbaram.process import runExternalCommand
 
 
 class ParallelType(IntEnum):
@@ -39,7 +39,7 @@ else:
 
 async def checkMPI():
     try:
-        process = await runExternalScript(MPICMD, VERSION_CHECK_OPTION,
+        process = await runExternalCommand(MPICMD, VERSION_CHECK_OPTION,
                                           stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await process.communicate()
         m = re.search('([0-9]+)\.([0-9]+)\.', stdout.decode())

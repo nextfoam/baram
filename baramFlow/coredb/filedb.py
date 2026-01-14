@@ -25,6 +25,7 @@ class FileFormatError(Exception):
 class FileDB:
     class Key(Enum):
         BATCH_CASES = 'BatchCases'
+        SNAPSHOT_CASES = 'SnapshotCases'
 
     FILE_NAME = 'configuration.h5'
 

@@ -8,21 +8,19 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import pandas as pd
 import yaml
 from filelock import FileLock
 from PySide6.QtCore import QLocale, QRect
 
+from baramFlow.base.material.database import materialsBase
 from libbaram.mpi import ParallelEnvironment, ParallelType
 from resources import resource
-
-from baramFlow.coredb.materials_base import MaterialsBase
 
 FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
 
-MATERIALS_FILE_NAME = 'materials.csv'
-
+MATERIALS_FILE_NAME = 'materials.yaml'
+THERMOS_FILE_NAME = 'thermos.csv'
 
 class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
@@ -68,7 +66,9 @@ class AppSettings:
 
         if not cls._materialsDBFile.exists():
             shutil.copy(resource.file(MATERIALS_FILE_NAME), cls._materialsDBFile)
-        MaterialsBase.load(cls._materialsDBFile)
+        materialsBase.load(cls._materialsDBFile)
+        
+        materialsBase.loadThermos(resource.file(THERMOS_FILE_NAME))
 
     @classmethod
     def casesPath(cls):
@@ -193,17 +193,17 @@ class AppSettings:
                     return path
 
         return None
-    
+
     @classmethod
     def getParallenEnvironment(cls):
         settings = cls._load()
         type_ = settings.get(SettingKey.PARALLEL_TYPE.value)
-        
+
         return ParallelEnvironment(
             settings.get(SettingKey.PARALLEL_NP.value, 1),
             ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             settings.get(SettingKey.PARALLEL_HOSTFILE.value))
-        
+
     @classmethod
     def setParallelEnvironment(cls, environment):
         settings = cls._load()
@@ -242,10 +242,3 @@ class AppSettings:
         if project[num] in recentCases:
             recentCases.remove(project[num])
         cls._save(settings)
-
-    @classmethod
-    def updateMaterialsDB(cls, materials):
-        df = pd.DataFrame.from_dict(materials, orient='index')
-        df.to_csv(cls._materialsDBFile, index_label='name')
-
-        MaterialsBase.update(materials)

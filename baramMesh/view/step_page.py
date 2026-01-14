@@ -4,24 +4,29 @@
 from pathlib import Path
 
 import qasync
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 
 from libbaram.utils import rmtree
 
 from baramMesh.app import app
-from baramMesh.openfoam.file_system import makeDir
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 
 
 class StepPage(QObject):
     OUTPUT_TIME = -1
 
+    stepCompleted = Signal()
+    stepReset = Signal()
+
     def __init__(self, ui, page):
         super().__init__()
         self._ui: Ui_MainWindow = ui
+
         self._widget = page
         self._loaded = False
         self._locked = False
+
+        self._batchRunning = False
 
     def isNextStepAvailable(self):
         return app.fileSystem.timePathExists(self.OUTPUT_TIME, app.project.parallelCores() > 1)
@@ -37,11 +42,14 @@ class StepPage(QObject):
     def open(self):
         return
 
-    async def selected(self):
-        self.updateMesh()
+    async def show(self, isCurrentStep, batchRunning):
+        self.updateWorkingStatus()
 
-    def deselected(self):
-        return
+    async def hide(self):
+        if not self._loaded:
+            return True
+
+        return await self.save()
 
     @qasync.asyncSlot()
     async def save(self):
@@ -52,6 +60,9 @@ class StepPage(QObject):
         self._locked = False
         self._clear()
 
+    def load(self):
+        pass
+    
     def retranslate(self):
         return
 
@@ -68,27 +79,18 @@ class StepPage(QObject):
         for path in processorPaths:
             rmtree(path)
 
-    def createOutputPath(self):
-        output = str(self.OUTPUT_TIME)
-
-        if app.project.parallelCores() > 1:
-            folders = app.fileSystem.processorFolders()
-            if folders:
-                for f in folders:
-                    makeDir(f, output, True)
-
-                return
-
-        makeDir(app.fileSystem.caseRoot(), output, True)
+    def updateWorkingStatus(self):
+        self.updateMesh()
+        self._updateControlButtons()
 
     def _outputPath(self) -> Path:
         return app.fileSystem.timePath(self.OUTPUT_TIME)
 
-    def _setNextStepEnabled(self, enabled):
-        self._ui.next.setEnabled(enabled)
-
     def _updateNextStepAvailable(self):
-        self._setNextStepEnabled(self.isNextStepAvailable())
+        if self.isNextStepAvailable():
+            self.stepCompleted.emit()
+        else:
+            self.stepReset.emit()
 
     def _showResultMesh(self):
         app.window.meshManager.show(self.OUTPUT_TIME)
@@ -102,15 +104,8 @@ class StepPage(QObject):
         else:
             self._showPreviousMesh()
 
-    def _disableControlsForRunning(self):
-        self._ui.menuFile.setEnabled(False)
-        self._ui.menuMesh_Quality.setEnabled(False)
-        self._ui.menuParallel.setEnabled(False)
-
-    def _enableControlsForSettings(self):
-        self._ui.menuFile.setEnabled(True)
-        self._ui.menuMesh_Quality.setEnabled(True)
-        self._ui.menuParallel.setEnabled(True)
+    def _updateControlButtons(self):
+        return
 
     def _enableStep(self):
         self._widget.setEnabled(True)

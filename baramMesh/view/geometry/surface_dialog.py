@@ -3,52 +3,69 @@
 
 import qasync
 from PySide6.QtWidgets import QDialog
+from vtkmodules.vtkCommonColor import vtkNamedColors
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
-from widgets.radio_group import RadioGroup
+from widgets.enum_button_group import EnumButtonGroup
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType
+from baramMesh.rendering.vtk_loader import polyDataToActor
 from .geometry import RESERVED_NAMES
 from .surface_dialog_ui import Ui_SurfaceDialog
+from .transform_widget import TransformWidget
 
 
 class SurfaceDialog(QDialog):
-    _cfdTypes = {
-        'none': CFDType.NONE.value,
-        'boundary': CFDType.BOUNDARY.value,
-        'interface_': CFDType.INTERFACE.value
-    }
-
-    def __init__(self, parent):
+    def __init__(self, parent, renderingView):
         super().__init__(parent)
         self._ui = Ui_SurfaceDialog()
         self._ui.setupUi(self)
 
-        self._typeRadios = RadioGroup(self._ui.typeRadios)
+        self._renderingView = renderingView
+        self._typeRadios = EnumButtonGroup()
+
+        self._transformWidget = TransformWidget(self)
 
         self._gIds = None
         self._dbElement = None
+
+        self._sources = None
+        self._actors = []
+
+        self._editable = True
+        self._transformed = False
+
+        self._typeRadios.addEnumButton(self._ui.none,       CFDType.NONE)
+        self._typeRadios.addEnumButton(self._ui.boundary,   CFDType.BOUNDARY)
+        self._typeRadios.addEnumButton(self._ui.interface_, CFDType.INTERFACE)
+
+        self._ui.dialogContent.layout().addWidget(self._transformWidget)
 
         self._connectSignalsSlots()
 
     def gIds(self):
         return self._gIds
 
-    def setGIds(self, gIds):
+    def setData(self, gIds, sources):
         self._gIds = gIds
+        self._sources = sources
         self._load()
 
-    def enableEdit(self):
-        self._ui.form.setEnabled(True)
-        self._ui.ok.show()
-        self._ui.cancel.setText(self.tr('Cancel'))
-
     def disableEdit(self):
-        self._ui.form.setEnabled(False)
+        self._ui.dialogContent.setEnabled(False)
         self._ui.ok.hide()
         self._ui.cancel.setText(self.tr('Close'))
+        self._editable = False
+
+    def done(self, result):
+        for actor in self._actors:
+            self._renderingView.removeActor(actor)
+
+        self._renderingView.refresh()
+
+        super().done(result)
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -73,7 +90,7 @@ class SurfaceDialog(QDialog):
             for gId in self._gIds:
                 element = db.checkout(f'geometry/{gId}')
 
-                cfdType = self._typeRadios.value()
+                cfdType = self._typeRadios.checkedData()
                 element.setValue('cfdType', cfdType)
                 element.setValue('nonConformal', self._ui.nonConformal.isChecked())
                 element.setValue('interRegion', self._ui.interRegion.isChecked())
@@ -85,13 +102,20 @@ class SurfaceDialog(QDialog):
 
                 db.commit(element)
 
+            if self._transformed:
+                for gId, polyData in self._sources.items():
+                    surface = app.db.getElement('geometry', gId)
+                    db.updateGeometryPolyData(surface.value('path'), polyData)
+
             app.db.commit(db)
+
             super().accept()
         except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr("Input Error"), e.toMessage())
 
     def _connectSignalsSlots(self):
-        self._typeRadios.valueChanged.connect(self._typeChanged)
+        self._typeRadios.dataChecked.connect(self._onTypeChanged)
+        self._transformWidget.transformed.connect(self._onTransformed)
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.close)
 
@@ -101,29 +125,60 @@ class SurfaceDialog(QDialog):
         first = surfaces[self._gIds[0]]
         if len(surfaces) > 1:
             self._ui.nameSetting.hide()
+            self._transformWidget.hide()
         else:
             self._ui.name.setText(first.value('name'))
-            self._ui.nameSetting.show()
+            if first.value('volume') is None and self._editable:
+                self._displayPreview()
+                self._transformWidget.setMeshes(self._sources)
+            else:
+                self._transformWidget.hide()
 
-        cfdType = first.value('cfdType')
+        cfdType = CFDType(first.value('cfdType'))
         nonConformal = None
         interRegion = None
-        self._typeRadios.setObjectMap(self._cfdTypes, cfdType)
-        if cfdType == CFDType.INTERFACE.value:
+        self._typeRadios.setCheckedData(cfdType)
+        if cfdType == CFDType.INTERFACE:
             nonConformal = first.value('nonConformal')
             interRegion = first.value('interRegion')
             self._ui.nonConformal.setChecked(nonConformal)
             self._ui.interRegion.setChecked(interRegion)
 
         for gId, s in surfaces.items():
-            if cfdType != s.value('cfdType') or cfdType == CFDType.INTERFACE.value:
-                if (cfdType != s.value('cfdType')
-                        or nonConformal != s.value('nonConformal')
-                        or interRegion != s.value('interRegion')):
-                    self._typeRadios.setValue(CFDType.BOUNDARY.value)
-                    break
+            if cfdType.value != s.value('cfdType'):
+                self._typeRadios.setCheckedData(CFDType.BOUNDARY)
+                break
 
-        self._typeChanged(self._typeRadios.value())
+            if (cfdType == CFDType.INTERFACE
+                    and (nonConformal != s.value('nonConformal') or interRegion != s.value('interRegion'))):
+                self._typeRadios.setCheckedData(CFDType.BOUNDARY)
+                break
 
-    def _typeChanged(self, value):
-        self._ui.interfaceType.setEnabled(value == CFDType.INTERFACE.value)
+        self._onTypeChanged(self._typeRadios.checkedData())
+
+    def _onTransformed(self):
+        self._transformed = True
+        self._sources = self._transformWidget.meshes()
+        self._displayPreview()
+
+    def _onTypeChanged(self, value):
+        self._ui.interfaceType.setEnabled(value == CFDType.INTERFACE)
+
+    def _displayPreview(self):
+        for actor in self._actors:
+            self._renderingView.removeActor(actor)
+
+        self._actors.clear()
+
+        for polyData in self._sources.values():
+            actor = polyDataToActor(polyData)
+            actor.GetProperty().SetRepresentationToSurface()
+            actor.GetProperty().EdgeVisibilityOn()
+            actor.GetProperty().SetLineWidth(1.0)
+            actor.GetProperty().SetDiffuse(0.6)
+            actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('burlywood'))
+            actor.GetProperty().SetLineWidth(2)
+            self._actors.append(actor)
+            self._renderingView.addActor(actor)
+
+        self._renderingView.refresh()

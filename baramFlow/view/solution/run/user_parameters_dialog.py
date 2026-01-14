@@ -8,10 +8,11 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QIcon, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView
 
-from baramFlow.coredb.coredb_reader import CoreDBReader
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
 
+from baramFlow.coredb.batch_parameter_db import BATCH_PARAMETER_PATTERN
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.run_calculation_db import RunCalculationDB
 from .user_parameters_dialog_ui import Ui_UserParametersDialog
@@ -105,7 +106,7 @@ class UserParametersDialog(QDialog):
             self.accept()
 
     def _connectSignalsSlots(self):
-        self._ui.add.clicked.connect(self._addItem)
+        self._ui.add.clicked.connect(lambda: self._addItem())
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.close)
 
@@ -115,7 +116,7 @@ class UserParametersDialog(QDialog):
         item = QTreeWidgetItem(self._ui.parameters, mode)
         if mode == ItemMode.ADD:
             nameEdit = QLineEdit()
-            nameEdit.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Z_][A-Z0-9_]*')))
+            nameEdit.setValidator(QRegularExpressionValidator(QRegularExpression(BATCH_PARAMETER_PATTERN)))
             self._ui.parameters.setItemWidget(item, Column.NAME, nameEdit)
             nameEdit.setFocus()
         else:

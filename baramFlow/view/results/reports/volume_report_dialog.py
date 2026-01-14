@@ -8,27 +8,31 @@ from pathlib import Path
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from libbaram import utils
+from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.run import runParallelUtility
+from widgets.async_message_box import AsyncMessageBox
+from widgets.progress_dialog import ProgressDialog
+from widgets.selector_dialog import SelectorDialog
+
+from baramFlow.base.constants import FieldType, VectorComponent
+from baramFlow.base.field import CollateralField, Field, SpecieField, UserScalarField
 from baramFlow.coredb.cell_zone_db import CellZoneDB
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam import parallel
+from baramFlow.libbaram.collateral_fields import collateralFieldDict
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict
 from baramFlow.openfoam.function_objects.components import foComponentsReport
 from baramFlow.openfoam.function_objects.mag import foMagReport
-from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType, VolumeType, \
-    foVolFieldValueReport
+from baramFlow.openfoam.function_objects.read_fields import foReadFieldsReport
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType, VolumeType, foVolFieldValueReport
 from baramFlow.openfoam.post_processing.post_file_reader import readPostFile
 from baramFlow.openfoam.solver import findSolver
-
-from libbaram import utils
-from libbaram.run import runParallelUtility
-from widgets.async_message_box import AsyncMessageBox
-from widgets.selector_dialog import SelectorDialog
-
+from baramFlow.openfoam.solver_field import getSolverComponentName, getSolverFieldName
+from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .volume_report_dialog_ui import Ui_VolumeReportDialog
 
 
@@ -42,19 +46,21 @@ class VolumeReportDialog(QDialog):
         self._volume = None
 
         for t in VolumeReportType:
-            self._ui.reportType.addEnumItem(t, MonitorDB.volumeReportTypeToText(t))
+            self._ui.reportType.addItem(MonitorDB.volumeReportTypeToText(t), t)
 
-        for f in FieldHelper.getAvailableFields():
-            self._ui.fieldVariable.addItem(f.text, f.key)
+        loadFieldsComboBox(self._ui.fieldVariable)
 
         self._connectSignalsSlots()
 
         self._load()
 
     def _connectSignalsSlots(self):
+        # self._ui.reportType.currentIndexChanged.connect(self._updateInputFields)
         self._ui.select.clicked.connect(self._selectVolumes)
         self._ui.compute.clicked.connect(self._compute)
         self._ui.close.clicked.connect(self._accept)
+
+        connectFieldsToComponents(self._ui.fieldVariable, self._ui.fieldComponent)
 
     def _load(self):
         pass
@@ -65,55 +71,47 @@ class VolumeReportDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _compute(self):
-        if not self._volume:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Volume.'))
-            return
-
-        fieldKey: FieldHelper.FieldItem.DBFieldKey = self._ui.fieldVariable.currentData()
-        fieldType = fieldKey.field
-        fieldID = fieldKey.id
-
-        rname = CellZoneDB.getCellZoneRegion(self._volume)
-        if (fieldType == Field.SCALAR
-                and rname != UserDefinedScalarsDB.getRegion(fieldID)):
-            await AsyncMessageBox().information(
-                self, self.tr('Input Error'),
-                self.tr('The region where the scalar field is configured does not contain selected Volume.'))
-            return
-
-        reportType = self._ui.reportType.currentData()
-
-        primary = RegionDB.getMaterial(rname)
-        if fieldType == Field.MATERIAL:
-            mid = fieldID
-            if MaterialDB.getType(mid) == MaterialType.SPECIE:
-                if mid not in MaterialDB.getSpecies(primary):
-                    await AsyncMessageBox().information(
-                        self, self.tr('Input Error'),
-                        self.tr('The region where the specie is configured does not contain selected Point.'))
-                    return
-            elif mid != primary and mid not in RegionDB.getSecondaryMaterials(rname):
-                await AsyncMessageBox().information(
-                    self, self.tr('Input Error'),
-                    self.tr('The region where the material is configured does not contain selected Point.'))
-                return
-
-        field = FieldHelper.DBFieldKeyToField(fieldType, fieldID)
-
         self._ui.compute.setEnabled(False)
 
-        self._ui.resultValue.setText('Calculating...')
+        reportType: VolumeReportType = self._ui.reportType.currentData()
 
-        seed = str(uuid.uuid4())
+        field: Field = self._ui.fieldVariable.currentData()
+        fieldComponent: VectorComponent = self._ui.fieldComponent.currentData()
 
+        if not self._volume:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Volume.'))
+            self._ui.compute.setEnabled(True)
+            return
+
+        rname = CellZoneDB.getCellZoneRegion(self._volume)
+
+        seed = uuidToNnstr(uuid.uuid4())
         foName = f'delete_me_{seed}_volume'
 
         functions = {}
 
-        if field == 'mag(U)':
-            functions['mag1'] = foMagReport('U')
-        elif field in ('Ux', 'Uy', 'Uz'):
-            functions['components1'] = foComponentsReport('U')
+        solverFieldName = getSolverFieldName(field)
+
+        if isinstance(field, CollateralField):
+            time = FileSystem.latestTime()
+            if FileSystem.fieldExists(time, solverFieldName):
+                functions[f'readField_{solverFieldName}'] = foReadFieldsReport([solverFieldName], rname)  # FO for reading the collateral field
+            else:
+                functions.update(collateralFieldDict([field]))  # FO for generating the collateral field
+
+        elif isinstance(field, SpecieField):
+            if field.codeName not in RegionDB.getSecondaryMaterials(rname):
+                await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                    self.tr("The region where the material is configured does not contain selected surface."))
+                self._ui.compute.setEnabled(True)
+                return
+
+        elif isinstance(field, UserScalarField):
+            if rname != UserDefinedScalarsDB.getRegion(field.codeName):
+                await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                    self.tr("The region where the scalar field is configured does not contain selected surface."))
+                self._ui.compute.setEnabled(True)
+                return
 
         name = CellZoneDB.getCellZoneName(self._volume)
         if CellZoneDB.isRegion(name):
@@ -123,11 +121,27 @@ class VolumeReportDialog(QDialog):
             volumeType = VolumeType.CELLZONE
             volumeName = name
 
-        functions[foName] = foVolFieldValueReport(volumeType, volumeName, field, reportType, rname)
+        if field.type == FieldType.SCALAR:
+            functions[foName] = foVolFieldValueReport(volumeType, volumeName, solverFieldName, reportType, rname)
+
+        else:  # FieldType.VECTOR
+            if fieldComponent == VectorComponent.MAGNITUDE:
+                functions['mag1'] = foMagReport(solverFieldName, rname)
+            else:
+                functions['components1'] = foComponentsReport(solverFieldName, rname)
+
+            solverComponentName = getSolverComponentName(field, fieldComponent)
+            functions[foName] = foVolFieldValueReport(volumeType, volumeName, solverComponentName, reportType, rname)
+
+        self._ui.resultValue.setText('Calculating...')
 
         data = {
             'functions': functions
         }
+
+        progressDialog = ProgressDialog(self, self.tr('Surface Report'), openDelay=500)
+        progressDialog.setLabelText(self.tr('Generating Report...'))
+        progressDialog.open()
 
         foDict = FoDict(f'delete_me_{seed}').build(data)
         foDict.write()
@@ -142,7 +156,7 @@ class VolumeReportDialog(QDialog):
         foDict.fullPath().unlink()
 
         if rc != 0:
-            await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Computing failed'))
+            progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -150,9 +164,10 @@ class VolumeReportDialog(QDialog):
         foPath = FileSystem.postProcessingPath(rname) / foName
 
         foFiles:  list[Path] = list(foPath.glob('**/volFieldValue.dat'))
+        print(foPath, foFiles)
 
         if len(foFiles) < 1:
-            await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Computing failed'))
+            progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
 
@@ -163,6 +178,8 @@ class VolumeReportDialog(QDialog):
         self._ui.resultValue.setText(str(df.iloc[0, 0]))
 
         utils.rmtree(foPath)
+
+        progressDialog.finish(self.tr('Calculation Completed'))
 
         self._ui.compute.setEnabled(True)
 

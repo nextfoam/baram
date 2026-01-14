@@ -3,7 +3,6 @@
 
 import asyncio
 import logging
-import os
 import webbrowser
 
 import qasync
@@ -11,11 +10,11 @@ from filelock import Timeout
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
-from PySide6.QtCore import Signal, QEvent, QMargins
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, QApplication
+from PySide6.QtCore import Signal, QEvent, QMargins, Qt
 from PySide6QtAds import CDockManager, DockWidgetArea
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
@@ -24,6 +23,7 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.openfoam.redistribution_task import RedistributionTask
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from baramMesh.view.display_control.display_control import DisplayControl
 from baramMesh.view.widgets.project_dialog import ProjectDialog
 from baramMesh.view.widgets.settings_scaling_dialog import SettingScalingDialog
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
 
         self._dockManager = CDockManager(self._ui.dockContainer)
 
-        self._navigationView = NavigationView(self._ui.stepButtons)
+        self._navigationView = NavigationView(self._ui)
         self._displayControl = DisplayControl(self._ui)
         self._renderingTool = RenderingTool(self._ui)
         self._consoleView = ConsoleView()
@@ -88,17 +88,13 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._dockManager)
 
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
-        
+
         self._ui.regionValidationMessage.hide()
 
         geometry = app.settings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
         fit = getFit(geometry, display)
         self.setGeometry(fit)
-
-    @property
-    def stepManager(self):
-        return self._stepManager
 
     @property
     def renderingView(self):
@@ -175,8 +171,11 @@ class MainWindow(QMainWindow):
         self._startDialog.actionProjectSelected.connect(self._openProject)
         self._startDialog.finished.connect(self._startDialogClosed)
 
-        self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
-        self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
+        self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
+        self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
+
+        snappyHexMesh.snappyStarted.connect(self._disableMenubar)
+        snappyHexMesh.snappyStopped.connect(self._enableMenubar)
 
         self._closeTriggered.connect(self._closeProject)
 
@@ -195,28 +194,29 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve())
+        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
+                                        app.properties.projectSuffix)
         self._dialog.accepted.connect(self._createProject)
+        self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        # QDialog.open() makes the dialog window modal.
         self._dialog.show()
 
     def _actionOpen(self):
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         self._dialog.fileSelected.connect(self._openProject)
-        self._dialog.open()
+        self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self._dialog.show()
 
     @qasync.asyncSlot()
     async def _actionSave(self):
         if await self._stepManager.saveCurrentPage():
             app.project.save()
 
-    @qasync.asyncSlot()
-    async def _actionSaveAs(self):
-        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.fileSelected.connect(self._saveAs)
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._dialog.finished.connect(self._ui.menubar.repaint)
+    def _actionSaveAs(self):
+        self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
+                                        Path(app.settings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+        self._dialog.pathSelected.connect(self._saveAs)
         self._dialog.open()
 
     def _actionParameters(self):
@@ -244,14 +244,14 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _openTutorials(self):
-        webbrowser.open('https://baramcfd.org/en/tutorial/baram-mesh/tutorial-mesh-dashboard-en/')
+        webbrowser.open('https://baramcfd.org/en/tutorials-en/tutorial-barammesh-en/tutorial-barammesh-en/')
 
     @qasync.asyncSlot()
     async def _createProject(self):
         await self._closeProject()
         self._clear()
 
-        if app.createProject(self._dialog.projectLocation()):
+        if app.createProject(self._dialog.projectPath()):
             self._recentFilesMenu.addRecentest(app.project.path)
             self._projectOpened()
 
@@ -269,25 +269,13 @@ class MainWindow(QMainWindow):
                                                 self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                    self.tr(f'{path.name} is already open in another program.'))
+                                                self.tr(f'{path.name} is already open in another program.'))
         except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                                 self.tr(f'configurations error : {e.path} - {e.name}'))
 
     @qasync.asyncSlot()
-    async def _saveAs(self, file):
-        path = Path(file).resolve()
-
-        if path.exists():
-            if not path.is_dir():
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{file} is not a directory.'))
-                return
-            elif os.listdir(path):
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{file} is not empty.'))
-                return
-
+    async def _saveAs(self, path):
         if await self._stepManager.saveCurrentPage():
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()
@@ -305,9 +293,19 @@ class MainWindow(QMainWindow):
 
     def _startDialogClosed(self):
         if app.project is None:
-            self.close()
+            QApplication.instance().quit()
+        else:
+            self._ui.menubar.repaint()
 
-        self._ui.menubar.repaint()
+    def _disableMenubar(self):
+        self._ui.menuFile.setEnabled(False)
+        self._ui.menuMesh_Quality.setEnabled(False)
+        self._ui.menuParallel.setEnabled(False)
+
+    def _enableMenubar(self):
+        self._ui.menuFile.setEnabled(True)
+        self._ui.menuMesh_Quality.setEnabled(True)
+        self._ui.menuParallel.setEnabled(True)
 
     @qasync.asyncSlot()
     async def _closeProject(self, toQuit=False):
@@ -370,9 +368,10 @@ class MainWindow(QMainWindow):
         self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
         logging.getLogger().addHandler(self._handler)
 
-        if self._startDialog.isVisible():
+        if self._startDialog is not None:
             self._startDialog.close()
             self.show()
+            self._startDialog = None
 
         self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
 

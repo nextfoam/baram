@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration version="10" xmlns="http://www.baramcfd.org/baram">
+<configuration version="12" xmlns="http://www.baramcfd.org/baram">
     <general>
         <flowType>incompressible</flowType>
         <timeTransient>false</timeTransient>
@@ -16,9 +16,12 @@
         </operatingConditions>
         <atmosphericBoundaryLayer>
             <flowDirection>
-                <x>1</x>
-                <y>0</y>
-                <z>0</z>
+                <specMethod>direct</specMethod>
+                <value>
+                    <x>1</x>
+                    <y>0</y>
+                    <z>0</z>
+                </value>
             </flowDirection>
             <groundNormalDirection>
                 <x>0</x>
@@ -29,6 +32,14 @@
             <referenceHeight>10</referenceHeight>
             <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
             <minimumZCoordinate>0.0</minimumZCoordinate>
+            <pasquillStability disabled="true">
+                <stabilityClass>D</stabilityClass>
+                <latitude>37</latitude>
+                <surfaceHeatFlux>0</surfaceHeatFlux>
+                <referenceDensity>1.225</referenceDensity>
+                <referenceSpecificHeat>1006.0</referenceSpecificHeat>
+                <referenceTemperature>298.15</referenceTemperature>
+            </pasquillStability>
         </atmosphericBoundaryLayer>
     </general>
 
@@ -49,6 +60,7 @@
         <material mid="1">
             <name>air</name>
             <type>nonmixture</type>
+            <chemicalFormula>air</chemicalFormula>
             <phase>gas</phase>
             <molecularWeight>28.966</molecularWeight>
             <absorptionCoefficient>0</absorptionCoefficient>
@@ -56,32 +68,46 @@
                 <specification>constant</specification>
                 <constant>1.225</constant>
                 <polynomial>0</polynomial>
-                <pengRobinsonParameters>
-                    <criticalTemperature>132.531</criticalTemperature>
-                    <criticalPressure>3.79E+06</criticalPressure>
-                    <criticalSpecificVolume>0.0029</criticalSpecificVolume>
-                    <acentricFactor>0.0335</acentricFactor>
-                </pengRobinsonParameters>
+                <boussinesq>
+                    <rho0>1</rho0>
+                    <T0>300</T0>
+                    <beta>3e-03</beta>
+                </boussinesq>
             </density>
             <specificHeat>
                 <specification>constant</specification>
                 <constant>1006</constant>
                 <polynomial>0</polynomial>
+                <janaf>
+                    <lowTemperature>200</lowTemperature>
+                    <commonTemperature>1000</commonTemperature>
+                    <highTemperature>6000</highTemperature>
+                    <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>
+                    <highCoefficients>0 0 0 0 0 0 0</highCoefficients>
+                </janaf>
             </specificHeat>
-            <viscosity>
+            <transport>
                 <specification>constant</specification>
-                <constant>1.79E-05</constant>
-                <polynomial>0</polynomial>
+                <viscosity>1.79E-05</viscosity>
+                <thermalConductivity>0.0245</thermalConductivity>
+                <polynomial>
+                    <viscosity>0.1</viscosity>
+                    <thermalConductivity>0</thermalConductivity>
+                </polynomial>
                 <sutherland>
                     <coefficient>1.46E-06</coefficient>
                     <temperature>110.4</temperature>
                 </sutherland>
-            </viscosity>
-            <thermalConductivity>
-                <specification>constant</specification>
-                <constant>0.0245</constant>
-                <polynomial>0</polynomial>
-            </thermalConductivity>
+            </transport>
+            <criticalTemperature>132.531</criticalTemperature>
+            <criticalPressure>3.79E+06</criticalPressure>
+            <criticalSpecificVolume>342.685</criticalSpecificVolume>
+            <tripleTemperature>298.15</tripleTemperature>
+            <triplePressure>101325</triplePressure>
+            <normalBoilingTemperature>373.15</normalBoilingTemperature>
+            <standardStateEnthalpy>0.0</standardStateEnthalpy>
+            <referenceTemperature>298.15</referenceTemperature>
+            <acentricFactor>0.0335</acentricFactor>
         </material>
     </materials>
 
@@ -148,6 +174,61 @@
                 </diffusivity>
             </scalar>
         </userDefinedScalars>
+        <DPMModels>
+            <properties>
+                <particleType>none</particleType>
+                <inert>
+                    <inertParticle>0</inertParticle>
+                </inert>
+                <droplet>
+                    <composition/>
+                    <temperature>300</temperature>
+                </droplet>
+                <numericalConditions>
+                    <interactionWithContinuousPhase>true</interactionWithContinuousPhase>
+                    <maxParticleCourantNumber>0.3</maxParticleCourantNumber>
+                    <DPMIterationInterval>10</DPMIterationInterval>
+                    <nodeBasedAveraging>true</nodeBasedAveraging>
+                    <trackingScheme>implicit</trackingScheme>
+                </numericalConditions>
+                <kinematicModel>
+                    <dragForce>
+                        <specification>sphereDrag</specification>
+                        <nonSphereDrag>
+                            <shapeFactor>0.9</shapeFactor>
+                        </nonSphereDrag>
+                        <TomiyamaDrag>
+                            <surfaceTension>0.9</surfaceTension>
+                            <contamination>pure</contamination>
+                        </TomiyamaDrag>
+                    </dragForce>
+                    <liftForce>
+                        <specification>none</specification>
+                        <TomiyamaLift>
+                            <surfaceTension>0.9</surfaceTension>
+                        </TomiyamaLift>
+                    </liftForce>
+                    <gravity>false</gravity>
+                    <pressureGradient>false</pressureGradient>
+                    <brownianMotionForce disabled="true">
+                        <molecularFreePathLength>0.9</molecularFreePathLength>
+                        <useTurbulence>false</useTurbulence>
+                    </brownianMotionForce>
+                </kinematicModel>
+                <turbulentDispersion>none</turbulentDispersion>
+                <heatTransfer>
+                    <specification>none</specification>
+                    <ranzMarshall>
+                        <birdCorrection>true</birdCorrection>
+                    </ranzMarshall>
+                </heatTransfer>
+                <evaporation>
+                    <model>none</model>
+                    <enthalpyTransferType>enthalpyDifference</enthalpyTransferType>
+                </evaporation>
+            </properties>
+            <injections/>
+        </DPMModels>
     </models>
 
     <regions/>

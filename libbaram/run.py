@@ -76,6 +76,7 @@ else:
 
     if platform.system() == 'Darwin':
         library += os.pathsep + '/opt/homebrew/lib'
+        library = str(APP_PATH) + os.pathsep + library  # APP_PATH should be at the front to get priority
 
     if platform.system() == 'Darwin':
         LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
@@ -97,7 +98,8 @@ else:
         PATH = '/opt/homebrew/bin' + os.pathsep + os.environ['PATH']
         ENV.update({
             'PATH': PATH,
-            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH  # To find libraries for function objects
+            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH,  # To find libraries for function objects
+            'FOAM_LD_LIBRARY_PATH': library
         })
 
     MPI_OPTIONS = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME]
@@ -254,3 +256,57 @@ class OpenFOAMError(Exception):
 
 class RunParallelUtility(RunUtility):
     pass
+
+
+async def openTerminal(cwd: Path):
+    env = ENV.copy()
+    paths = env['PATH'].split(os.pathsep)
+    paths.append(str(OPENFOAM/'bin'))
+
+    if 'VIRTUAL_ENV' in env:
+        vpath = env['VIRTUAL_ENV']
+        env['PATH'] = os.pathsep.join([p for p in paths if not p.startswith(vpath)])
+
+    vvars = ['VIRTUAL_ENV', 'PYTHONHOME', 'CONDA_PREFIX', 'CONDA_DEFAULT_ENV']
+    for var in vvars:
+        env.pop(var, None)
+
+    system = platform.system()
+
+    if system == "Windows":
+        env.pop('PROMPT', None)
+
+        try:
+            # Windows Terminal
+            process = await asyncio.create_subprocess_exec("wt.exe", "--inheritEnvironment", "-d", str(cwd), env=env, cwd=cwd)
+        except FileNotFoundError:
+            # Fallback to PowerShell
+            process = await asyncio.create_subprocess_exec("powershell.exe", env=env, cwd=cwd)
+            
+        await process.wait()
+
+    elif system == "Darwin":  # macOS
+        env.pop('PS1', None)
+
+        process = await asyncio.create_subprocess_exec("open", "-a", "Terminal", env=env, cwd=cwd)
+        await process.wait()
+
+    elif system == "Linux":
+        env.pop('PS1', None)
+
+        process = None
+        terminals = ["gnome-terminal", "konsole", "xfce4-terminal", "xterm"]
+        for terminal in terminals:
+            try:
+                process = await asyncio.create_subprocess_exec(terminal, env=env, cwd=cwd)
+                await process.wait()
+                break
+            except FileNotFoundError:
+                continue
+
+        if process is None:
+            raise RuntimeError("No suitable terminal emulator found")
+
+    else:
+        raise OSError(f"Unsupported operating system: {system}")
+

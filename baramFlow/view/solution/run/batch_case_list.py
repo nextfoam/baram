@@ -114,6 +114,7 @@ class ContextMenu(QMenu):
     scheduleActionTriggered = Signal(list)
     cancelScheduleActionTriggered = Signal(list)
     deleteActionTriggered = Signal(list)
+    initializeActionTriggered = Signal(CaseItem)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -126,13 +127,20 @@ class ContextMenu(QMenu):
             self.tr('Schedule Calculation'), lambda: self.scheduleActionTriggered.emit(self._targets))
         self._cancelScheduleAction = self.addAction(
             self.tr('Cancel Schedule'), lambda: self.cancelScheduleActionTriggered.emit(self._targets))
+        self._initializeAction = self.addAction(
+            self.tr('Initialize Case'), lambda: self.initializeActionTriggered.emit(self._targets[0]))
         self._deleteAction = self.addAction(
             self.tr('Delete'), lambda: self.deleteActionTriggered.emit(self._targets))
 
     def execute(self, pos, items):
         self._targets = items
 
-        self._loadAction.setVisible(len(items) == 1)
+        if len(items) == 1:
+            self._loadAction.setVisible(True)
+            self._initializeAction.setVisible(True)
+        else:
+            self._loadAction.setVisible(False)
+            self._initializeAction.setVisible(False)
 
         self.exec(pos)
 
@@ -166,6 +174,7 @@ class BatchCaseList(QObject):
         self._menu.loadActionTriggered.connect(self._loadCase)
         self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
         self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
+        self._menu.initializeActionTriggered.connect(self._initialize)
         self._menu.deleteActionTriggered.connect(self._delete)
 
         CaseManager().batchCleared.connect(self._clearStatuses)
@@ -234,11 +243,11 @@ class BatchCaseList(QObject):
 
         self._currentCase = name
 
-        if self._currentCase:
+        if self._currentCase in self._items:
             self._items[self._currentCase].setLoaded(True)
 
     def updateStatus(self, status, name):
-        if name:
+        if name in self._items:
             self._items[name].setStatus(status)
 
     def _adjustSize(self):
@@ -302,6 +311,23 @@ class BatchCaseList(QObject):
     def _cancelSchedule(self, items):
         for i in items:
             i.cancelSchedule()
+
+    @qasync.asyncSlot()
+    async def _initialize(self, item):
+        progressDialog = ProgressDialog(self._parent, self.tr('Case Initializing'))
+        progressDialog.setLabelText(self.tr('Initializing Batch Case...'))
+        CaseManager().progress.connect(progressDialog.setLabelText)
+        progressDialog.open()
+
+        await CaseManager().loadBatchCase(BatchCase(item.name(), self._cases[item.name()])).initialize()
+
+        async with OpenFOAMReader() as reader:
+            await reader.setupReader()
+
+        await GraphicsDB().updatePolyMeshAll()
+
+        CaseManager().progress.disconnect(progressDialog.setLabelText)
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _delete(self, items):

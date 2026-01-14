@@ -12,7 +12,8 @@ from PySide6.QtGui import QColor
 from vtkmodules.vtkCommonDataModel import vtkDataSet
 
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import Field, VectorComponent
+from baramFlow.base.constants import VectorComponent
+from baramFlow.base.field import Field
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.libbaram.util import getScalarRange, getVectorRange
 

@@ -29,7 +29,7 @@ class MaterialsImportDialog(QDialog):
         self._ui.select.clicked.connect(self._openFileSelectorDialog)
 
     def _openFileSelectorDialog(self):
-        self._dialog = QFileDialog(self, self.tr('Import Batch Parameters'), '', self.tr('CSV (*.csv)'))
+        self._dialog = QFileDialog(self, self.tr('Import Materials Data'), '', self.tr('YAML (*.yaml *.yml)'))
         self._dialog.fileSelected.connect(self._fileSelected)
         self._dialog.open()
 

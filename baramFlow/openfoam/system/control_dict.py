@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.math import calucateDirectionsByRotation
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baramFlow.app import app
+from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
+from baramFlow.base.field import HEAT_TRANSFER_COEFF, WALL_HEAT_FLUX, AGE, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY
+from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE
+from baramFlow.base.material.material import Phase
+from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallMotion, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, MaterialType
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.region_db import RegionDB
@@ -23,7 +30,7 @@ from baramFlow.openfoam.function_objects.collateral_fields import foAgeMonitor, 
 from baramFlow.openfoam.function_objects.collateral_fields import foMachNumberMonitor, foQMonitor
 from baramFlow.openfoam.function_objects.collateral_fields import foTotalPressureMonitor, foVorticityMonitor
 from baramFlow.openfoam.function_objects.collateral_fields import foWallHeatFluxMonitor, foWallShearStressMonitor
-from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusMonitor, foCelsiusTemperatureMonitor
 from baramFlow.openfoam.function_objects.components import foComponentsMonitor
 from baramFlow.openfoam.function_objects.force_coeffs import foForceCoeffsMonitor
 from baramFlow.openfoam.function_objects.forces import foForcesMonitor
@@ -34,53 +41,65 @@ from baramFlow.openfoam.function_objects.surface_field_value import SurfaceRepor
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType, VolumeType, foVolFieldValueMonitor
 from baramFlow.openfoam.solver import findSolver, usePrgh
 
-from libbaram.math import calucateDirectionsByRotation
-from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 from .fv_options import generateSourceTermField, generateFixedValueField
 
 
-def _getAvailableFields():
+def _getSolverInfoFields(rname: str)->list[str]:
+    db = coredb.CoreDB()
+
+    solveFlow = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow')
+    solveEnergy = (db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
+    solveUDS = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS')
+
     compresibleDensity = GeneralDB.isCompressibleDensity()
-    if compresibleDensity:
-        fields = ['rhoU', 'rho']
-    else:
-        fields = ['U']
 
-    if usePrgh():
-        fields.append('p_rgh')
-    else:
-        fields.append('p')
+    mid = RegionDB.getMaterial(rname)
+    phase = MaterialDB.getPhase(mid)
 
-    # Fields depending on the turbulence model
-    rasModel = TurbulenceModelsDB.getRASModel()
-    if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
-        fields.append('k')
-        fields.append('epsilon')
-    elif rasModel == TurbulenceModel.K_OMEGA:
-        fields.append('k')
-        fields.append('omega')
-    elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
-        fields.append('nuTilda')
+    fields: list[str] = []
 
-    if ModelsDB.isEnergyModelOn():
+    if solveFlow and phase != Phase.SOLID:
         if compresibleDensity:
-            fields.append('rhoE')
+            fields.extend(['rhoU', 'rho'])
         else:
-            fields.append('h')
+            fields.append('U')
 
-    if ModelsDB.isMultiphaseModelOn():
-        for _, name, _, phase in MaterialDB.getMaterials():
-            if phase != Phase.SOLID.value:
-                fields.append(f'alpha.{name}')
-    elif ModelsDB.isSpeciesModelOn():
-        for mixture, _ in RegionDB.getMixturesInRegions():
-            for name in MaterialDB.getSpecies(mixture).values():
-                fields.append(name)
+        if usePrgh():
+            fields.append('p_rgh')
+        else:
+            fields.append('p')
 
-    for _, fieldName in CoreDBReader().getUserDefinedScalars():
-        fields.append(fieldName)
+        # Fields depending on the turbulence model
+        rasModel = TurbulenceModelsDB.getRASModel()
+        if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
+            fields.append('k')
+            fields.append('epsilon')
+        elif rasModel == TurbulenceModel.K_OMEGA:
+            fields.append('k')
+            fields.append('omega')
+        elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
+            fields.append('nuTilda')
+
+        if ModelsDB.isMultiphaseModelOn():
+            for _, name, _, phase in MaterialDB.getMaterials():
+                if phase != Phase.SOLID.value:
+                    fields.append(f'alpha.{name}')
+
+        if ModelsDB.isSpeciesModelOn():
+            for mixture, _ in RegionDB.getMixturesInRegions():
+                for name in MaterialDB.getSpecies(mixture).values():
+                    fields.append(name)
+
+    if solveEnergy:
+        if ModelsDB.isEnergyModelOn():
+            if compresibleDensity:
+                fields.append('rhoE')
+            else:
+                fields.append('h')
+
+    if solveUDS and phase != Phase.SOLID:
+        for _, fieldName in CoreDBReader().getUserDefinedScalars():
+            fields.append(fieldName)
 
     return fields
 
@@ -140,6 +159,10 @@ def isAtmosphericWall(bcid):
 
     return (db.getValue(xpath + '/wall/velocity/wallMotion/type') == WallMotion.STATIONARY_WALL.value
             and db.getBool(xpath + '/wall/velocity/wallMotion/stationaryWall/atmosphericWall'))
+
+
+def collateralFOName(field, rname):
+    return f'collateral_{field.codeName}_{rname}'
 
 
 class ControlDict(DictionaryFile):
@@ -209,7 +232,7 @@ class ControlDict(DictionaryFile):
         if (BoundaryDB.getBoundaryConditionsByType(BoundaryType.ABL_INLET)
                 or any([isAtmosphericWall(bcid)
                         for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
-            self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
+            self._data['libs'] = ['atmosphericModels']
 
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
@@ -217,12 +240,12 @@ class ControlDict(DictionaryFile):
         if self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS'):
             self._appendScalarTransportFunctionObjects()
 
+        self._appendCollateralFieldsFunctionObjects(
+            NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/collateralFields')
+
         self._appendMonitoringFunctionObjects()
 
         self._appendResidualFunctionObjects()
-
-        self._generateCollateralFieldsFunctionObjects(
-            NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/collateralFields')
 
         return self
 
@@ -245,7 +268,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
-                'libs': [openfoamLibraryPath('libsolverFunctionObjects')],
+                'libs': ['solverFunctionObjects'],
                 'field': fieldName,
                 'schemesField': 'scalar',
                 'nCorr': '0' if not GeneralDB.isTimeTransient() else self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
@@ -305,18 +328,14 @@ class ControlDict(DictionaryFile):
 
             residualsName = f'solverInfo_{rgid}'
 
-            mid = RegionDB.getMaterial(rname)
-            if MaterialDB.getPhase(mid) == Phase.SOLID:
-                if ModelsDB.isEnergyModelOn():
-                    fields = ['h']
-                else:
-                    continue  # 'h' is the only property solid has
-            else:
-                fields = _getAvailableFields()
+            fields = _getSolverInfoFields(rname)
+
+            if len(fields) == 0:
+                continue
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
-                'libs': [openfoamLibraryPath('libutilityFunctionObjects')],
+                'libs': ['utilityFunctionObjects'],
                 'executeControl': 'timeStep',
                 'executeInterval': '1',
                 'writeResidualFields': 'no',
@@ -326,12 +345,68 @@ class ControlDict(DictionaryFile):
             if rname != '':
                 self._data['functions'][residualsName].update({'region': rname})
 
+    def _appendAdditionalFO(self, monitorField, rname):
+        field = monitorField.field
+
+        if field.type == FieldType.VECTOR:
+            if monitorField.component == VectorComponent.MAGNITUDE and 'mag1' not in self._data['functions']:
+                self._data['functions']['mag1'] = foMagMonitor('U', rname, 1)
+            elif 'components1' not in self._data['functions']:
+                self._data['functions']['components1'] = foComponentsMonitor('U', rname, 1)
+
+            return
+
+        if field.category != FieldCategory.COLLATERAL:
+            return
+
+        foName = collateralFOName(field, rname)
+        if foName in self._data['functions']:
+            return
+
+        if ModelsDB.isEnergyModelOn():
+            if field == HEAT_TRANSFER_COEFF:
+                plainWalls  = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
+                thermowalls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.THERMO_COUPLED_WALL, rname)]
+                patches = plainWalls + thermowalls
+                self._data['functions'][foName] = foHeatTransferCoefficientMonitor(rname, patches, 1)
+            elif field == WALL_HEAT_FLUX:
+                self._data['functions'][foName] = foWallHeatFluxMonitor(rname, 1)
+            elif field == CELSIUS_TEMPERATURE:
+                self._data['functions'][foName] = foCelsiusTemperatureMonitor(rname, 1)
+
+        if self._db.getRegionProperties(rname).isFluid():
+            if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
+                if field == AGE:
+                    self._data['functions'][foName] = foAgeMonitor(rname, 1)
+
+            if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
+                if field == MACH_NUMBER:
+                    self._data['functions'][foName] = foMachNumberMonitor(rname, 1)
+
+            if field == Q:
+                self._data['functions'][foName] = foQMonitor(rname, 1)
+            elif field == TOTAL_PRESSURE:
+                self._data['functions'][foName] = foTotalPressureMonitor(rname, 1)
+            elif field == VORTICITY:
+                self._data['functions'][foName] = foVorticityMonitor(rname, 1)
+            elif field == WALL_SHEAR_STRESS:
+                self._data['functions'][foName] = foWallShearStressMonitor(rname, 1)
+            elif field == WALL_Y_PLUS:
+                self._data['functions'][foName] = foWallYPlusMonitor(rname, 1)
+
     def _generateForces(self, xpath, patches):
         cofr = self._db.getVector(xpath + '/centerOfRotation')
         rname = self._db.getValue(xpath + '/region')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
 
-        data = foForcesMonitor(patches, cofr, rname, interval)
+        if GeneralDB.isDensityBased():
+            pRef = None
+        else:
+            referencePressure = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+            operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+            pRef = referencePressure + operatingPressure
+
+        data = foForcesMonitor(patches, cofr, pRef, rname, interval)
 
         return data
 
@@ -368,30 +443,28 @@ class ControlDict(DictionaryFile):
     def _generatePointMonitor(self, xpath):
         coordinate = self._db.getVector(xpath + '/coordinate')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
-        region = self._db.getValue(xpath + '/region')
+        rname = self._db.getValue(xpath + '/region')
+        snapOntoBoundary = self._db.getValue(xpath + '/snapOntoBoundary') == 'true'
+        field = getMonitorField(xpath)
 
-        if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
-            field = self._getMonitorField(xpath, region)
-            if not field:
-                return None
 
-            boundary = BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))
-            data = foPatchProbesMonitor(boundary, field, coordinate, region, interval)
+        if snapOntoBoundary:
+            bcid = self._db.getValue(xpath + '/boundary')
+            boundary = BoundaryDB.getBoundaryName(bcid)
+            rname = BoundaryDB.getBoundaryRegion(bcid)
+            data = foPatchProbesMonitor(boundary, field.openfoamField(), coordinate, rname, interval)
         else:
-            if not region:
-                regions = self._db.getRegions()
-                if len(regions) > 1:
-                    for rname in regions:
-                        if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                            self._db.setValue(xpath + '/region', rname)
-                            region = rname
-                            break
+            if not rname:
+                for name in self._db.getRegions():
+                    if isPointInDataSet(coordinate, app.internalMeshActor(name).dataSet):
+                        self._db.setValue(xpath + '/region', name)
+                        rname = name
+                        break
+                else:
+                    return None
 
-            field = self._getMonitorField(xpath, region)
-            if not field:
-                return None
-
-            data = foProbesMonitor(field, coordinate, region, interval)
+            self._appendAdditionalFO(field, rname)
+            data = foProbesMonitor(field.openfoamField(), coordinate, rname, interval)
 
         return data
 
@@ -399,21 +472,19 @@ class ControlDict(DictionaryFile):
         reportType = SurfaceReportType(self._db.getValue(xpath + 'reportType'))
         surface = self._db.getValue(xpath + '/surface')
         patchName = BoundaryDB.getBoundaryName(surface)
-        region = BoundaryDB.getBoundaryRegion(surface)
+        rname = BoundaryDB.getBoundaryRegion(surface)
         interval = int(self._db.getValue(xpath + '/writeInterval'))
+        field = getMonitorField(xpath)
 
-        field = None
         if reportType == SurfaceReportType.MASS_FLOW_RATE:
-            field = 'phi'
+            fieldText = 'phi'
         elif reportType == SurfaceReportType.VOLUME_FLOW_RATE:
-            field = 'U'
+            fieldText = 'U'
         else:
-            field = self._getMonitorField(xpath, region)
+            fieldText = field.openfoamField()
 
-        if not field:
-            return None
-
-        data = foSurfaceFieldValueMonitor(patchName, field, reportType, region, interval)
+        self._appendAdditionalFO(field, rname)
+        data = foSurfaceFieldValueMonitor(patchName, fieldText, reportType, rname, interval)
 
         return data
 
@@ -422,9 +493,7 @@ class ControlDict(DictionaryFile):
         reportType = VolumeReportType(self._db.getValue(xpath + '/reportType'))
         interval = int(self._db.getValue(xpath + '/writeInterval'))
         region = CellZoneDB.getCellZoneRegion(volume)
-        field = self._getMonitorField(xpath, region)
-        if not field:
-            return None
+        field = getMonitorField(xpath)
 
         name = CellZoneDB.getCellZoneName(volume)
         if CellZoneDB.isRegion(name):
@@ -434,39 +503,12 @@ class ControlDict(DictionaryFile):
             volumeType = VolumeType.CELLZONE
             volumeName = name
 
-        data = foVolFieldValueMonitor(volumeType, volumeName, field, reportType, region, interval)
+        self._appendAdditionalFO(field, region)
+        data = foVolFieldValueMonitor(volumeType, volumeName, field.openfoamField(), reportType, region, interval)
 
         return data
 
-    def _getMonitorField(self, xpath, rname):
-        fieldType = Field(self._db.getValue(xpath + '/field/field'))
-        fieldID = self._db.getValue(xpath + '/field/fieldID')
-
-        primary = RegionDB.getMaterial(rname)
-        if fieldType == Field.MATERIAL:
-            if MaterialDB.getType(fieldID) == MaterialType.SPECIE:
-                if fieldID not in MaterialDB.getSpecies(primary):
-                    return None
-            elif fieldID != primary and fieldID not in RegionDB.getSecondaryMaterials(rname):
-                return None
-
-        field = FieldHelper.DBFieldKeyToField(fieldType, fieldID)
-        if field == 'mag(U)':
-            self._appendMagFieldFunctionObject()
-        elif field in ('Ux', 'Uy', 'Uz'):
-            self._appendComponentsFunctionObject()
-
-        return field
-
-    def _appendMagFieldFunctionObject(self):
-        if 'mag1' not in self._data['functions']:
-            self._data['functions']['mag1'] = foMagMonitor('U', 1)
-
-    def _appendComponentsFunctionObject(self):
-        if 'components1' not in self._data['functions']:
-            self._data['functions']['components1'] = foComponentsMonitor('U', 1)
-
-    def _generateCollateralFieldsFunctionObjects(self, xpath):
+    def _appendCollateralFieldsFunctionObjects(self, xpath):
         for rname in self._db.getRegions():
 
             if ModelsDB.isEnergyModelOn():
@@ -474,11 +516,9 @@ class ControlDict(DictionaryFile):
                     plainWalls  = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
                     thermowalls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.THERMO_COUPLED_WALL, rname)]
                     patches = plainWalls + thermowalls
-                    self._data['functions'][f'collateralHeatTransferCoefficient_{rname}'] = foHeatTransferCoefficientMonitor(rname, patches, 1)
-
-            if ModelsDB.isEnergyModelOn():
-                if self._db.getBool(xpath + '/wallHeatFlux'):
-                    self._data['functions'][f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(HEAT_TRANSFER_COEFF, rname)] = foHeatTransferCoefficientMonitor(rname, patches, 1)
+                elif self._db.getBool(xpath + '/wallHeatFlux'):
+                    self._data['functions'][collateralFOName(WALL_HEAT_FLUX, rname)] = foWallHeatFluxMonitor(rname, 1)
 
             region = self._db.getRegionProperties(rname)
 
@@ -486,23 +526,23 @@ class ControlDict(DictionaryFile):
 
                 if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
                     if self._db.getBool(xpath + '/age'):
-                        self._data['functions'][f'collateralAge_{rname}'] = foAgeMonitor(rname, 1)
+                        self._data['functions'][collateralFOName(AGE, rname)] = foAgeMonitor(rname, 1)
 
                 if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
                     if self._db.getBool(xpath + '/machNumber'):
-                        self._data['functions'][f'collateralMachNumber_{rname}'] = foMachNumberMonitor(rname, 1)
+                        self._data['functions'][collateralFOName(MACH_NUMBER, rname)] = foMachNumberMonitor(rname, 1)
 
                 if self._db.getBool(xpath + '/q'):
-                    self._data['functions'][f'collateralQ_{rname}'] = foQMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(Q, rname)] = foQMonitor(rname, 1)
 
                 if self._db.getBool(xpath + '/totalPressure'):
-                    self._data['functions'][f'collateralTotalPressure_{rname}'] = foTotalPressureMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(TOTAL_PRESSURE, rname)] = foTotalPressureMonitor(rname, 1)
 
                 if self._db.getBool(xpath + '/vorticity'):
-                    self._data['functions'][f'collateralVorticity_{rname}'] = foVorticityMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(VORTICITY, rname)] = foVorticityMonitor(rname, 1)
 
                 if self._db.getBool(xpath + '/wallShearStress'):
-                    self._data['functions'][f'collateralWallShearStress_{rname}'] = foWallShearStressMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(WALL_SHEAR_STRESS, rname)] = foWallShearStressMonitor(rname, 1)
 
                 if self._db.getBool(xpath + '/wallYPlus'):
-                    self._data['functions'][f'collateralWallYPlus_{rname}'] = foWallYPlusMonitor(rname, 1)
+                    self._data['functions'][collateralFOName(WALL_Y_PLUS, rname)] = foWallYPlusMonitor(rname, 1)

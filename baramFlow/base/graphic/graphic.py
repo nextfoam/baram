@@ -13,11 +13,12 @@ from lxml import etree
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkUnstructuredGrid
 from vtkmodules.vtkFiltersFlowPaths import vtkStreamTracer
 
+from baramFlow.base.constants import FieldCategory, FieldType, VectorComponent
+from baramFlow.base.field import COORDINATE, VECTOR_COMPONENT_TEXTS, VELOCITY, Field, getFieldInstance
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import COORDINATE, VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
 from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.solver_field import getSolverFieldName
@@ -47,17 +48,17 @@ class StreamlineType(Enum):
     RIBBON = 'ribbon'
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Graphic:
     GRAPHICS_PATH: ClassVar[str] = '/graphics'
-
-    uuid: UUID
-    name: str
 
     instanceUpdated: AsyncSignal = dataClassField(init=False)
     displayItemAdded: AsyncSignal = dataClassField(init=False)
     displayItemRemoving: AsyncSignal = dataClassField(init=False)
     displayItemRemoved: AsyncSignal = dataClassField(init=False)
+
+    uuid: UUID
+    name: str
 
     time: str = '0'
 

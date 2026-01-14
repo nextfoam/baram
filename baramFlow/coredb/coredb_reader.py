@@ -7,14 +7,15 @@ from PySide6.QtCore import QCoreApplication
 
 from libbaram.math import calucateDirectionsByRotation
 
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, TransportSpecification
 from baramFlow.libbaram.calculation import AverageCalculator
+
 from . import coredb
 from .boundary_db import DirectionSpecificationMethod
 from .coredb import ValueException, DBError, _CoreDB
 from .general_db import GeneralDB
 from .initialization_db import InitializationDB
-from .material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from .material_schema import Phase, ViscositySpecification
+from .material_db import MaterialDB
 from .reference_values_db import ReferenceValuesDB
 from .region_db import RegionDB
 from .turbulence_model_db import TurbulenceModelsDB
@@ -164,6 +165,9 @@ class CoreDBReader(_CoreDB):
         if arguments:
             self._arguments.update(arguments)
 
+    def parameters(self):
+        return self._arguments
+
     def getValue(self, xpath):
         value = super().getValue(xpath)
         if value == '' or value[0] != '$':
@@ -189,23 +193,23 @@ class CoreDBReader(_CoreDB):
     def getDensity(self, materials, t: float, p: float) -> float:  # kg / m^3
         def density(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = self.getValue(xpath + '/density/specification')
-            if spec == 'constant':
+            spec = DensitySpecification(self.getValue(xpath + '/density/specification'))
+            if spec == DensitySpecification.CONSTANT:
                 return float(self.getValue(xpath + '/density/constant'))
-            elif spec == 'perfectGas':
+            elif spec == DensitySpecification.PERFECT_GAS:
                 r'''
                 .. math:: \rho = \frac{MW \times P}{R \times T}
                 '''
                 operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
                 mw = float(self.getValue(xpath + '/molecularWeight'))
                 return (p + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
-            elif spec == 'polynomial':
+            elif spec == DensitySpecification.POLYNOMIAL:
                 coeffs = list(map(float, self.getValue(xpath + '/density/polynomial').split()))
                 rho = 0.0
                 for exp, c in enumerate(coeffs):
                     rho += c * t ** exp
                 return rho
-            elif spec == 'incompressiblePerfectGas':
+            elif spec == DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:
                 r'''
                 .. math:: \rho = \frac{MW \times P_{ref}}{R \times T}
                 '''
@@ -213,6 +217,10 @@ class CoreDBReader(_CoreDB):
                 operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
                 mw = float(self.getValue(xpath + '/molecularWeight'))
                 return (referencePressure + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
+            elif spec == DensitySpecification.BOUSSINESQ:
+                return float(self.getValue(xpath + '/density/boussinesq/rho0'))
+            elif spec == DensitySpecification.PERFECT_FLUID:
+                return float(self.getValue(xpath + '/density/perfectFluid/rho0'))
             else:
                 raise KeyError
 
@@ -225,38 +233,39 @@ class CoreDBReader(_CoreDB):
     def getViscosity(self, materials: list, t: float) -> float:
         def viscosity(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = ViscositySpecification(self.getValue(xpath + '/viscosity/specification'))
-            if spec == ViscositySpecification.CONSTANT:
-                return float(self.getValue(xpath + '/viscosity/constant'))
+            spec = TransportSpecification(self.getValue(xpath + '/transport/specification'))
+            if spec == TransportSpecification.CONSTANT:
+                return float(self.getValue(xpath + '/transport/viscosity'))
 
-            if spec == ViscositySpecification.POLYNOMIAL:
-                coeffs = list(map(float, self.getValue(xpath + '/viscosity/polynomial').split()))
+            elif spec == TransportSpecification.POLYNOMIAL:
+                coeffs = list(map(float, self.getValue(xpath + '/transport/polynomial/viscosity').split()))
                 mu = 0.0
                 for exp, c in enumerate(coeffs):
                     mu += c * t ** exp
                 return mu
 
-            if spec == ViscositySpecification.SUTHERLAND:
+            elif spec == TransportSpecification.SUTHERLAND:
                 r'''
                 .. math:: \mu = \frac{C_1 T^{3/2}}{T+S}
                 '''
-                c1 = float(self.getValue(xpath + '/viscosity/sutherland/coefficient'))
-                s = float(self.getValue(xpath + '/viscosity/sutherland/temperature'))
+                c1 = float(self.getValue(xpath + '/transport/sutherland/coefficient'))
+                s = float(self.getValue(xpath + '/transport/sutherland/temperature'))
 
                 return c1 * t ** 1.5 / (t+s)
 
             rho = float(self.getValue(xpath + '/density/constant'))
-            if spec == ViscositySpecification.CROSS_POWER_LAW:
-                return rho * float(self.getValue(xpath + '/viscosity/cross/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.HERSCHEL_BULKLEY:
-                return rho * float(self.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'))
+            if spec == TransportSpecification.CROSS_POWER_LAW:
+                return rho * float(self.getValue(xpath + '/transport/cross/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.BIRD_CARREAU:
-                return rho * float(self.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'))
+            elif spec == TransportSpecification.HERSCHEL_BULKLEY:
+                return rho * float(self.getValue(xpath + '/transport/herschelBulkley/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.POWER_LAW:
-                return rho * float(self.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'))
+            elif spec == TransportSpecification.BIRD_CARREAU:
+                return rho * float(self.getValue(xpath + '/transport/carreau/zeroShearViscosity'))
+
+            elif spec == TransportSpecification.POWER_LAW:
+                return rho * float(self.getValue(xpath + '/transport/nonNewtonianPowerLaw/consistencyIndex'))
 
             raise KeyError
 

@@ -4,15 +4,22 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from baramFlow.base.monitor.monitor import getMonitorField
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
+from baramFlow.base.constants import FieldCategory, VectorComponent
+from baramFlow.base.field import VELOCITY, TEMPERATURE
+from baramFlow.base.material.material import Phase
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.monitor_db import MonitorDB
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
+from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
@@ -34,10 +41,9 @@ class SurfaceDialog(QDialog):
         self._surface = None
 
         for t in SurfaceReportType:
-            self._ui.reportType.addEnumItem(t, MonitorDB.surfaceReportTypeToText(t))
+            self._ui.reportType.addItem(MonitorDB.surfaceReportTypeToText(t), t)
 
-        for f in FieldHelper.getAvailableFields():
-            self._ui.fieldVariable.addItem(f.text, f.key)
+        loadFieldsComboBox(self._ui.field)
 
         if name is None:
             db = coredb.CoreDB()
@@ -45,12 +51,17 @@ class SurfaceDialog(QDialog):
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
-            self._ui.groupBox.setTitle(name)
+            self._ui.monitor.setTitle(name)
 
         self._xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
 
         self._connectSignalsSlots()
         self._load()
+
+        if CaseManager().isRunning():
+            self._ui.monitor.setEnabled(False)
+            self._ui.ok.hide()
+            self._ui.cancel.setText(self.tr('Close'))
 
     def getName(self):
         return self._name
@@ -64,17 +75,22 @@ class SurfaceDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurface)
-        self._ui.reportType.currentDataChanged.connect(self._reportTypeChanged)
+        self._ui.reportType.currentIndexChanged.connect(self._reportTypeChanged)
         self._ui.ok.clicked.connect(self._accept)
+
+        connectFieldsToComponents(self._ui.field, self._ui.fieldComponent)
 
     def _load(self):
         db = coredb.CoreDB()
         self._ui.name.setText(self._name)
         self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentData(SurfaceReportType(db.getValue(self._xpath + '/reportType')))
-        self._ui.fieldVariable.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
-                                         db.getValue(self._xpath + '/field/fieldID')))
+        self._ui.reportType.setCurrentIndex(
+            self._ui.reportType.findData(SurfaceReportType(db.getValue(self._xpath + '/reportType'))))
+
+        field = getMonitorField(MonitorDB.getSurfaceMonitorXPath(self._name))
+        self._ui.field.setCurrentIndex(self._ui.field.findData(field.field))
+        self._ui.fieldComponent.setCurrentIndex(self._ui.fieldComponent.findData(field.component))
+
         surface = db.getValue(self._xpath + '/surface')
         if surface != '0':
             self._setSurface(surface)
@@ -88,36 +104,47 @@ class SurfaceDialog(QDialog):
                 await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
+        field = self._ui.field.currentData()
+        if field is None:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Field."))
+            return
+
         if not self._surface:
             await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Surface."))
             return
 
-        field = self._ui.fieldVariable.currentData()
-        if (field.field == Field.SCALAR
-                and BoundaryDB.getBoundaryRegion(self._surface) != UserDefinedScalarsDB.getRegion(field.id)):
+        region = BoundaryDB.getBoundaryRegion(self._surface)
+
+        if RegionDB.getPhase(region) == Phase.SOLID and field != TEMPERATURE:
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                self.tr('Only temperature field can be configured for Solid Region.'))
+            return
+
+        if field.category == FieldCategory.USER_SCALAR and region != UserDefinedScalarsDB.getRegion(field.codeName):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The region where the scalar field is configured does not contain selected Surface.'))
             return
 
-        writer = CoreDBWriter()
-        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-        writer.append(self._xpath + '/reportType', self._ui.reportType.currentValue(), None)
-        writer.append(self._xpath + '/field/field', field.field.value, None)
-        writer.append(self._xpath + '/field/fieldID', field.id, None)
-        writer.append(self._xpath + '/surface', self._surface, self.tr("Surface"))
+        try:
+            with coredb.CoreDB() as db:
+                db.setValue(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
+                db.setValue(self._xpath + '/reportType', self._ui.reportType.currentData().value)
+                db.setValue(self._xpath + '/fieldCategory', field.category.value)
+                db.setValue(self._xpath + '/fieldCodeName', field.codeName)
+                db.setValue(self._xpath + '/fieldComponent', str(self._ui.fieldComponent.currentData().value))
+                db.setValue(self._xpath + '/surface', self._surface, self.tr("Surface"))
+                print(field.codeName)
+        
+                if self._isNew:
+                    db.setValue(self._xpath + '/name', name, self.tr("Name"))
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+            return False
 
-        if self._isNew:
-            writer.append(self._xpath + '/name', name, self.tr("Name"))
+        self._name = name
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            if self._isNew:
-                self._name = name
-
-            self.accept()
+        self.accept()
 
     def _setSurface(self, surface):
         self._surface = surface
@@ -132,6 +159,12 @@ class SurfaceDialog(QDialog):
     def _surfaceChanged(self):
         self._setSurface(self._dialog.selectedItem())
 
-    def _reportTypeChanged(self, reportType):
-        self._ui.fieldVariable.setDisabled(
-            reportType == SurfaceReportType.MASS_FLOW_RATE or reportType == SurfaceReportType.VOLUME_FLOW_RATE)
+    def _reportTypeChanged(self, index):
+        if self._ui.reportType.currentData() in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
+            self._ui.field.setEnabled(False)
+            self._ui.fieldComponent.setEnabled(False)
+            self._ui.field.setCurrentIndex(self._ui.field.findData(VELOCITY))
+            self._ui.fieldComponent.setCurrentIndex(self._ui.fieldComponent.findData(VectorComponent.MAGNITUDE))
+        else:
+            self._ui.field.setEnabled(True)
+            self._ui.fieldComponent.setEnabled(True)

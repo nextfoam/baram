@@ -21,6 +21,7 @@ class BoundaryType(Enum):
     VELOCITY_INLET	    = 'velocityInlet'
     FLOW_RATE_INLET	    = 'flowRateInlet'
     PRESSURE_INLET	    = 'pressureInlet'
+    INTAKE_FAN          = 'intakeFan'
     ABL_INLET	        = 'ablInlet'
     OPEN_CHANNEL_INLET  = 'openChannelInlet'
     FREE_STREAM	        = 'freeStream'
@@ -28,7 +29,9 @@ class BoundaryType(Enum):
     SUBSONIC_INLET	    = 'subsonicInlet'
     SUPERSONIC_INFLOW	= 'supersonicInflow'
     # Outlet
+    FLOW_RATE_OUTLET    = 'flowRateOutlet'
     PRESSURE_OUTLET	    = 'pressureOutlet'
+    EXHAUST_FAN         = 'exhaustFan'
     OPEN_CHANNEL_OUTLET = 'openChannelOutlet'
     OUTFLOW	            = 'outflow'
     SUBSONIC_OUTFLOW	= 'subsonicOutflow'
@@ -55,6 +58,36 @@ class GeometricalType(Enum):
     SYMMETRY    = 'symmetry'
     EMPTY       = 'empty'
     WEDGE       = 'wedge'
+
+
+TYPE_MAP = {
+    BoundaryType.VELOCITY_INLET       : GeometricalType.PATCH,
+    BoundaryType.FLOW_RATE_INLET      : GeometricalType.PATCH,
+    BoundaryType.PRESSURE_INLET       : GeometricalType.PATCH,
+    BoundaryType.INTAKE_FAN           : GeometricalType.PATCH,
+    BoundaryType.ABL_INLET            : GeometricalType.PATCH,
+    BoundaryType.OPEN_CHANNEL_INLET   : GeometricalType.PATCH,
+    BoundaryType.FREE_STREAM          : GeometricalType.PATCH,
+    BoundaryType.FAR_FIELD_RIEMANN    : GeometricalType.PATCH,
+    BoundaryType.SUBSONIC_INLET       : GeometricalType.PATCH,
+    BoundaryType.SUPERSONIC_INFLOW    : GeometricalType.PATCH,
+    BoundaryType.FLOW_RATE_OUTLET     : GeometricalType.PATCH,
+    BoundaryType.PRESSURE_OUTLET      : GeometricalType.PATCH,
+    BoundaryType.EXHAUST_FAN          : GeometricalType.PATCH,
+    BoundaryType.OPEN_CHANNEL_OUTLET  : GeometricalType.PATCH,
+    BoundaryType.OUTFLOW              : GeometricalType.PATCH,
+    BoundaryType.SUBSONIC_OUTFLOW     : GeometricalType.PATCH,
+    BoundaryType.SUPERSONIC_OUTFLOW   : GeometricalType.PATCH,
+    BoundaryType.WALL                 : GeometricalType.WALL,
+    BoundaryType.THERMO_COUPLED_WALL  : GeometricalType.MAPPED_WALL,
+    BoundaryType.POROUS_JUMP          : GeometricalType.CYCLIC,
+    BoundaryType.FAN                  : GeometricalType.CYCLIC,
+    BoundaryType.SYMMETRY             : GeometricalType.SYMMETRY,
+    BoundaryType.INTERFACE            : GeometricalType.CYCLIC_AMI,
+    BoundaryType.EMPTY                : GeometricalType.EMPTY,
+    BoundaryType.CYCLIC               : GeometricalType.CYCLIC,
+    BoundaryType.WEDGE                : GeometricalType.WEDGE,
+}
 
 
 class VelocitySpecification(Enum):
@@ -147,6 +180,11 @@ class DirectionSpecificationMethod(Enum):
     AOA_AOS = 'AoA_AoS'
 
 
+class FlowDirectionSpecificationMethod(Enum):
+    DIRECT = 'direct'
+    SURFACE_NORMAL = 'surfaceNormal'
+
+
 DirectionSpecificationMethodTexts = {
     DirectionSpecificationMethod.DIRECT:    QCoreApplication.translate('BoundaryDB', 'Direct'),
     DirectionSpecificationMethod.AOA_AOS:   QCoreApplication.translate('BoundaryDB', 'AOA and AOS')
@@ -158,11 +196,11 @@ class BoundaryDB:
     ABL_INLET_CONDITIONS_XPATH = '/general/atmosphericBoundaryLayer'
 
     _coupledBoundaryType = {
-        BoundaryType.THERMO_COUPLED_WALL.value,
-        BoundaryType.POROUS_JUMP.value,
-        BoundaryType.FAN.value,
-        BoundaryType.INTERFACE.value,
-        BoundaryType.CYCLIC.value,
+        BoundaryType.THERMO_COUPLED_WALL,
+        BoundaryType.POROUS_JUMP,
+        BoundaryType.FAN,
+        BoundaryType.INTERFACE,
+        BoundaryType.CYCLIC,
     }
 
     @classmethod
@@ -188,8 +226,12 @@ class BoundaryDB:
         return f'{r}{cls.getBoundaryName(bcid)}' if bcid else ''
 
     @classmethod
-    def getBoundaryType(cls, bcid):
-        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/physicalType')
+    def getGeometryType(cls, bctype: BoundaryType)->GeometricalType:
+        return TYPE_MAP.get(bctype, GeometricalType.WALL)
+
+    @classmethod
+    def getBoundaryType(cls, bcid)->BoundaryType:
+        return BoundaryType(coredb.CoreDB().getValue(cls.getXPath(bcid) + '/physicalType'))
 
     @classmethod
     def getBoundaryTypeByName(cls, rname, bcname):
@@ -197,50 +239,76 @@ class BoundaryDB:
             f'/regions/region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
 
     @classmethod
-    def needsCoupledBoundary(cls, bctype):
+    def needsCoupledBoundary(cls, bctype: BoundaryType):
         return bctype in cls._coupledBoundaryType
 
     @classmethod
-    def dbBoundaryTypeToText(cls, dbText):
-        return {
-            # Inlet
-            BoundaryType.VELOCITY_INLET.value: QCoreApplication.translate('BoundaryDB', 'Velocity Inlet'),
-            BoundaryType.FLOW_RATE_INLET.value: QCoreApplication.translate('BoundaryDB', 'Flow Rate Inlet'),
-            BoundaryType.PRESSURE_INLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Inlet'),
-            BoundaryType.ABL_INLET.value: QCoreApplication.translate('BoundaryDB', 'ABL Inlet'),
-            BoundaryType.OPEN_CHANNEL_INLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Inlet'),
-            BoundaryType.FREE_STREAM.value: QCoreApplication.translate('BoundaryDB', 'Free Stream'),
-            BoundaryType.FAR_FIELD_RIEMANN.value: QCoreApplication.translate('BoundaryDB', 'Far-Field Riemann'),
-            BoundaryType.SUBSONIC_INLET.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Inlet'),
-            BoundaryType.SUPERSONIC_INFLOW.value: QCoreApplication.translate('BoundaryDB', 'Supersonic Inflow'),
-            # Outlet
-            BoundaryType.PRESSURE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Outlet'),
-            BoundaryType.OPEN_CHANNEL_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Outlet'),
-            BoundaryType.OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Outflow'),
-            BoundaryType.SUBSONIC_OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Outflow'),
-            BoundaryType.SUPERSONIC_OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Supersonic Outflow'),
-            # Wall
-            BoundaryType.WALL.value: QCoreApplication.translate('BoundaryDB', 'Wall'),
-            BoundaryType.THERMO_COUPLED_WALL.value: QCoreApplication.translate('BoundaryDB', 'Thermo-Coupled Wall'),
-            BoundaryType.POROUS_JUMP.value: QCoreApplication.translate('BoundaryDB', 'Porous Jump'),
-            BoundaryType.FAN.value: QCoreApplication.translate('BoundaryDB', 'FAN'),
-            # Internal
-            BoundaryType.SYMMETRY.value: QCoreApplication.translate('BoundaryDB', 'Symmetry'),
-            BoundaryType.INTERFACE.value: QCoreApplication.translate('BoundaryDB', 'Interface'),
-            BoundaryType.EMPTY.value: QCoreApplication.translate('BoundaryDB', 'Empty'),
-            BoundaryType.CYCLIC.value: QCoreApplication.translate('BoundaryDB', 'Cyclic'),
-            BoundaryType.WEDGE.value: QCoreApplication.translate('BoundaryDB', 'Wedge'),
-        }.get(dbText)
+    def getCoupledBoundary(cls, bcid: str):
+        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/coupledBoundary')
 
     @classmethod
-    def getBoundarySelectorItems(cls) -> list[SelectorItem]:
+    def cyclingBoundaries(cls, rname: str)->list[tuple[str, str]]:
+        boundaries: dict[str, tuple[str, str]] = {}
+        db = coredb.CoreDB()
+        for bcid, bcname, ptype in db.getBoundaryConditions(rname):
+            if str(bcid) in boundaries:
+                continue
+
+            if BoundaryType(ptype) in [BoundaryType.POROUS_JUMP, BoundaryType.FAN, BoundaryType.INTERFACE, BoundaryType.CYCLIC]:
+                cpid = cls.getCoupledBoundary(str(bcid))
+                if cpid == '0':
+                    continue
+
+                cpname = cls.getBoundaryName(cpid)
+                boundaries[cpid] = (bcname, cpname)
+
+        return list(boundaries.values())
+
+    @classmethod
+    def dbBoundaryTypeToText(cls, bctype:BoundaryType):
+        return {
+            # Inlet
+            BoundaryType.VELOCITY_INLET:     QCoreApplication.translate('BoundaryDB', 'Velocity Inlet'),
+            BoundaryType.FLOW_RATE_INLET:    QCoreApplication.translate('BoundaryDB', 'Flow Rate Inlet'),
+            BoundaryType.PRESSURE_INLET:     QCoreApplication.translate('BoundaryDB', 'Pressure Inlet'),
+            BoundaryType.INTAKE_FAN:         QCoreApplication.translate('BoundaryDB', 'Intake Fan'),
+            BoundaryType.ABL_INLET:          QCoreApplication.translate('BoundaryDB', 'ABL Inlet'),
+            BoundaryType.OPEN_CHANNEL_INLET: QCoreApplication.translate('BoundaryDB', 'Open Channel Inlet'),
+            BoundaryType.FREE_STREAM:        QCoreApplication.translate('BoundaryDB', 'Free Stream'),
+            BoundaryType.FAR_FIELD_RIEMANN:  QCoreApplication.translate('BoundaryDB', 'Far-Field Riemann'),
+            BoundaryType.SUBSONIC_INLET:     QCoreApplication.translate('BoundaryDB', 'Subsonic Inlet'),
+            BoundaryType.SUPERSONIC_INFLOW:  QCoreApplication.translate('BoundaryDB', 'Supersonic Inflow'),
+            # Outlet
+            BoundaryType.FLOW_RATE_OUTLET:    QCoreApplication.translate('BoundaryDB', 'Flow Rate Outlet'),
+            BoundaryType.PRESSURE_OUTLET:     QCoreApplication.translate('BoundaryDB', 'Pressure Outlet'),
+            BoundaryType.EXHAUST_FAN:         QCoreApplication.translate('BoundaryDB', 'Exhaust Fan'),
+            BoundaryType.OPEN_CHANNEL_OUTLET: QCoreApplication.translate('BoundaryDB', 'Open Channel Outlet'),
+            BoundaryType.OUTFLOW:             QCoreApplication.translate('BoundaryDB', 'Outflow'),
+            BoundaryType.SUBSONIC_OUTFLOW:    QCoreApplication.translate('BoundaryDB', 'Subsonic Outflow'),
+            BoundaryType.SUPERSONIC_OUTFLOW:  QCoreApplication.translate('BoundaryDB', 'Supersonic Outflow'),
+            # Wall
+            BoundaryType.WALL:                QCoreApplication.translate('BoundaryDB', 'Wall'),
+            BoundaryType.THERMO_COUPLED_WALL: QCoreApplication.translate('BoundaryDB', 'Thermo-Coupled Wall'),
+            BoundaryType.POROUS_JUMP:         QCoreApplication.translate('BoundaryDB', 'Porous Jump'),
+            BoundaryType.FAN:                 QCoreApplication.translate('BoundaryDB', 'FAN'),
+            # Internal
+            BoundaryType.SYMMETRY:  QCoreApplication.translate('BoundaryDB', 'Symmetry'),
+            BoundaryType.INTERFACE: QCoreApplication.translate('BoundaryDB', 'Interface'),
+            BoundaryType.EMPTY:     QCoreApplication.translate('BoundaryDB', 'Empty'),
+            BoundaryType.CYCLIC:    QCoreApplication.translate('BoundaryDB', 'Cyclic'),
+            BoundaryType.WEDGE:     QCoreApplication.translate('BoundaryDB', 'Wedge'),
+        }.get(bctype, 'Unknown Type')
+
+    @classmethod
+    def getBoundarySelectorItems(cls, types=None) -> list[SelectorItem]:
         db = coredb.CoreDB()
 
         items = []
         for rname in db.getRegions():
             r = '' if rname == '' else rname + ':'
             for bcid, bcname, ptype in db.getBoundaryConditions(rname):
-                items.append(SelectorItem(f'{r}{bcname}', bcname, str(bcid)))
+                if types is None or BoundaryType(ptype) in types:
+                    items.append(SelectorItem(f'{r}{bcname}', bcname, str(bcid)))
 
         return items
 
@@ -260,7 +328,7 @@ class BoundaryDB:
         return items
 
     @classmethod
-    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str, str]]:
+    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions for the type

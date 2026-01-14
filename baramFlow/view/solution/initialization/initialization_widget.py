@@ -16,13 +16,14 @@ from resources import resource
 from widgets.flat_push_button import FlatPushButton
 
 from baramFlow.app import app
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod, TemperatureProfile, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, SpalartAllmarasSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
@@ -383,7 +384,7 @@ class InitializationWidget(QWidget):
 
     def _computeFromBoundary(self, bcid: int):
         db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
-        bctype = BoundaryType(BoundaryDB.getBoundaryType(bcid))
+        bctype = BoundaryDB.getBoundaryType(bcid)
         xpath = BoundaryDB.getXPath(bcid)
 
         v = float(self._ui.scaleOfVelocity.text())
@@ -459,7 +460,10 @@ class InitializationWidget(QWidget):
         material = MaterialDB.getMaterialComposition(xpath + '/species', RegionDB.getMaterial(self._rname))
         rho = db.getDensity(material, t, p)  # Density
         mu = db.getViscosity(material, t)  # Viscosity
-        nu = mu / rho  # Kinetic Viscosity
+        if rho > 0:
+            nu = mu / rho  # Kinetic Viscosity
+        else:  # To prevent device-by-zero exception. Some configurations may be inconsistent.
+            nu = mu
 
         if turbulenceModel := TurbulenceModelsDB.getRASModel():
             if turbulenceModel == TurbulenceModel.K_EPSILON:

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import DPMParticleType
 from baramFlow.coredb.coredb import CoreDB
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import MultiphaseModel, ModelsDB
@@ -14,13 +16,26 @@ class SolverNotFound(Exception):
 
 
 def findSolver():
+    isTimeTransient = GeneralDB.isTimeTransient()
+
     if GeneralDB.isDensityBased():
-        if GeneralDB.isTimeTransient():
+        if isTimeTransient:
             return 'UTSLAeroFoam'
         else:
             return 'TSLAeroFoam'
 
     db = CoreDB()
+
+    dpmModel = DPMModelManager.particleType()
+    if dpmModel == DPMParticleType.INERT:
+        if isTimeTransient:
+            return 'thermoParcelBuoyantPimpleNFoam'
+        else:
+            return 'thermoParcelBuoyantSimpleNFoam'
+
+    if dpmModel == DPMParticleType.DROPLET:
+        return 'reactingParcelFoam'
+
     if ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID:
         for rname in db.getRegions():  # number of regions might be 1 for multiphase case
             numPhases = len(RegionDB.getSecondaryMaterials(rname)) + 1  # secondary materials + primary material
@@ -36,8 +51,6 @@ def findSolver():
                     return 'interPhaseChangeFoam'
 
         return 'interFoam'
-
-    isTimeTransient = GeneralDB.isTimeTransient()
 
     if RegionDB.isMultiRegion():
         if isTimeTransient:

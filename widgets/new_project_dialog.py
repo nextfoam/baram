@@ -3,58 +3,45 @@
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QDialog, QFileDialog, QDialogButtonBox
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
-from .new_project_dialog_ui import Ui_NewProjectDialog
+from .new_project_widget import NewProjectWidget
 
 
 class NewProjectDialog(QDialog):
-    def __init__(self, parent, title, path=None):
+    pathSelected = Signal(Path)
+
+    def __init__(self, parent, title, path=None, suffix=None):
         super().__init__(parent)
 
-        self._ui = Ui_NewProjectDialog()
-        self._ui.setupUi(self)
+        self.resize(500, self.size().height())
 
-        self._complete = False
-        self._baseLocation = Path.home() if path is None else path
-        self._updateProjectLocation()
+        self._widget = NewProjectWidget(self, path, suffix)
 
-        self._dialog = None
+        layout = QVBoxLayout(self)
+        layout.addWidget(self._widget)
+
+        self._buttonBox = QDialogButtonBox(self)
+        self._buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
+        layout.addWidget(self._buttonBox)
 
         self.setWindowTitle(title)
+        self._buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
         self._connectSignalsSlots()
 
-    def projectLocation(self):
-        return Path(self._ui.projectLocation.text())
+    def projectPath(self):
+        return Path(self._widget.projectPath())
 
     def _connectSignalsSlots(self):
-        self._ui.projectName.textChanged.connect(self._updateProjectLocation)
-        self._ui.select.clicked.connect(self._selectLocation)
+        self._widget.pathChanged.connect(self._pathChanged)
+        self._buttonBox.button(QDialogButtonBox.StandardButton.Ok).clicked.connect(self._accept)
+        self._buttonBox.button(QDialogButtonBox.StandardButton.Cancel).clicked.connect(self.reject)
 
-    def _selectLocation(self):
-        self._dialog = QFileDialog(self, self.tr('Select Location'), str(self._baseLocation))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.fileSelected.connect(self._locationParentSelected)
-        self._dialog.open()
+    def _pathChanged(self, path):
+        self._buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(path is not None)
 
-    def _updateProjectLocation(self):
-        self._ui.projectLocation.setText(str(self._baseLocation / self._ui.projectName.text()))
-
-        complete = False
-
-        if not self._baseLocation.exists():
-            self._ui.validationMessage.setText(self.tr(f'{self._baseLocation} is not a directory.'))
-        elif not self._ui.projectName.text():
-            self._ui.validationMessage.clear()
-        elif Path(self._ui.projectLocation.text()).exists():
-            self._ui.validationMessage.setText(self.tr(f'{self._ui.projectLocation.text()} already exists.'))
-        else:
-            self._ui.validationMessage.clear()
-            complete = True
-
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(complete)
-
-    def _locationParentSelected(self, dir):
-        self._baseLocation = Path(dir).resolve()
-        self._updateProjectLocation()
+    def _accept(self):
+        self.pathSelected.emit(self.projectPath())
+        self.accept()

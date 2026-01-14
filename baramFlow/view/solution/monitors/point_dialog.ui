@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>374</width>
-    <height>366</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="monitor">
      <property name="title">
       <string>Point Monitor</string>
      </property>
@@ -59,7 +59,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="writeInterval">
+          <widget class="FloatEdit" name="writeInterval">
            <property name="text">
             <string/>
            </property>
@@ -73,7 +73,17 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="field"/>
+          <widget class="PythonComboBox" name="field"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Component</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="VectorComponentComboBox" name="fieldComponent"/>
          </item>
         </layout>
        </widget>
@@ -104,7 +114,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="coordinateX"/>
+          <widget class="FloatEdit" name="coordinateX"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_4">
@@ -114,7 +124,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="coordinateY"/>
+          <widget class="FloatEdit" name="coordinateY"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_5">
@@ -124,7 +134,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="coordinateZ"/>
+          <widget class="FloatEdit" name="coordinateZ"/>
          </item>
         </layout>
        </widget>
@@ -180,7 +190,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -211,9 +221,24 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>VectorComponentComboBox</class>
+   <extends>QComboBox</extends>
+   <header>baramFlow.view.widgets.vector_component_combo_box</header>
+  </customwidget>
+  <customwidget>
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.typed_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

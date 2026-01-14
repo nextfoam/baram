@@ -3,8 +3,6 @@
 
 from enum import Enum
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 class SurfaceReportType(Enum):
     AREA_WEIGHTED_AVERAGE = 'areaWeightedAverage'
@@ -32,7 +30,7 @@ SURFACE_MONITOR_OPERATION = {
 def _foSurfaceFieldValueBase(surface: str, field: str, reportType: SurfaceReportType, rname: str) -> dict:
     data = {
         'type': 'surfaceFieldValue',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'regionType': 'patch',
         'name': surface,

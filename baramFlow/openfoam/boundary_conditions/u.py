@@ -3,11 +3,12 @@
 
 from math import sqrt
 
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, InterfaceMode
 from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
 
@@ -40,8 +41,11 @@ class U(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructVelocityInletU(xpath, name)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')),
+                BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateOutlet', True)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletU(xpath)),
+                BoundaryType.INTAKE_FAN.value:          (lambda: self._constructPressureInletOutletVelocity()),
+                BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructPressureInletOutletVelocity()),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletVelocity()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
@@ -65,17 +69,19 @@ class U(BoundaryCondition):
 
         return field
 
-    def _constructFlowRateInletVelocity(self, xpath):
+    def _constructFlowRateInletVelocity(self, xpath, outlet=False):
         spec = self._db.getValue(xpath + '/flowRate/specification')
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'volumetricFlowRate': self._db.getValue(xpath + '/flowRate/volumeFlowRate')
+                'volumetricFlowRate': (-float(self._db.getValue(xpath + '/flowRate/volumeFlowRate')) if outlet
+                                       else self._db.getValue(xpath + '/flowRate/volumeFlowRate'))
             }
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate'),
+                'massFlowRate': (-float(self._db.getValue(xpath + '/flowRate/massFlowRate')) if outlet
+                                 else self._db.getValue(xpath + '/flowRate/massFlowRate')),
                 'rhoInlet': self._region.density
             }
 
@@ -95,15 +101,10 @@ class U(BoundaryCondition):
             return self._constructPressureInletOutletVelocity()
 
     def _constructAtmBoundaryLayerInletVelocity(self):
-        return {
-            'type': 'atmBoundaryLayerInletVelocity',
-            'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
-            'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
-            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
-            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
-            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
-        }
+        if self._db.getAttribute(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability', 'disabled') == 'true':
+            return self._constructAtmBoundaryLayerInlet('atmBoundaryLayerInletVelocity')
+        else:
+            return self._constructPasquillAtmBoundaryLayerInlet('pasquillAtmBoundaryLayerInletVelocity')
 
     def _constructVariableHeightFlowRateInletVelocity(self, flowRate):
         return {

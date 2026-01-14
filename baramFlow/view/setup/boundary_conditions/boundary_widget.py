@@ -5,21 +5,21 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Signal, QPoint
 
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from .boundary_widget_ui import Ui_BoundaryWidget
 
 
 class BoundaryWidget(QWidget):
     rightClicked = Signal(int, QPoint)
 
-    def __init__(self, rname, bcid, bcname, bctype):
+    def __init__(self, rname, bcid, bcname, bctype: BoundaryType):
         super().__init__()
         self._ui = Ui_BoundaryWidget()
         self._ui.setupUi(self)
 
         self._rname = rname
         self._bcid = bcid
-        self._bctype = None
+        self._bctype = BoundaryType.WALL
 
         self._ui.name.setText(bcname)
         self.setType(bctype)
@@ -42,7 +42,7 @@ class BoundaryWidget(QWidget):
     def type(self):
         return self._bctype
 
-    def setType(self, bctype):
+    def setType(self, bctype: BoundaryType):
         self._bctype = bctype
         self._ui.type.setText(BoundaryDB.dbBoundaryTypeToText(bctype))
 

@@ -3,8 +3,10 @@
 
 from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 
+from baramFlow.base.boundary.boundary import UserDefinedScalarValue
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from libbaram.pfloat import PFloat
 
 
 class UserDefinedScalarsWidget(QGroupBox):
@@ -27,6 +29,19 @@ class UserDefinedScalarsWidget(QGroupBox):
                 editor = QLineEdit()
                 self._layout.addRow(fieldName, editor)
                 self._scalars[scalarID] = (fieldName, editor)
+
+    def data(self):
+        if not self._on:
+            return None
+
+        data = []
+        for scalarID in self._scalars:
+            fieldName, editor = self._scalars[scalarID]
+            data.append(UserDefinedScalarValue(
+                scalarID=scalarID,
+                value=str(PFloat(editor.text(), self.tr('User Defined Scalars' + fieldName)))))
+
+        return data
 
     def on(self):
         return self._on

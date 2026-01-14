@@ -6,9 +6,11 @@ import logging
 from PySide6.QtCore import QObject, Signal
 
 from baramFlow.app import app
-from baramFlow.case_manager import BATCH_DIRECTORY_NAME
+from baramFlow.case_manager import BATCH_DIRECTORY_NAME, POD_DIRECTORY_NAME
+from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
+from baramFlow.openfoam.system.topo_set_dict import TopoSetDict
 from libbaram import utils
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import RunUtility
@@ -37,6 +39,7 @@ class RedistributionTask(QObject):
 
         liveCaseFolder = Project.instance().path.joinpath(CASE_DIRECTORY_NAME)
         batchRoot      = Project.instance().path.joinpath(BATCH_DIRECTORY_NAME)  # noqa: E221
+        podRoot        = Project.instance().path.joinpath(POD_DIRECTORY_NAME)  # noqa: E221
         caseFolders = list(batchRoot.iterdir()) if batchRoot.exists() else []
         caseFolders.insert(0, liveCaseFolder)
 
@@ -79,13 +82,43 @@ class RedistributionTask(QObject):
             if numCores > 1:
                 self.progress.emit(self.tr('Decomposing the case.'))
 
+                console = app.window.consoleView()
+                app.window.showConsoleDock()
+
                 for caseRoot in caseFolders:
                     if caseRoot == liveCaseFolder:
-                        decomposeParDict = DecomposeParDict(caseRoot, numCores).build()
                         if len(regions) > 1:
-                            decomposeParDict.write()
+                            # This might be for HD KSOE,
+                            # which uses NF5 that requires decomposeParDict only in system folder not system/<region> folder
+                            DecomposeParDict(caseRoot, '', numCores).build().write()
+
                         for rname in regions:
-                            decomposeParDict.setRegion(rname).write()
+
+                            singleProcessorFaceSets = []
+
+                            cyclingBoundaries = BoundaryDB.cyclingBoundaries(rname)
+
+                            if cyclingBoundaries:
+                                coupleSets = {f'{c[0]}_{c[1]}': (c[0], c[1]) for c in cyclingBoundaries}
+
+                                TopoSetDict(rname).setupCoupleSets(coupleSets).build().write()
+
+                                if len(regions) == 1:
+                                    cm = RunUtility('topoSet', cwd=caseRoot)
+                                else:
+                                    cm = RunUtility('topoSet', '-region', rname, cwd=caseRoot)
+
+                                cm.output.connect(console.append)
+                                cm.errorOutput.connect(console.append)
+
+                                await cm.start()
+                                rc = await cm.wait()
+                                if rc != 0:
+                                    raise RuntimeError(self.tr('Decomposition failed.'))
+
+                                singleProcessorFaceSets = list(coupleSets.keys())
+
+                            DecomposeParDict(caseRoot, rname, numCores, singleProcessorFaceSets).build().write()
 
                         args = ('-allRegions', '-time', '0:', '-case', caseRoot)
                     else:
@@ -93,12 +126,10 @@ class RedistributionTask(QObject):
 
                         args = ('-allRegions', '-fields', '-time', '0:', '-case', caseRoot)
 
-                    console = app.window.consoleView()
                     cm = RunUtility('decomposePar', *args, cwd=caseRoot)
                     cm.output.connect(console.append)
                     cm.errorOutput.connect(console.append)
 
-                    app.window.showConsoleDock()
                     await cm.start()
                     result = await cm.wait()
                     if result != 0:
@@ -116,6 +147,8 @@ class RedistributionTask(QObject):
 
             async with OpenFOAMReader() as reader:
                 await reader.setupReader()
+
+            utils.rmtree(podRoot)
 
             loader = PolyMeshLoader()
             loader.progress.connect(self.progress)

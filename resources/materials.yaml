@@ -1,0 +1,1024 @@
+air:
+    name: air
+    aliases:
+        - Air
+    chemicalFormula: 'Air'
+    molecularWeight: 28.966
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 132.531
+    criticalPressure: 3790000.0
+    criticalSpecificVolume: 342.685
+    normalBoilingTemperature: 100
+    acentricFactor: 0.0335
+    sutherlandTemperature: 110.4
+    sutherlandCoefficient: 1.46e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: air
+        density: 1.225
+        specificHeat: 1006.0
+        viscosity: 1.79e-05
+        thermalConductivity: 0.0245
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+aluminum:
+    name: aluminum
+    aliases: []
+    chemicalFormula: Al
+    molecularWeight: 26.98
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 0.0
+    criticalPressure: 0.0
+    criticalSpecificVolume: 0.0
+    normalBoilingTemperature: 0.0
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: solid
+    solid:
+        name: aluminum
+        density: 2707.0
+        specificHeat: 896.0
+        viscosity: 0.1
+        thermalConductivity: 204.0
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.039
+argon:
+    name: argon
+    aliases:
+        - Argon
+    chemicalFormula: Ar
+    molecularWeight: 39.948
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 150.687
+    criticalPressure: 4860000.0
+    criticalSpecificVolume: 535.6
+    normalBoilingTemperature: 535.6
+    acentricFactor: -0.00219
+    sutherlandTemperature: 114.0
+    sutherlandCoefficient: 1.82e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: argon
+        density: 1.69
+        specificHeat: 521.66
+        viscosity: 2.2e-05
+        thermalConductivity: 0.0172
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+benzene:
+    name: benzene
+    aliases:
+        - Benzene
+    chemicalFormula: C6H6
+    molecularWeight: 78.11
+    tripleTemperature: 278.7
+    triplePressure: 4785
+    criticalTemperature: 562.05
+    criticalPressure: 4898000
+    criticalSpecificVolume: 0.00359
+    normalBoilingTemperature: 353.24
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: benzene
+        density: 874.0
+        specificHeat: 1800.0
+        viscosity: 0.000604
+        thermalConductivity: 0.167
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 12700
+    enthalpyOfVaporization: 433600
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+carbonDioxide:
+    name: carbonDioxide
+    aliases:
+        - CarbonDioxide
+    chemicalFormula: CO2
+    molecularWeight: 44.01
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 304.128
+    criticalPressure: 7380000.0
+    criticalSpecificVolume: 467.6
+    normalBoilingTemperature: 467.6
+    acentricFactor: 0.22394
+    sutherlandTemperature: 222.0
+    sutherlandCoefficient: 1.5e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: carbonDioxide
+        density: 1.861
+        specificHeat: 841.25
+        viscosity: 1.44e-05
+        thermalConductivity: 0.0159
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+carbonMonoxide:
+    name: carbonMonoxide
+    aliases:
+        - CarbonMonoxide
+    chemicalFormula: CO
+    molecularWeight: 28.0106
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 132.86
+    criticalPressure: 3490000.0
+    criticalSpecificVolume: 303.91
+    normalBoilingTemperature: 303.91
+    acentricFactor: 0.0497
+    sutherlandTemperature: 136.0
+    sutherlandCoefficient: 1.5e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: carbonMonoxide
+        density: 1.185
+        specificHeat: 1042.0
+        viscosity: 1.73e-05
+        thermalConductivity: 0.0242
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+concrete:
+    name: concrete
+    aliases: []
+    chemicalFormula: 'Concrete'
+    molecularWeight: 200.0
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 0.0
+    criticalPressure: 0.0
+    criticalSpecificVolume: 0.0
+    normalBoilingTemperature: 0.0
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: solid
+    solid:
+        name: concrete
+        density: 3000.0
+        specificHeat: 1900.0
+        viscosity: 0.1
+        thermalConductivity: 0.6
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+copper:
+    name: copper
+    aliases: []
+    chemicalFormula: Cu
+    molecularWeight: 63.546
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 0.0
+    criticalPressure: 0.0
+    criticalSpecificVolume: 0.0
+    normalBoilingTemperature: 0.0
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: solid
+    solid:
+        name: copper
+        density: 8954.0
+        specificHeat: 383.1
+        viscosity: 0.1
+        thermalConductivity: 386.0
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.023
+ethanol:
+    name: ethanol
+    aliases:
+        - Ethanol
+    chemicalFormula: C2H5OH
+    molecularWeight: 46.068
+    tripleTemperature: 159
+    triplePressure: 0.43
+    criticalTemperature: 513.9
+    criticalPressure: 6137000
+    criticalSpecificVolume: 0.00276
+    normalBoilingTemperature: 351.44
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: ethanol
+        density: 789.0
+        specificHeat: 2570.0
+        viscosity: 0.00107
+        thermalConductivity: 0.167
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 7870
+    enthalpyOfVaporization: 920000
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+helium:
+    name: helium
+    aliases:
+        - Helium
+    chemicalFormula: He
+    molecularWeight: 4.002602
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 5.1953
+    criticalPressure: 227600.0
+    criticalSpecificVolume: 72.5672
+    normalBoilingTemperature: 72.5672
+    acentricFactor: -0.3836
+    sutherlandTemperature: 99.0
+    sutherlandCoefficient: 2.59e-05
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: helium
+        density: 0.169
+        specificHeat: 5193.2
+        viscosity: 1.94e-05
+        thermalConductivity: 0.152
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+hydrogen:
+    name: hydrogen
+    aliases:
+        - Hydrogen
+    chemicalFormula: H2
+    molecularWeight: 2.01588
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 33.145
+    criticalPressure: 1300000.0
+    criticalSpecificVolume: 31.2623
+    normalBoilingTemperature: 31.2623
+    acentricFactor: -0.219
+    sutherlandTemperature: 97.0
+    sutherlandCoefficient: 6.9e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: hydrogen
+        density: 0.085
+        specificHeat: 14268.0
+        viscosity: 8.69e-06
+        thermalConductivity: 0.181
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+kerosene:
+    name: kerosene
+    aliases:
+        - Kerosene
+    chemicalFormula: 'Kerosene'
+    molecularWeight: 170.0
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 650
+    criticalPressure: 2000000
+    criticalSpecificVolume: 0.0035
+    normalBoilingTemperature: 423
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: kerosene
+        density: 800.0
+        specificHeat: 2010.0
+        viscosity: 0.00164
+        thermalConductivity: 0.145
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 100
+    enthalpyOfVaporization: 250000
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+mercury:
+    name: mercury
+    aliases:
+        - Mercury
+    chemicalFormula: Hg
+    molecularWeight: 200.59
+    tripleTemperature: 234.3156
+    triplePressure: 0.000165
+    criticalTemperature: 1750
+    criticalPressure: 172000000
+    criticalSpecificVolume: 0.000189
+    normalBoilingTemperature: 629.88
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: mercury
+        density: 13590.0
+        specificHeat: 140.0
+        viscosity: 0.00153
+        thermalConductivity: 8.4
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.246
+    enthalpyOfVaporization: 294700
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+methane:
+    name: methane
+    aliases:
+        - Methane
+    chemicalFormula: CH4
+    molecularWeight: 16.043
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 190.564
+    criticalPressure: 4600000.0
+    criticalSpecificVolume: 162.66
+    normalBoilingTemperature: 162.66
+    acentricFactor: 0.01142
+    sutherlandTemperature: 184.0
+    sutherlandCoefficient: 1.04e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: methane
+        density: 0.679
+        specificHeat: 2210.0
+        viscosity: 1.08e-05
+        thermalConductivity: 0.0326
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+methanol:
+    name: methanol
+    aliases:
+        - Methanol
+    chemicalFormula: CH3OH
+    molecularWeight: 32.04
+    tripleTemperature: 175.6
+    triplePressure: 0.187
+    criticalTemperature: 512.6
+    criticalPressure: 8084000
+    criticalSpecificVolume: 0.00312
+    normalBoilingTemperature: 337.7
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: methanol
+        density: 791.0
+        specificHeat: 2510.0
+        viscosity: 0.000553
+        thermalConductivity: 0.202
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 16960
+    enthalpyOfVaporization: 1100000
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+moltenSteel:
+    name: moltenSteel
+    aliases:
+        - MoltenSteel
+    chemicalFormula: Fe
+    molecularWeight: 54.97
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 0.0
+    criticalPressure: 0.0
+    criticalSpecificVolume: 0.0
+    normalBoilingTemperature: 3134
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: moltenSteel
+        density: 7040.0
+        specificHeat: 792.0
+        viscosity: 0.003
+        thermalConductivity: 31.0
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 5.2
+    enthalpyOfVaporization: 6090000
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+nitrogen:
+    name: nitrogen
+    aliases:
+        - Nitrogen
+    chemicalFormula: N2
+    molecularWeight: 28.0134
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 126.192
+    criticalPressure: 3400000.0
+    criticalSpecificVolume: 313.3
+    normalBoilingTemperature: 313.3
+    acentricFactor: 0.0372
+    sutherlandTemperature: 107.0
+    sutherlandCoefficient: 1.4e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: nitrogen
+        density: 1.185
+        specificHeat: 1041.3
+        viscosity: 1.73e-05
+        thermalConductivity: 0.0251
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+oxygen:
+    name: oxygen
+    aliases:
+        - Oxygen
+    chemicalFormula: O2
+    molecularWeight: 31.9988
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 154.581
+    criticalPressure: 5040000.0
+    criticalSpecificVolume: 436.144
+    normalBoilingTemperature: 436.144
+    acentricFactor: 0.0222
+    sutherlandTemperature: 139.0
+    sutherlandCoefficient: 1.75e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: gas
+    gas:
+        name: oxygen
+        density: 1.353
+        specificHeat: 918.3
+        viscosity: 2.0e-05
+        thermalConductivity: 0.0256
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0
+steel:
+    name: steel
+    aliases: []
+    chemicalFormula: 'Steel'
+    molecularWeight: 55.85
+    tripleTemperature: 0.0
+    triplePressure: 0.0
+    criticalTemperature: 0.0
+    criticalPressure: 0.0
+    criticalSpecificVolume: 0.0
+    normalBoilingTemperature: 0.0
+    acentricFactor: 0.0
+    sutherlandTemperature: 0.0
+    sutherlandCoefficient: 0.0
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: solid
+    solid:
+        name: steel
+        density: 7850.0
+        specificHeat: 450.0
+        viscosity: 0.1
+        thermalConductivity: 24.3
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 0.0
+    enthalpyOfVaporization: 0.0
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.066
+water:
+    name: water
+    aliases:
+        - Water
+    chemicalFormula: H2O
+    molecularWeight: 18.0153
+    tripleTemperature: 273.16
+    triplePressure: 611657
+    criticalTemperature: 647.096
+    criticalPressure: 22100000.0
+    criticalSpecificVolume: 0.00317
+    normalBoilingTemperature: 373.15
+    acentricFactor: 0.344292
+    sutherlandTemperature: 1064.0
+    sutherlandCoefficient: 2.42e-06
+    janafOld:
+        lowTemperature: 0.0
+        commonTemperature: 0.0
+        highTemperature: 0.0
+        lowCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+        highCoefficients:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    dipoleMoment: 0.0
+    solubilityParameter: 0.0
+    phase: liquid
+    liquid:
+        name: waterLiquid
+        density: 999.1
+        specificHeat: 4188.5
+        viscosity: 0.00114
+        thermalConductivity: 0.5888
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    gas:
+        name: waterVapor
+        density: 0.588
+        specificHeat: 2080.0
+        viscosity: 1.22e-05
+        thermalConductivity: 0.0246
+        standardStateEnthalpy: 0
+        referenceTemperature: 298.15
+    saturationPressure: 3169
+    enthalpyOfVaporization: 2442000
+    dropletSurfaceTension: 0.0
+    absorptionCoefficient: 0.0
+    emissivity: 0.0

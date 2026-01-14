@@ -7,12 +7,11 @@ from PySide6.QtCore import Signal
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType
-from baramFlow.coredb.material_schema import DensitySpecification, Specification, ViscositySpecification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
@@ -73,19 +72,19 @@ class MixtureCard(QWidget):
         self._ui.name.setText(MaterialDB.getName(self._mid))
 
         self._ui.densitySpec.setText(
-            MaterialDB.specificationToText(DensitySpecification(db.getValue(self._xpath + '/density/specification'))))
+            MaterialDB.densitySpecToText(DensitySpecification(db.getValue(self._xpath + '/density/specification'))))
 
         energyModelOn = ModelsDB.isEnergyModelOn()
         if energyModelOn:
             self._ui.specificHeatWidget.show()
             self._ui.specificHeatSpec.setText(
-                MaterialDB.specificationToText(Specification(db.getValue(self._xpath + '/specificHeat/specification'))))
+                MaterialDB.specificHeatSpecToText(SpecificHeatSpecification(db.getValue(self._xpath + '/specificHeat/specification'))))
         else:
             self._ui.specificHeatWidget.hide()
 
         if energyModelOn or TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID:
             self._ui.transportSpec.setText(
-                MaterialDB.specificationToText(ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))))
+                MaterialDB.transportSpecToText(TransportSpecification(db.getValue(self._xpath + '/transport/specification'))))
         else:
             self._ui.transportWidget.hide()
 

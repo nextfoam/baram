@@ -8,8 +8,8 @@ from baramMesh.db.configurations_schema import CFDType
 
 
 class CreatePatchDict(DictionaryFile):
-    def __init__(self, prefix: str):
-        super().__init__(app.fileSystem.caseRoot(), self.systemLocation(), 'createPatchDict')
+    def __init__(self, prefix: str, fileSystem):
+        super().__init__(fileSystem.caseRoot(), self.systemLocation(), 'createPatchDict')
         self._prefix = prefix
 
     def build(self):

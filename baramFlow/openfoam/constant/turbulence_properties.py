@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
+from baramFlow.base.material.material import TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import ViscositySpecification
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
@@ -61,51 +61,51 @@ class TurbulenceProperties(DictionaryFile):
         }
 
         xpath = MaterialDB.getXPath(RegionDB.getMaterial(self._rname))
-        viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
-        if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
+        transportSpec = TransportSpecification(self._db.getValue(xpath + '/transport/specification'))
+        if transportSpec == TransportSpecification.CROSS_POWER_LAW:
             self._data['laminar'] = {
                 'model': 'generalizedNewtonian',
                 'viscosityModel': 'CrossPowerLaw',
                 'CrossPowerLawCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/cross/zeroShearViscosity'),
-                    'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
-                    'm': self._db.getValue(xpath + '/viscosity/cross/naturalTime'),
-                    'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex'),
+                    'nu0': self._db.getValue(xpath + '/transport/cross/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/transport/cross/infiniteShearViscosity'),
+                    'm': self._db.getValue(xpath + '/transport/cross/naturalTime'),
+                    'n': self._db.getValue(xpath + '/transport/cross/powerLawIndex'),
                     'tauStar': '0'  # tauStar method is not used if tauStar is zero. ESI version has a bug in handling tauStar compared to Foundation version
                 }
             }
-        elif viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
+        elif transportSpec == TransportSpecification.HERSCHEL_BULKLEY:
             self._data['laminar'] = {
                 'model': 'generalizedNewtonian',
                 'viscosityModel': 'HerschelBulkley',
                 'HerschelBulkleyCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'),
-                    'tau0': self._db.getValue(xpath + '/viscosity/herschelBulkley/yieldStressThreshold'),
-                    'k': self._db.getValue(xpath + '/viscosity/herschelBulkley/consistencyIndex'),
-                    'n': self._db.getValue(xpath + '/viscosity/herschelBulkley/powerLawIndex')
+                    'nu0': self._db.getValue(xpath + '/transport/herschelBulkley/zeroShearViscosity'),
+                    'tau0': self._db.getValue(xpath + '/transport/herschelBulkley/yieldStressThreshold'),
+                    'k': self._db.getValue(xpath + '/transport/herschelBulkley/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/transport/herschelBulkley/powerLawIndex')
                 }
             }
-        elif viscositySpecification == ViscositySpecification.BIRD_CARREAU:
+        elif transportSpec == TransportSpecification.BIRD_CARREAU:
             self._data['laminar'] = {
                 'model': 'generalizedNewtonian',
                 'viscosityModel': 'BirdCarreau',
                 'BirdCarreauCoeffs': {
-                    'nu0': self._db.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'),
-                    'nuInf': self._db.getValue(xpath + '/viscosity/carreau/infiniteShearViscosity'),
-                    'k': self._db.getValue(xpath + '/viscosity/carreau/relaxationTime'),
-                    'n': self._db.getValue(xpath + '/viscosity/carreau/powerLawIndex'),
-                    'a': self._db.getValue(xpath + '/viscosity/carreau/linearityDeviation')
+                    'nu0': self._db.getValue(xpath + '/transport/carreau/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/transport/carreau/infiniteShearViscosity'),
+                    'k': self._db.getValue(xpath + '/transport/carreau/relaxationTime'),
+                    'n': self._db.getValue(xpath + '/transport/carreau/powerLawIndex'),
+                    'a': self._db.getValue(xpath + '/transport/carreau/linearityDeviation')
                 }
             }
-        elif viscositySpecification == ViscositySpecification.POWER_LAW:
+        elif transportSpec == TransportSpecification.POWER_LAW:
             self._data['laminar'] = {
                 'model': 'generalizedNewtonian',
                 'viscosityModel': 'powerLaw',
                 'powerLawCoeffs': {
-                    'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosity'),
-                    'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosity'),
-                    'k': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'),
-                    'n': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/powerLawIndex')
+                    'nuMax': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/maximumViscosity'),
+                    'nuMin': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/minimumViscosity'),
+                    'k': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/transport/nonNewtonianPowerLaw/powerLawIndex')
                 }
             }
 

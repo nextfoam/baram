@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EvalNEnhanceROMDialog</class>
+ <widget class="QDialog" name="EvalNEnhanceROMDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>60</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Eval &amp; Enhance Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayoutNumEval">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelNumEval">
+       <property name="text">
+        <string>Number of evaluation runs:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="spnNumEval">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>999</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpQuantities">
+     <property name="title">
+      <string>Quantities to Evaluate</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutQuantities">
+      <item>
+        <layout class="QHBoxLayout" name="layoutTypeSelector">
+          <item>
+            <spacer name="horizontalSpacerType">
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint">
+                <size>
+                  <width>40</width>
+                  <height>20</height>
+                </size>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QComboBox" name="cmbType">
+              <property name="minimumWidth">
+                <number>220</number>
+              </property>
+              <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToContents</enum>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <layout class="QVBoxLayout" name="layoutItems">
+          <!-- Dynamic Widget Area -->
+        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>EvalNEnhanceROMDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>260</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>210</x>
+     <y>120</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>EvalNEnhanceROMDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>320</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>210</x>
+     <y>140</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <resources/>
+ <connections/>
+</ui>

@@ -19,9 +19,8 @@ class ProgressDialog(QDialog):
         self._autoCloseOnCancel = autoCloseOnCancel
         self._openDelay = openDelay
 
-        self._process = None
-        self._slot = None
         self._canceled = False
+        self._isOpen = False
 
         self._timer: QTimer = None
 
@@ -45,6 +44,12 @@ class ProgressDialog(QDialog):
     def hideCancelButton(self):
         self._ui.button.setVisible(False)
 
+    def abort(self, text: str):
+        if not self._isOpen:
+            super().open()
+
+        self.finish(text)
+
     def finish(self, text: str):
         self._clearTimer()
 
@@ -66,13 +71,16 @@ class ProgressDialog(QDialog):
                 self._timer.start()
         else:
             super().open()
+            self._isOpen = True
 
     def _timeout(self):
         super().open()
+        self._isOpen = True
 
     def close(self):
         self._clearTimer()
         super().close()
+        self._isOpen = False
 
     def cancel(self):
         self.close()

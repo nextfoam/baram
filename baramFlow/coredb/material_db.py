@@ -3,22 +3,17 @@
 
 from PySide6.QtCore import QCoreApplication, QObject
 
+from baramFlow.base.material.material import NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS
+from baramFlow.coredb.general_db import GeneralDB
 import baramFlow.coredb.libdb as xml
+from baramFlow.base.material.material import Phase, MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.coredb import coredb
+from baramFlow.coredb.models_db import ModelsDB
 from .configuraitions import ConfigurationException
-from .material_schema import Phase, MaterialType, Specification, DensitySpecification, ViscositySpecification
 from .material_schema import MaterialSchema
 from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
-UNIVERSAL_GAS_CONSTANT = 8314.46261815324  # J / ( K · kmol )
-
 MATERIAL_XPATH = '/materials/material'
-
-NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS = [ViscositySpecification.CROSS_POWER_LAW,
-                                          ViscositySpecification.HERSCHEL_BULKLEY,
-                                          ViscositySpecification.BIRD_CARREAU,
-                                          ViscositySpecification.POWER_LAW]
-
 
 class IMaterialObserver(QObject):
     def materialRemoving(self, db, mid: str):
@@ -91,6 +86,10 @@ class MaterialDB(object):
         return MaterialType(coredb.CoreDB().getValue(cls.getXPath(mid) + '/type'))
 
     @classmethod
+    def getChemicalFormula(cls, mid: str):
+        return str(coredb.CoreDB().getValue(cls.getXPath(mid) + '/chemicalFormula'))
+
+    @classmethod
     def getCoolPropName(cls, mid) -> str:
         name = coredb.CoreDB().getValue(f'{MaterialDB.getXPath(mid)}/name')
         return coredb.CoreDB().materialDB[name]['CoolPropName']
@@ -113,30 +112,56 @@ class MaterialDB(object):
         }.get(phase)
 
     @classmethod
-    def specificationToText(cls, specification) -> str:
-        return {
-            Specification.CONSTANT:                             QCoreApplication.translate('MaterialDB', 'Constant'),
-            Specification.PERFECT_GAS:                          QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
-            Specification.SUTHERLAND:                           QCoreApplication.translate('MaterialDB', 'Sutherland'),
-            Specification.POLYNOMIAL:                           QCoreApplication.translate('MaterialDB', 'Polynomial'),
-            DensitySpecification.CONSTANT:                      QCoreApplication.translate('MaterialDB', 'Constant'),
-            DensitySpecification.PERFECT_GAS:                   QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
-            DensitySpecification.POLYNOMIAL:                    QCoreApplication.translate('MaterialDB', 'Polynomial'),
-            DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:    QCoreApplication.translate('MaterialDB',
-                                                                                           'Incompressible-perfect-gas'),
-            DensitySpecification.REAL_GAS_PENG_ROBINSON:        QCoreApplication.translate('MaterialDB',
-                                                                                           'Real-gas-peng-robinson'),
-            ViscositySpecification.CONSTANT:                    QCoreApplication.translate('MaterialDB', 'Constant'),
-            ViscositySpecification.PERFECT_GAS:                 QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
-            ViscositySpecification.SUTHERLAND:                  QCoreApplication.translate('MaterialDB', 'Sutherland'),
-            ViscositySpecification.POLYNOMIAL:                  QCoreApplication.translate('MaterialDB', 'Polynomial'),
-            ViscositySpecification.CROSS_POWER_LAW:             QCoreApplication.translate('MaterialDB', 'Cross'),
-            ViscositySpecification.HERSCHEL_BULKLEY:            QCoreApplication.translate('MaterialDB',
-                                                                                           'Herschel-bulkley'),
-            ViscositySpecification.BIRD_CARREAU:                QCoreApplication.translate('MaterialDB', 'Bird-Carreau'),
-            ViscositySpecification.POWER_LAW:                   QCoreApplication.translate('MaterialDB',
-                                                                                           'Non-newtonian-power-law'),
-        }.get(specification)
+    def densitySpecToText(cls, spec) -> str:
+        texts = {
+            DensitySpecification.CONSTANT:                   QCoreApplication.translate('MaterialDB', 'Constant'),
+            DensitySpecification.PERFECT_GAS:                QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            DensitySpecification.POLYNOMIAL:                 QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS: QCoreApplication.translate('MaterialDB',
+                                                                                        'Incompressible-perfect-gas'),
+            DensitySpecification.REAL_GAS_PENG_ROBINSON:     QCoreApplication.translate('MaterialDB',
+                                                                                        'Real-gas-peng-robinson'),
+            DensitySpecification.BOUSSINESQ:                 QCoreApplication.translate('MaterialDB', 'Boussinesq'),
+            DensitySpecification.PERFECT_FLUID:              QCoreApplication.translate('MaterialDB', 'Perfect Fluid'),
+            DensitySpecification.TABLE:                      QCoreApplication.translate('MaterialDB', 'Table'),
+        }
+
+        if spec in texts:
+            return texts[spec]
+        else:
+            return 'Unknown Spec.'
+
+    @classmethod
+    def specificHeatSpecToText(cls, spec) -> str:
+        texts = {
+            SpecificHeatSpecification.CONSTANT:   QCoreApplication.translate('MaterialDB', 'Constant'),
+            SpecificHeatSpecification.POLYNOMIAL: QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            SpecificHeatSpecification.JANAF:      QCoreApplication.translate('MaterialDB', 'JANAF'),
+            SpecificHeatSpecification.TABLE:      QCoreApplication.translate('MaterialDB', 'Table'),
+        }
+
+        if spec in texts:
+            return texts[spec]
+        else:
+            return 'Unknown Spec.'
+
+    @classmethod
+    def transportSpecToText(cls, spec) -> str:
+        texts = {
+            TransportSpecification.CONSTANT:         QCoreApplication.translate('MaterialDB', 'Constant'),
+            TransportSpecification.SUTHERLAND:       QCoreApplication.translate('MaterialDB', 'Sutherland'),
+            TransportSpecification.POLYNOMIAL:       QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            TransportSpecification.CROSS_POWER_LAW:  QCoreApplication.translate('MaterialDB', 'Cross'),
+            TransportSpecification.HERSCHEL_BULKLEY: QCoreApplication.translate('MaterialDB', 'Herschel-bulkley'),
+            TransportSpecification.BIRD_CARREAU:     QCoreApplication.translate('MaterialDB', 'Bird-Carreau'),
+            TransportSpecification.POWER_LAW:        QCoreApplication.translate('MaterialDB', 'Non-newtonian-power-law'),
+            TransportSpecification.TABLE:            QCoreApplication.translate('MaterialDB', 'Table'),
+        }
+
+        if spec in texts:
+            return texts[spec]
+        else:
+            return 'Unknown Spec.'
 
     @classmethod
     def isMaterialExists(cls, name) -> bool:
@@ -293,12 +318,107 @@ class MaterialDB(object):
 
         materials.remove(specie)
 
+    @classmethod
+    def availableDensitySpec(cls, mtype: MaterialType, phase: Phase) -> list[DensitySpecification]:
+        densitySpecs = [
+            DensitySpecification.CONSTANT,
+        ]
+
+        if ModelsDB.isEnergyModelOn():
+            if phase == Phase.GAS:
+                densitySpecs.extend([
+                    DensitySpecification.PERFECT_GAS,
+                    DensitySpecification.POLYNOMIAL,
+                    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
+                ])
+
+                if GeneralDB.isPressureBased() \
+                    and not ModelsDB().isMultiphaseModelOn() \
+                    and mtype == MaterialType.NONMIXTURE:
+                    densitySpecs.extend([
+                        DensitySpecification.BOUSSINESQ,
+                        DensitySpecification.REAL_GAS_PENG_ROBINSON,
+                    ])
+
+            elif phase == Phase.LIQUID:
+                if not ModelsDB.isMultiphaseModelOn():
+                    densitySpecs.append(DensitySpecification.POLYNOMIAL)
+
+                if GeneralDB.isPressureBased() \
+                    and not ModelsDB().isMultiphaseModelOn() \
+                    and mtype == MaterialType.NONMIXTURE:
+                    densitySpecs.append(DensitySpecification.PERFECT_FLUID)
+
+            else:  #phase == Phase.SOLID
+                densitySpecs.extend([
+                    DensitySpecification.POLYNOMIAL,
+                ])
+
+        return densitySpecs
+
+
+    @classmethod
+    def availableSpecificHeatSpecs(cls, mtype: MaterialType, phase: Phase) -> list[SpecificHeatSpecification]:
+        specificHeatSpecs = [
+                SpecificHeatSpecification.CONSTANT,
+        ]
+
+        if ModelsDB.isEnergyModelOn():
+            specificHeatSpecs.extend([
+                    SpecificHeatSpecification.POLYNOMIAL,
+            ])
+            if phase == Phase.GAS:
+                specificHeatSpecs.extend([
+                    SpecificHeatSpecification.JANAF
+                ])
+
+        return specificHeatSpecs
+
+
+    @classmethod
+    def availableTransportSpecs(cls, mtype: MaterialType, phase: Phase) -> list[TransportSpecification]:
+        transportSpecs = [
+            TransportSpecification.CONSTANT,
+        ]
+
+        if phase == Phase.GAS:
+            if ModelsDB.isEnergyModelOn():
+                transportSpecs.extend([
+                    TransportSpecification.SUTHERLAND,
+                    TransportSpecification.POLYNOMIAL,
+                ])
+
+        elif phase == Phase.LIQUID:
+            if ModelsDB.isEnergyModelOn():
+                transportSpecs.extend([
+                    TransportSpecification.POLYNOMIAL,
+                ])
+
+            if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR:
+                transportSpecs.extend([
+                    TransportSpecification.CROSS_POWER_LAW,
+                    TransportSpecification.HERSCHEL_BULKLEY,
+                    TransportSpecification.BIRD_CARREAU,
+                    TransportSpecification.POWER_LAW
+                ])
+
+        else:  #phase == Phase.SOLID
+            if ModelsDB.isEnergyModelOn():
+                transportSpecs.extend([
+                    TransportSpecification.POLYNOMIAL,
+                ])
+
+
+        return transportSpecs
+
 
 class TurbulenceModelObserver(ITurbulenceModelObserver):
     def modelUpdating(self, db, model):
         if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR:
-            for viscosity in db.getElements(MaterialDB.MATERIALS_XPATH + '/material/viscosity'):
-                if (ViscositySpecification(xml.getText(viscosity, 'specification'))
+            for transport in db.getElements(MaterialDB.MATERIALS_XPATH + '/material/transport'):
+                if (TransportSpecification(xml.getText(transport, 'specification'))
                         in NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS):
                     raise ConfigurationException(
                         self.tr('Non-newtonian material is configured, and turbulecne model must be laminar.'))
+
+

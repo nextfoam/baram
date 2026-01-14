@@ -3,15 +3,13 @@
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
-
 from baramFlow.coredb.numerical_db import NumericalDB
-from libbaram.openfoam.of_utils import openfoamLibraryPath
 
 
 def _foAgeBase():
     data = {
         'type': 'age',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
         'tolerance': CoreDBReader().getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
         'nCorr': 1000,
     }
@@ -22,7 +20,7 @@ def _foAgeBase():
 def _foHeatTransferCoefficientBase(patches):
     data = {
         'type': 'heatTransferCoeff',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'htcModel': 'localReferenceTemperature',
         'field': 'T',
@@ -39,7 +37,7 @@ def _foHeatTransferCoefficientBase(patches):
 def _foMachNumberBase():
     data = {
         'type': 'MachNo',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'result': 'Mach'
     }
@@ -50,7 +48,7 @@ def _foMachNumberBase():
 def _foQBase():
     data = {
         'type': 'Q',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'result': 'Q'
     }
@@ -61,7 +59,7 @@ def _foQBase():
 def _foTotalPressureBase():
     data = {
         'type': 'pressure',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'mode': 'total',
         'result': 'totalPressure'
@@ -73,7 +71,7 @@ def _foTotalPressureBase():
 def _foVorticityBase():
     data = {
         'type': 'vorticity',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'result': 'vorticity'
     }
@@ -84,7 +82,7 @@ def _foVorticityBase():
 def _foWallHeatFluxBase():
     data = {
         'type': 'wallHeatFlux',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'writeToFile': 'false'
     }
@@ -95,7 +93,7 @@ def _foWallHeatFluxBase():
 def _foWallShearStressBase():
     data = {
         'type': 'wallShearStress',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
 
         'writeToFile': 'false'
     }
@@ -106,7 +104,22 @@ def _foWallShearStressBase():
 def _foWallYPlusBase():
     data = {
         'type': 'yPlus',
-        'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs': ['fieldFunctionObjects'],
+
+        'writeToFile': 'false'
+    }
+
+    return data
+
+
+def _foCelsiusTemperatureBase():
+    data = {
+        'type': 'exprField',
+        'libs': ['fieldFunctionObjects'],
+        'field': 'TCelsius',
+        'expression': '"T - 273.15"',
+        'dimensions': '[0 0 0 1 0 0 0]',
+        'autowrite': 'true',
 
         'writeToFile': 'false'
     }
@@ -117,14 +130,14 @@ def _foWallYPlusBase():
 def _additionalEntriesForMonitor(rname: str, interval):
     if GeneralDB.isTimeTransient():
         data =  {
-            'executeControl': 'writeTime',
+            'executeControl': 'timeStep',
             'executeInterval': interval,
-            'writeControl': 'writeTime',
+            'writeControl': 'timeStep',
             'writeInterval': interval,
         }
     else:
         data = {
-            'executeControl': 'onEnd',
+            'executeControl': 'timeStep',
             'writeControl': 'onEnd',
         }
 
@@ -217,6 +230,13 @@ def foWallYPlusMonitor(rname: str, interval):
     return data
 
 
+def foCelsiusTemperatureMonitor(rname: str, interval):
+    data = _foCelsiusTemperatureBase()
+    data.update(_additionalEntriesForMonitor(rname, interval))
+
+    return data
+
+
 def foAgeReport(rname: str):
     data = _foAgeBase()
     data.update(_additionalEntriesForReport(rname))
@@ -275,6 +295,13 @@ def foWallShearStressReport(rname: str):
 
 def foWallYPlusReport(rname: str):
     data = _foWallYPlusBase()
+    data.update(_additionalEntriesForReport(rname))
+
+    return data
+
+
+def foCelsiusTemperatureReport(rname: str):
+    data = _foCelsiusTemperatureBase()
     data.update(_additionalEntriesForReport(rname))
 
     return data

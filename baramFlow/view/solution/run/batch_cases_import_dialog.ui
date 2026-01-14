@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Import Batce Cases</string>
+   <string>Import Batch Cases</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -43,7 +43,7 @@
          <item>
           <widget class="QPushButton" name="select">
            <property name="text">
-            <string>Slelect</string>
+            <string>Select</string>
            </property>
           </widget>
          </item>

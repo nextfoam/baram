@@ -61,12 +61,14 @@ def main():
         QMessageBox.information(None, QApplication.translate('main', 'Check MPI'), message)
         return
 
-    app.setupApplication(AppProperties({
-        'name': 'BaramMesh',
-        'fullName': QApplication.translate('Main', 'BaramMesh'),
-        'iconResource': 'baramMesh.ico',
-        'logoResource': 'baramMesh.ico',
-    }))
+    app.setupApplication(AppProperties(
+        name='BaramMesh',
+        fullName=QApplication.translate('Main', 'BaramMesh'),
+        iconResource='baramMesh.ico',
+        logoResource='baramMesh.ico',
+        projectSuffix='.bm',
+        exportSuffix='.bf'
+    ))
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()

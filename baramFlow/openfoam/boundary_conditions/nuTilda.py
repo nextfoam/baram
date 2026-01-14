@@ -35,8 +35,11 @@ class NuTilda(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValueByModel(xpath)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFixedValueByModel(xpath)),
+                BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructFixedValueByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletNuTilda(xpath)),
+                BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValueByModel(xpath)),
+                BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructZeroGradient()),
                 BoundaryType.ABL_INLET.value:           (lambda: None),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),

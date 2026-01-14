@@ -21,7 +21,7 @@ def setListHeight(widget):
 
 
 class BoundaryTypePicker(QWidget):
-    picked = Signal(int, str)
+    picked = Signal(int, BoundaryType)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -34,13 +34,16 @@ class BoundaryTypePicker(QWidget):
             self._ui.velocityInlet:     BoundaryType.VELOCITY_INLET,
             self._ui.flowRateInlet:     BoundaryType.FLOW_RATE_INLET,
             self._ui.pressureInlet:     BoundaryType.PRESSURE_INLET,
+            self._ui.intakeFan:         BoundaryType.INTAKE_FAN,
             self._ui.ABLInlet:          BoundaryType.ABL_INLET,
             self._ui.openChannelInlet:  BoundaryType.OPEN_CHANNEL_INLET,
             self._ui.freeStream:        BoundaryType.FREE_STREAM,
             self._ui.farFieldRiemann:   BoundaryType.FAR_FIELD_RIEMANN,
             self._ui.subsonicInlet:     BoundaryType.SUBSONIC_INLET,
             self._ui.supersonicInflow:  BoundaryType.SUPERSONIC_INFLOW,
+            self._ui.flowRateOutlet:    BoundaryType.FLOW_RATE_OUTLET,
             self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET,
+            self._ui.exhaustFan:        BoundaryType.EXHAUST_FAN,
             self._ui.openChannelOutlet: BoundaryType.OPEN_CHANNEL_OUTLET,
             self._ui.outflow:           BoundaryType.OUTFLOW,
             self._ui.subsonicOutflow:   BoundaryType.SUBSONIC_OUTFLOW,
@@ -98,5 +101,5 @@ class BoundaryTypePicker(QWidget):
         self._ui.buttonGroup.buttonClicked.connect(self._typePicked)
 
     def _typePicked(self, button):
-        self.picked.emit(self._bcid, self._types[button].value)
+        self.picked.emit(self._bcid, self._types[button])
         self.hide()

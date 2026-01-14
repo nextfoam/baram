@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, DirectionSpecificationMethod
 from baramFlow.view.widgets.region_objects_selector import BoundariesSelector
+from widgets.async_message_box import AsyncMessageBox
 
 from .force_dialog_ui import Ui_ForceDialog
 
@@ -41,73 +43,20 @@ class ForceDialog(QDialog):
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
-            self._ui.groupBox.setTitle(name)
+            self._ui.monitor.setTitle(name)
 
         self._xpath = MonitorDB.getForceMonitorXPath(self._name)
 
         self._connectSignalsSlots()
         self._load()
 
+        if CaseManager().isRunning():
+            self._ui.monitor.setEnabled(False)
+            self._ui.ok.hide()
+            self._ui.cancel.setText(self.tr('Close'))
+
     def getName(self):
         return self._name
-
-    def accept(self):
-        name = self._name
-        if self._isNew:
-            name = self._ui.name.text().strip()
-            if not name:
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
-                return
-
-        if not self._boundaries:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Boundaries."))
-            return
-
-        writer = CoreDBWriter()
-        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-
-        specificationMethod = self._ui.specificationMethod.currentData()
-        writer.append(self._xpath + '/forceDirection/specificationMethod', specificationMethod.value, None)
-        writer.append(self._xpath + '/forceDirection/dragDirection/x', self._ui.dragDirectionX.text(),
-                      self.tr('Drag Direction'))
-        writer.append(self._xpath + '/forceDirection/dragDirection/y', self._ui.dragDirectionY.text(),
-                      self.tr('Drag Direction'))
-        writer.append(self._xpath + '/forceDirection/dragDirection/z', self._ui.dragDirectionZ.text(),
-                      self.tr('Drag Direction'))
-        writer.append(self._xpath + '/forceDirection/liftDirection/x', self._ui.liftDirectionX.text(),
-                      self.tr('Lift Direction'))
-        writer.append(self._xpath + '/forceDirection/liftDirection/y', self._ui.liftDirectionY.text(),
-                      self.tr('Lift Direction'))
-        writer.append(self._xpath + '/forceDirection/liftDirection/z', self._ui.liftDirectionZ.text(),
-                      self.tr('Lift Direction'))
-        writer.append(self._xpath + '/forceDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
-        writer.append(self._xpath + '/forceDirection/angleOfSideslip', self._ui.AoS.text(), self.tr('Angle of Sideslip'))
-        if specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-            writer.append(self._xpath + '/forceDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
-            writer.append(self._xpath + '/forceDirection/angleOfSideslip', self._ui.AoS.text(),
-                          self.tr('Angle of Sideslip'))
-
-        writer.append(self._xpath + '/centerOfRotation/x',
-                      self._ui.centerOfRotationX.text(), self.tr("Center of Rotation X"))
-        writer.append(self._xpath + '/centerOfRotation/y',
-                      self._ui.centerOfRotationY.text(), self.tr("Center of Rotation Y"))
-        writer.append(self._xpath + '/centerOfRotation/z',
-                      self._ui.centerOfRotationZ.text(), self.tr("Center of Rotation Z"))
-        writer.append(self._xpath + '/region', self._region, self.tr('Region'))
-        writer.append(self._xpath + '/boundaries',
-                      ' '.join(str(bcid) for bcid in self._boundaries), self.tr("Boundaries"))
-
-        if self._isNew:
-            writer.append(self._xpath + '/name', name, self.tr("Name"))
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            if self._isNew:
-                self._name = name
-
-            super().accept()
 
     def reject(self):
         super().reject()
@@ -115,9 +64,48 @@ class ForceDialog(QDialog):
             db = coredb.CoreDB()
             db.removeForceMonitor(self._name)
 
+    @qasync.asyncSlot()
+    async def _accept(self):
+        try:
+            self._validate()
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return False
+
+        with coredb.CoreDB() as db:
+            db.setValue(self._xpath + '/writeInterval', self._ui.writeInterval.text())
+
+            specificationMethod = self._ui.specificationMethod.currentData()
+            db.setValue(self._xpath + '/forceDirection/specificationMethod', specificationMethod.value)
+            db.setValue(self._xpath + '/forceDirection/dragDirection/x', self._ui.dragDirectionX.text())
+            db.setValue(self._xpath + '/forceDirection/dragDirection/y', self._ui.dragDirectionY.text())
+            db.setValue(self._xpath + '/forceDirection/dragDirection/z', self._ui.dragDirectionZ.text())
+            db.setValue(self._xpath + '/forceDirection/liftDirection/x', self._ui.liftDirectionX.text())
+            db.setValue(self._xpath + '/forceDirection/liftDirection/y', self._ui.liftDirectionY.text())
+            db.setValue(self._xpath + '/forceDirection/liftDirection/z', self._ui.liftDirectionZ.text())
+
+            if specificationMethod == DirectionSpecificationMethod.AOA_AOS:
+                db.setValue(self._xpath + '/forceDirection/angleOfSideslip', self._ui.AoS.text())
+                db.setValue(self._xpath + '/forceDirection/angleOfAttack', self._ui.AoA.text())
+
+            db.setValue(self._xpath + '/centerOfRotation/x', self._ui.centerOfRotationX.text())
+            db.setValue(self._xpath + '/centerOfRotation/y', self._ui.centerOfRotationY.text())
+            db.setValue(self._xpath + '/centerOfRotation/z', self._ui.centerOfRotationZ.text())
+            db.setValue(self._xpath + '/region', self._region, self.tr('Region'))
+            db.setValue(self._xpath + '/boundaries',
+                          ' '.join(str(bcid) for bcid in self._boundaries), self.tr("Boundaries"))
+
+            if self._isNew:
+                name = self._ui.name.text().strip()
+                db.setValue(self._xpath + '/name', self._ui.name.text().strip(), self.tr("Name"))
+                self._name = name
+
+        super().accept()
+
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
         self._ui.select.clicked.connect(self._selectBoundaries)
+        self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -141,6 +129,31 @@ class ForceDialog(QDialog):
         self._region = db.getValue(self._xpath + '/region')
         boundaries = db.getValue(self._xpath + '/boundaries')
         self._setBoundaries(boundaries.split() if boundaries else [])
+
+    def _validate(self):
+        if self._isNew:
+            if self._ui.name.text().strip() == '':
+                raise ValueError(self.tr("Enter Monitor Name."))
+
+        self._ui.writeInterval.validate(self.tr("Write Interval"))
+
+        self._ui.dragDirectionX.validate(self.tr('Drag Direction'))
+        self._ui.dragDirectionY.validate(self.tr('Drag Direction'))
+        self._ui.dragDirectionZ.validate(self.tr('Drag Direction'))
+        self._ui.liftDirectionX.validate(self.tr('Lift Direction'))
+        self._ui.liftDirectionY.validate(self.tr('Lift Direction'))
+        self._ui.liftDirectionZ.validate(self.tr('Lift Direction'))
+
+        if self._ui.specificationMethod.currentData() == DirectionSpecificationMethod.AOA_AOS:
+            self._ui.AoA.validate(self.tr('Angle of Attack'))
+            self._ui.AoS.validate(self.tr('Angle of Sideslip'))
+
+        self._ui.centerOfRotationX.validate(self.tr("Center of Rotation X"))
+        self._ui.centerOfRotationY.validate(self.tr("Center of Rotation Y"))
+        self._ui.centerOfRotationZ.validate(self.tr("Center of Rotation Z"))
+
+        if not self._boundaries:
+            raise ValueError(self.tr("Select Boundaries."))
 
     def _setBoundaries(self, boundaries):
         self._boundaries = boundaries

@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 import qasync
-from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QFileDialog
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QFileDialog, QHeaderView
 
-from libbaram.validation import TextType, EnumType, FloatType, validateData, ValidationError
+from libbaram.simple_db.simple_schema import TextType, EnumType, FloatType, ValidationError
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb.app_settings import AppSettings
-from baramFlow.coredb.material_schema import Phase
-from baramFlow.coredb.materials_base import MaterialsBase
+from baramFlow.base.material.database import materialsBase, liquidSchema, gasSchema, solidSchema
+from baramFlow.base.material.database import loadDatabase, saveDatabase
+from baramFlow.base.material.material import Phase
 from .material_database_dialog_ui import Ui_MaterialDatabaseDialog
 from .materials_import_dialog import MaterialsImportDialog
 
@@ -64,7 +64,17 @@ class MaterialDatabaseDialog(QDialog):
         self._ui = Ui_MaterialDatabaseDialog()
         self._ui.setupUi(self)
 
-        self._materials = dict(MaterialsBase.getMaterials())
+        self._columns = None
+        self._materials = materialsBase.getRawData()
+
+        columns = dict.fromkeys(liquidSchema)
+        columns.update(dict.fromkeys(gasSchema))
+        columns.update(dict.fromkeys(solidSchema))
+        self._columns = list(columns.keys())
+
+        self._ui.list.setColumnCount(len(self._columns))
+        self._ui.list.setHeaderLabels(self._columns)
+        self._ui.list.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
 
         self._connectSignalsSlots()
         self._updateList()
@@ -79,28 +89,40 @@ class MaterialDatabaseDialog(QDialog):
     def _updateList(self):
         self._ui.list.clear()
 
-        values = self._materials[next(iter(self._materials))]
-        columns = list(values.keys())
-        columns.insert(0, self.tr('Name'))
+        phases = ['liquid', 'gas', 'solid']
 
-        self._ui.list.setColumnCount(len(columns))
-        self._ui.list.setHeaderLabels(columns)
+        for key, data in self._materials.items():
+            item = QTreeWidgetItem(self._ui.list, [data['name']])
+            for phase in phases:
+                if material := data.get(phase):
+                    values = [str(material.get(column, '')) for column in self._columns]
+                    values[0] = f'{values[0]} ({phase})'
+                    materialItem = QTreeWidgetItem(item, values)
+                    materialItem.setData(0, Qt.ItemDataRole.UserRole, phase)
 
-        for name, values in self._materials.items():
-            QTreeWidgetItem(self._ui.list, [name, *values.values()])
+        self._ui.list.expandAll()
 
     def _deleteMaterials(self):
         for item in self._ui.list.selectedItems():
-            name = item.text(0)
-            del self._materials[name]
-            self._ui.list.invisibleRootItem().removeChild(item)
+            if parent := item.parent():
+                parentName = parent.text(0)
+                if parentName in self._materials:
+                    self._materials[parentName].pop(item.data(0, Qt.ItemDataRole.UserRole))
+                parent.removeChild(item)
+                topLevelItem = None if parent.childCount() > 0 else parent
+            else:
+                topLevelItem = item
+
+            if topLevelItem:
+                self._materials.pop(topLevelItem.text(0), None)
+                self._ui.list.invisibleRootItem().removeChild(topLevelItem)
 
     def _selectionChanged(self):
         selected = len(self._ui.list.selectedItems())
         self._ui.delete_.setEnabled(0 < selected < self._ui.list.topLevelItemCount())
 
     def _openExportDialog(self):
-        self._dialog = QFileDialog(self, self.tr('Export Materials'), '', self.tr('CSV (*.csv)'))
+        self._dialog = QFileDialog(self, self.tr('Export Materials'), '', self.tr('YAML (*.yaml)'))
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.fileSelected.connect(self._exportDatabase)
         self._dialog.open()
@@ -111,59 +133,23 @@ class MaterialDatabaseDialog(QDialog):
         self._dialog.open()
 
     def _accept(self):
-        AppSettings.updateMaterialsDB(self._materials)
+        materialsBase.update(self._materials)
         self.accept()
 
-    def _exportDatabase(self, file):
-        df = pd.DataFrame.from_dict(self._materials, orient='index')
-        df.to_csv(file, index_label='name')
+    def _exportDatabase(self, path):
+        saveDatabase(path, self._materials)
 
     @qasync.asyncSlot()
     async def _importDatabase(self):
-        df = pd.read_csv(self._dialog.selectedFile(), header=0, index_col=0, dtype=str)
-        if list(df.columns) != material_columns:
-            await AsyncMessageBox().information(
-                self, self.tr('Import Error'), self.tr('The file has incorrect columns.'))
-
-            return
-
-        df = df.transpose()
-        duplicated = df.columns[df.columns.duplicated()]
-        if not duplicated.empty:
-            await AsyncMessageBox().information(
-                self, self.tr('Import Error'), self.tr('Duplicate keys detected: {}'.format('", "'.join(duplicated))))
-
-            return
-
-        rawData = df.where(pd.notnull(df), None).to_dict()
-        materials = {}
-
-        name = None
         try:
-            for key, data in rawData.items():
-                name = key.strip()
-                if name in materials:
-                    await AsyncMessageBox().information(
-                        self, self.tr('Import Error'), self.tr('Duplicated Material Name - {}'.format(name)))
-                    return
-
-                phase = data['phase']
-                if phase not in schema:
-                    await AsyncMessageBox().information(
-                        self, self.tr('Import Error'),
-                        self.tr('Phase of Material "{}" is invalid phase.<br/>Available phases - {}').format(
-                            name, ', '.join(schema.keys())))
-                    return
-
-                materials[name] = validateData(data, schema[data['phase'].strip()])
+            loaded = loadDatabase(self._dialog.selectedFile())
         except ValidationError as e:
-            await AsyncMessageBox().information(
-                self, self.tr('Import Error'),
-                self.tr('Column "{0}" of Material "{1}" - {2}'.format(e.name, name, e.message)))
+            AsyncMessageBox().information(self, self.tr('Input Error'), e.toMessage())
+            return
 
         if self._dialog.isClearChecked():
-            self._materials = materials
+            self._materials = loaded
         else:
-            self._materials.update(materials)
+            self._materials.update(loaded)
 
         self._updateList()

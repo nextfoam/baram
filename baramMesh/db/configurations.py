@@ -3,7 +3,7 @@
 
 import yaml
 
-from libbaram.simple_db import SimpleDB
+from libbaram.simple_db.simple_db import SimpleDB
 
 from .configurations_schema import schema
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
@@ -59,6 +59,10 @@ class Configurations(SimpleDB):
 
     def geometryPolyData(self, key):
         return self._files['geometry'][key]
+
+    def updateGeometryPolyData(self, key, pd):
+        self._files['geometry'][key] = pd
+        self._modified = True
 
     def commit(self, data):
         for key in data._files:

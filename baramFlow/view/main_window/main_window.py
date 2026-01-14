@@ -11,25 +11,29 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from uuid import UUID
 
+from PySide6.QtGui import QAction
 import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QEvent, QTimer, Signal
+from PySide6.QtCore import QCoreApplication, Qt, QEvent, QTimer
 
+from baramFlow.base import expert_mode
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
-from libbaram.run import hasUtility
+from libbaram.run import hasUtility, openTerminal
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
+from baramFlow.base.model.model import ModelManager
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
@@ -64,6 +68,7 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
+from baramFlow.view.solution.run.pod_rom_page import PODROMPage
 from baramFlow.view.results.graphics.graphics_page import GraphicsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
@@ -88,6 +93,12 @@ class CloseType(Enum):
     CLOSE_PROJECT = auto()
 
 
+class CloseState(Enum):
+    NONE   = auto()
+    POSTED = auto()
+    CLOSING   = auto()
+
+
 class MenuPage:
     def __init__(self, pageClass=None):
         self._pageClass = pageClass
@@ -108,9 +119,7 @@ class MenuPage:
         return self._widget or not self._pageClass
 
 
-class MainWindow(QMainWindow):
-    _closeTriggered = Signal(CloseType)
-
+class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
@@ -158,6 +167,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: MenuPage(InitializationPage),
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: MenuPage(RunConditionsPage),
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
+            MenuItem.MENU_SOLUTION_PODROM.value: MenuPage(PODROMPage),
 
             MenuItem.MENU_RESULTS_SCAFFOLDS.value: MenuPage(ScaffoldsPage),
             MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(GraphicsPage),
@@ -165,8 +175,10 @@ class MainWindow(QMainWindow):
         }
 
         self._dialog = None
+        self._actionTerminal = None
+        self._closeState = CloseState.NONE
 
-        self._closeType = None
+        self._backgroundTasks = set()
 
         self._setupShortcuts()
 
@@ -198,27 +210,29 @@ class MainWindow(QMainWindow):
         self._project.opened()
 
     def closeEvent(self, event):
-        if self._closeType is None:
-            self._closeTriggered.emit(CloseType.EXIT_APP)
+        if self._closeState == CloseState.NONE:
+            self._closeState = CloseState.POSTED
             event.ignore()
-            return
 
-        self._disconnectSignalsSlots()
+            task = asyncio.create_task(self._asyncClose())
+            self._backgroundTasks.add(task)
+            task.add_done_callback(self._backgroundTasks.discard)
 
-        self._caseManager.clear()
-        Project.close()
+        elif self._closeState == CloseState.POSTED:
+            event.ignore()
 
-        if self._closeType == CloseType.CLOSE_PROJECT:
-            app.restart()
+        elif self._closeState == CloseState.CLOSING:
+            self._closeState = CloseState.NONE
+            super().closeEvent(event)
+
         else:
-            app.quit()
-
-        super().closeEvent(event)
+            raise AssertionError
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
             self._navigatorView.translate()
+            self._retranslateUi()
 
             for page in self._menuPages.values():
                 if page.isCreated():
@@ -246,8 +260,8 @@ class MainWindow(QMainWindow):
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
         self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
-        self._ui.actionCloseProject.triggered.connect(lambda: self._closeProject(CloseType.CLOSE_PROJECT))
-        self._ui.actionExit.triggered.connect(lambda: self._closeProject(CloseType.EXIT_APP))
+        self._ui.actionCloseProject.triggered.connect(self._closeProjectActionHandler)
+        self._ui.actionExit.triggered.connect(self._exitActionHandler)
 
         self._ui.actionMeshInfo.triggered.connect(self._openMeshInfoDialog)
         self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
@@ -267,8 +281,6 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
-        self._closeTriggered.connect(self._closeProject)
-
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
@@ -277,6 +289,8 @@ class MainWindow(QMainWindow):
         GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
         GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
+
+        expert_mode.registerObserver(self)
 
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
@@ -299,11 +313,9 @@ class MainWindow(QMainWindow):
             self, self.tr('Save as a new project'),
             self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
 
-        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.fileSelected.connect(self._projectDirectorySelected)
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._dialog.finished.connect(self._ui.menubar.repaint)
+        self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
+                                        Path(AppSettings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+        self._dialog.pathSelected.connect(self._saveAsDirectorySelected)
         self._dialog.open()
 
     async def _saveCurrentPage(self):
@@ -355,8 +367,16 @@ class MainWindow(QMainWindow):
         self._openMeshSelectionDialog(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
 
     @qasync.asyncSlot()
-    async def _closeProject(self, closeType):
+    async def _closeProjectActionHandler(self):
+        await self._asyncClose(CloseType.CLOSE_PROJECT)
+
+    @qasync.asyncSlot()
+    async def _exitActionHandler(self):
+        await self._asyncClose(CloseType.EXIT_APP)
+
+    async def _asyncClose(self, closeType=CloseType.EXIT_APP):
         if not await self._saveCurrentPage():
+            self._closeState = CloseState.NONE
             return
 
         if self._project.isModified:
@@ -368,18 +388,28 @@ class MainWindow(QMainWindow):
             if confirm == QMessageBox.StandardButton.Ok:
                 await self._save()
             elif confirm == QMessageBox.StandardButton.Cancel:
+                self._closeState = CloseState.NONE
                 return
 
-        await GraphicsDB().close()
-
-        self._dockView.close()
         logging.getLogger().removeHandler(self._handler)
         self._handler.close()
 
         AppSettings.updateLastMainWindowGeometry(self.geometry())
 
-        self._closeType = closeType
-        self.close()
+        self._disconnectSignalsSlots()
+
+        self._caseManager.clear()
+        await Project.close()
+
+        self._dockView.close()
+
+        self._closeState = CloseState.CLOSING
+
+        if closeType == CloseType.CLOSE_PROJECT:
+            self.close()
+            app.restart()
+        else:
+            app.quit()
 
     def _openMeshInfoDialog(self):
         self._dialog = MeshInfoDialog(self)
@@ -561,11 +591,11 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _openTutorials(self):
-        webbrowser.open('https://baramcfd.org/en/tutorial/baram-flow/tutorial-dashboard-en/')
+        webbrowser.open('https://baramcfd.org/en/tutorials-en/tutorial-baramflow-en/tutorial-baramflow-dashboard-en/')
 
     def meshUpdated(self):
         if RegionDB.isMultiRegion():
-            ModelsDB.EnergyModelOn()
+            ModelManager.energyModelOn()
 
         self._project.save()
         # self._ui.menuMesh.setEnabled(True)
@@ -697,19 +727,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _projectDirectorySelected(self, file):
-        path = Path(file).resolve()
-
-        if path.exists():
-            if not path.is_dir():
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{path} is not a directory.'))
-                return
-            elif os.listdir(path):
-                AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                              self.tr(f'{path} is not empty.'))
-                return
-
+    async def _saveAsDirectorySelected(self, path):
         if await self._saveCurrentPage():
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()
@@ -717,7 +735,7 @@ class MainWindow(QMainWindow):
             progressDialog.setLabelText(self.tr('Saving project'))
 
             await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
-            self._project.saveAs(path)
+            await self._project.saveAs(path)
             progressDialog.close()
 
     def _openMeshSelectionDialog(self, meshType, fileFilter=None):
@@ -940,3 +958,26 @@ class MainWindow(QMainWindow):
             dockWidget.close()
 
             del self._docks[uuid]
+
+    def _enableTerminalMenu(self):
+        self._actionTerminal = QAction(self)
+        self._actionTerminal.setText(QCoreApplication.translate("MainWindow", u"&Terminal", None))
+        self._actionTerminal.triggered.connect(self._actionTerminalTriggered)
+
+        self._ui.menuExternal_Tools.addAction(self._actionTerminal)
+
+    def _actionTerminalTriggered(self):
+        path = FileSystem.caseRoot()
+        if path is None or not path.is_dir():
+            return
+
+        task = asyncio.create_task(openTerminal(path))
+        self._backgroundTasks.add(task)
+        task.add_done_callback(self._backgroundTasks.discard)
+
+    def expertModeAtivated(self):
+        self._enableTerminalMenu()
+
+    def _retranslateUi(self):
+        if self._actionTerminal is not None:
+            self._actionTerminal.setText(QCoreApplication.translate("MainWindow", u"&Terminal", None))

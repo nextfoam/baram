@@ -5,11 +5,11 @@ import qasync
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import Phase, DensitySpecification, SpecificHeatSpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
@@ -45,8 +45,8 @@ class PressureOutletDialog(ResizableDialog):
         xpath = MaterialDB.getXPath(mid)
         if (not ModelsDB.isEnergyModelOn()
                 or MaterialDB.getPhase(mid) == Phase.SOLID
-                or db.getValue(xpath + '/density/specification') != Specification.PERFECT_GAS.value
-                or db.getValue(xpath + '/specificHeat/specification') != Specification.CONSTANT.value):
+                or DensitySpecification(db.getValue(xpath + '/density/specification')) != DensitySpecification.PERFECT_GAS
+                or SpecificHeatSpecification(db.getValue(xpath + '/specificHeat/specification')) != SpecificHeatSpecification.CONSTANT):
             self._ui.NRB.hide()
 
             if not ModelsDB.isEnergyModelOn():

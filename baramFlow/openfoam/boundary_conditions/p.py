@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
+from uuid import UUID
+
+from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
+
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.coredb_reader import Region
@@ -9,11 +14,16 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import usePrgh, useGaugePressureInPrgh
+from libbaram.natural_name_uuid import uuidToNnstr
+
 
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
     BoundaryType.FLOW_RATE_INLET.value: 'calculated',
+    BoundaryType.FLOW_RATE_OUTLET.value: 'calculated',
     BoundaryType.PRESSURE_INLET.value: 'calculated',
+    BoundaryType.INTAKE_FAN.value: 'calculated',
+    BoundaryType.EXHAUST_FAN.value: 'calculated',
     BoundaryType.ABL_INLET.value: 'calculated',
     BoundaryType.OPEN_CHANNEL_INLET.value: 'calculated',
     BoundaryType.FREE_STREAM.value: 'calculated',
@@ -37,18 +47,23 @@ TYPE_MAP = {
 }
 
 
+class FanPressureDirection(Enum):
+    IN = 'in'
+    OUT = 'out'
+
+
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
 
     def __init__(self, region: Region, time, processorNo, field):
         super().__init__(region, time, processorNo, field)
 
-        self._operatingPressure = None
+        self._operatingPressure = 0
 
         self._field = field
         self._usePrgh = False
 
-        self._initialValue = None
+        self._initialValue = 0
 
     def build0(self):
         self._data = None
@@ -105,8 +120,11 @@ class P(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
+                    BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
+                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.IN)),
+                    BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.OUT)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
@@ -122,7 +140,7 @@ class P(BoundaryCondition):
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', bcid)),
+                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath, bcid)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                     BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
@@ -180,22 +198,51 @@ class P(BoundaryCondition):
         }
 
     def _constructFan(self, xpath, bcid):
-        fanCurveFileName = f'UvsPressure{bcid}'
-        Project.instance().fileDB().getFileContents(self._db.getValue(xpath + '/fanCurveFile')).to_csv(
-            FileSystem.constantPath() / fanCurveFileName, sep=',', header=False, index=False
-        )
+        fanCurveFileName = f'fanCurve_{bcid}'
+        self._writeFanCurveFile(fanCurveFileName, xpath)
 
         return {
             'type': 'fan',
             'patchType': 'cyclic',
-            'jumpTable': 'csvFile',
-            'jumpTableCoeffs': {
-                'nHeaderLine': 0,
-                'refColumn': 0,
-                'componentColumns': [1],
-                'separator': '","',
-                'mergeSeparators': 'no',
-                'file': f'<constant>/{fanCurveFileName}'
+            'mode': 'volumeFlowRate',
+            'jumpTable': {
+                'type': 'table',
+                'file': f'constant/{fanCurveFileName}',
+                'outOfBounds': 'clamp'
             },
             'value': self._initialValueByTime()
         }
+
+    def _constructFanPressure(self, xpath, bcid, direction):
+        fanCurveFileName = f'fanCurve_{bcid}'
+        self._writeFanCurveFile(fanCurveFileName, xpath)
+
+        p0 = self._operatingPressure + float(self._db.getValue(xpath + '/pressure'))
+        return {
+            'type': 'fanPressure',
+            'direction': direction.value,
+            'fanCurve': {
+                'type': 'table',
+                'file': f'constant/{fanCurveFileName}',
+                'outOfBounds': 'clamp'
+            },
+            'p0': ('uniform', p0),
+            'value': self._initialValueByTime()
+        }
+
+    def _writeFanCurveFile(self, fileName, xpath):
+        fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
+        fanCurve = None
+        if fanCurveName.int != 0:
+            df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
+            if df is not None:
+                fanCurve = df.values.tolist()
+                if len(fanCurve[0]) > 2:  # if it includes vector value
+                    fanCurve = [[row[0], row[1:]] for row in fanCurve]
+
+        # ToDo: What if fanCurve is not available?
+
+        path = FileSystem.constantPath() / fileName
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(str(FoamFileGenerator(fanCurve)))

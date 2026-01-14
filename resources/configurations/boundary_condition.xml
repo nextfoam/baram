@@ -47,6 +47,13 @@
             <massFlowRate>1</massFlowRate>
         </flowRate>
     </flowRateInlet>
+    <flowRateOutlet>
+        <flowRate>
+            <specification>massFlowRate</specification>
+            <volumeFlowRate>1</volumeFlowRate>
+            <massFlowRate>1</massFlowRate>
+        </flowRate>
+    </flowRateOutlet>
     <pressureInlet>
         <pressure>0</pressure>
     </pressureInlet>
@@ -190,6 +197,14 @@
             <limit>none</limit>
         </wallAdhesions>
     </wall>
+    <thermoCoupledWall>
+        <temperature>
+            <wallLayers disabled="true">
+                <thicknessLayers>0.001</thicknessLayers>
+                <thermalConductivityLayers>10</thermalConductivityLayers>
+            </wallLayers>
+        </temperature>
+    </thermoCoupledWall>
     <interface>
         <mode>internalInterface</mode>
         <rotationAxisOrigin>
@@ -213,10 +228,6 @@
         <inertialCoefficient>5</inertialCoefficient>
         <porousMediaThickness>0.05</porousMediaThickness>
     </porousJump>
-    <fan>
-        <fanCurveFile></fanCurveFile>
-        <reverseDirection>false</reverseDirection>
-    </fan>
     <turbulence>
         <k-epsilon>
             <specification>intensityAndViscosityRatio</specification>
@@ -261,4 +272,19 @@
     <volumeFractions/>
     <userDefinedScalars/>
     <species/>
+    <pressure>0</pressure>
+    <fanCurveName>00000000-0000-0000-0000-000000000000</fanCurveName>
+    <patchInteraction>
+        <type>reflect</type>
+        <reflect>
+            <coefficientOfRestitution>
+                <normal>1</normal>
+                <tangential>1</tangential>
+            </coefficientOfRestitution>
+        </reflect>
+        <recycle>
+            <recycleBoundary>0</recycleBoundary>
+            <recycleFraction>1</recycleFraction>
+        </recycle>
+    </patchInteraction>
 </boundaryCondition>

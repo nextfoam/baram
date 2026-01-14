@@ -4,7 +4,7 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.multi_selector_dialog import SelectorItem, MultiSelectorDialog
 
@@ -121,31 +121,29 @@ class BoundarySettingDialog(QDialog):
         self._boundaries = []
         self._availableBoundaries = []
 
-        meshBoundaries = app.window.meshManager.boundaries()
         for gId, geometry in self._db.getElements('geometry').items():
-            if geometry.value('name') in meshBoundaries:
-                cfdType = geometry.value('cfdType')
-                if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
-                    if app.window.geometryManager.isBoundingHex6(gId):
-                        continue
+            cfdType = geometry.value('cfdType')
+            if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
+                if app.window.geometryManager.isBoundingHex6(gId):
+                    continue
 
-                    name = geometry.value('name')
-                    groupId = geometry.value('layerGroup')
+                name = geometry.value('name')
+                groupId = geometry.value('layerGroup')
+                if groupId is None:
+                    addAvailableBoundary(name, gId)
+                elif groupId == self._groupId:
+                    addAvailableBoundary(name, gId)
+                    addSelectedBoundary(name, gId)
+
+                if cfdType == CFDType.INTERFACE.value:
+                    name = f'{name}_slave'
+                    sId = f'{gId}s'
+                    groupId = geometry.value('slaveLayerGroup')
                     if groupId is None:
-                        addAvailableBoundary(name, gId)
+                        addAvailableBoundary(name, sId)
                     elif groupId == self._groupId:
-                        addAvailableBoundary(name, gId)
-                        addSelectedBoundary(name, gId)
-
-                    if cfdType == CFDType.INTERFACE.value:
-                        name = f'{name}_slave'
-                        sId = f'{gId}s'
-                        groupId = geometry.value('slaveLayerGroup')
-                        if groupId is None:
-                            addAvailableBoundary(name, sId)
-                        elif groupId == self._groupId:
-                            addAvailableBoundary(name, sId)
-                            addSelectedBoundary(name, sId)
+                        addAvailableBoundary(name, sId)
+                        addSelectedBoundary(name, sId)
 
         self._oldBoundaries = self._boundaries
 

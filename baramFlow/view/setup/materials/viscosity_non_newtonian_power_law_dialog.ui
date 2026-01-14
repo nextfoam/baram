@@ -25,7 +25,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="FloatEdit" name="maximumViscosity"/>
+       <widget class="BatchableFloatEdit" name="maximumViscosity"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
@@ -35,7 +35,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="FloatEdit" name="minimumViscosity"/>
+       <widget class="BatchableFloatEdit" name="minimumViscosity"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_3">
@@ -45,7 +45,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="FloatEdit" name="consistencyIndex"/>
+       <widget class="BatchableFloatEdit" name="consistencyIndex"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_4">
@@ -55,7 +55,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="FloatEdit" name="powerLawIndex"/>
+       <widget class="BatchableFloatEdit" name="powerLawIndex"/>
       </item>
      </layout>
     </widget>
@@ -110,9 +110,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

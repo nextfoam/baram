@@ -8,8 +8,9 @@ from PySide6.QtWidgets import QDialog
 
 import qasync
 
+from baramFlow.base.constants import FieldType
+from baramFlow.base.field import CollateralField, Field
 from baramFlow.base.graphic.graphic import Graphic, StreamlineType
-from baramFlow.base.field import CollateralField, Field, FieldType
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB
@@ -43,7 +44,7 @@ class GraphicDialog(QDialog):
         self._timeSlider.updateTimeValues(times)
         self._timeSlider.setCurrentTime(graphic.time)
 
-        self._fields: list[Field] = getAvailableFields()
+        self._fields: list[Field] = getAvailableFields(includeCoordinate=True)
         for f in self._fields:
             self._ui.field.addItem(f.text, f)
 
@@ -127,7 +128,7 @@ class GraphicDialog(QDialog):
                 rc = await calculateCollateralField([field], [time])
 
                 if rc != 0:
-                    progressDialog.finish(self.tr('Calculation failed'))
+                    progressDialog.abort(self.tr('Calculation failed'))
                     self._ui.update.setEnabled(True)
                     return
 

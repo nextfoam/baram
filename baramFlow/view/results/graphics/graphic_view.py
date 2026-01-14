@@ -16,9 +16,9 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkTextProperty
 
 from baramFlow.app import app
 
+from baramFlow.base.constants import FieldType, VectorComponent
 from baramFlow.base.graphic.color_scheme import getColorTable
 from baramFlow.base.graphic.graphic import Graphic
-from baramFlow.base.field import FieldType, VectorComponent
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
@@ -87,6 +87,7 @@ class VisualReportView(RenderingView):
         actor.UnconstrainedFontSizeOn()
 
         actor.SetTitle(graphic.fieldDisplayName)
+        actor.SetLabelFormat('%-#6.5g')  # VTK default is "%-#6.3g". Now change the number of significant digits to "5"
 
         titleTextProp: vtkTextProperty = actor.GetTitleTextProperty()
         titleTextProp.SetFontFamily(VTK_FONT_FILE)

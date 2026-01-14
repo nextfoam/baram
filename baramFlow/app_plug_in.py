@@ -37,6 +37,6 @@ class AppPlugIn(QObject):
         self._caseWizard.open()
 
     def _createCase(self):
-        path = Path(self._caseWizard.field('projectLocation'))
+        path = Path(self._caseWizard.field('projectPath'))
         path.mkdir(exist_ok=True)
         app.projectCreated.emit(path, ProjectOpenType.MESH if self._caseWizard.isMeshProject() else ProjectOpenType.NEW)

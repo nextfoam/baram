@@ -4,14 +4,16 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import Models, DPMParticleType
 from baramFlow.case_manager import CaseManager
-from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel
+from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.project import Project
-from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
+from .DPM.DPM_dialog import DPMDialog
 from .energy_dialog import EnergyDialog
 from .models_page_ui import Ui_ModelsPage
 from .species_dialog import SpeciesDialog
@@ -70,12 +72,12 @@ class ModelsPage(ContentPage):
 
         self._items = {}
 
-        multiphaseModelText = {
+        multiphaseModelTexts = {
             MultiphaseModel.OFF: self.tr('Off'),
             MultiphaseModel.VOLUME_OF_FLUID: self.tr('Volume of Fluid'),
         }
 
-        turbulenceModelText = {
+        turbulenceModelTexts = {
             TurbulenceModel.INVISCID: self.tr('Inviscid'),
             TurbulenceModel.LAMINAR: self.tr('Laminar'),
             TurbulenceModel.SPALART_ALLMARAS: self.tr('Spalart-Allmaras'),
@@ -85,27 +87,34 @@ class ModelsPage(ContentPage):
             TurbulenceModel.LES: self.tr('LES'),
         }
 
-        solverTypeText = {
+        solverTypeTexts = {
             SolverType.PRESSURE_BASED: self.tr('Pressure-based'),
             SolverType.DENSITY_BASED: self.tr('Density-based'),
         }
 
+        DPMParticleTypeTexts = {
+            DPMParticleType.NONE        : self.tr('None'),
+            DPMParticleType.INERT       : self.tr('Inert'),
+            DPMParticleType.DROPLET     : self.tr('Droplet'),
+            DPMParticleType.COMBUSTING  : self.tr('Combusting')
+        }
+
         self._addModelItem(Models.TURBULENCE,
                            self.tr('Turbulence'),
-                           lambda: turbulenceModelText[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
+                           lambda: turbulenceModelTexts[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
 
         self._addModelItem(Models.ENERGY,
                            self.tr('Energy'),
                            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
-                           EnergyDialog if not RegionDB.isMultiRegion() else None)
+                           EnergyDialog)
 
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),
-                           lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
+                           lambda: multiphaseModelTexts[ModelsDB.getMultiphaseModel()])
 
         self._addModelItem(Models.SOLVER_TYPE,
                            self.tr('Solver Type'),
-                           lambda: solverTypeText[GeneralDB.getSolverType()])
+                           lambda: solverTypeTexts[GeneralDB.getSolverType()])
 
         self._addModelItem(Models.SPECIES,
                            self.tr('Species'),
@@ -134,11 +143,15 @@ class ModelsPage(ContentPage):
 
     def _updateEnabled(self):
         caseManager = CaseManager()
-        self._ui.list.setEnabled(not caseManager.isActive())
-        self._ui.edit.setEnabled(not caseManager.isActive())
+        if caseManager.isActive():
+            self._ui.list.setEnabled(False)
+            self._ui.edit.setEnabled(False)
+        else:
+            self._ui.list.setEnabled(True)
+            self._selectionChanged()
 
     def _selectionChanged(self):
-        if len(self._ui.list.selectedItems()) > 0:
+        if self._ui.list.selectedItems():
             self._ui.edit.setEnabled(True)
         else:
             self._ui.edit.setEnabled(False)

@@ -38,8 +38,14 @@ class Baram(QObject):
         app.restarted.connect(self._restart)
         app.projectCreated.connect(self._openProject)
 
-    async def start(self):
+    async def start(self, path=None):
         vtk_threads.vtkThreadLock = asyncio.Lock()
+
+        if path is not None:
+            await self._projectSelected(path)
+
+            return
+
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:
@@ -81,9 +87,10 @@ class Baram(QObject):
         openedProject = None
 
         try:
-            openedProject = Project.open(path.resolve(), openType)
+            openedProject = await Project.open(path.resolve(), openType)
 
-            if (openedProject.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value) is not None
+            batchCases = openedProject.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+            if (batchCases is not None and not batchCases.empty
                     and platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin()):
                 # Symbolic link requires administrator permission on Windows platform
                 openedProject = None
@@ -101,10 +108,11 @@ class Baram(QObject):
                                             self.tr('Fail to open case\n' + str(ex)))
 
         if openedProject is None:
-            Project.close()
+            await Project.close()
             return
 
-        self._projectSelector.accept()  # To close project selector dialog
+        if self._projectSelector is not None:
+            self._projectSelector.accept()  # To close project selector dialog
         app.openMainWindow()
 
 

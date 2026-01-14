@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
 
-
-def _foComponentsBase(field: str):
+def _foComponentsBase(field: str, rname: str | None) -> dict:
     data = {
         'type':            'components',
-        'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs':            ['fieldFunctionObjects'],
 
         'field':           field,
 
@@ -15,11 +13,14 @@ def _foComponentsBase(field: str):
         'log': 'false',
     }
 
+    if rname:
+        data['region'] = rname
+
     return data
 
 
-def foComponentsReport(field: str):
-    data = _foComponentsBase(field)
+def foComponentsReport(field: str, rname: str | None) -> dict:
+    data = _foComponentsBase(field, rname)
 
     data.update({
         'executeControl': 'onEnd',
@@ -30,8 +31,8 @@ def foComponentsReport(field: str):
     return data
 
 
-def foComponentsMonitor(field: str, interval: int):
-    data = _foComponentsBase(field)
+def foComponentsMonitor(field: str, rname: str | None, interval: int):
+    data = _foComponentsBase(field, rname)
     data.update({
         'executeControl':  'timeStep',
         'executeInterval': interval,

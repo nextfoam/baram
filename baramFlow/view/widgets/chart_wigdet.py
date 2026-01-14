@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import math
 import sys
 import typing
@@ -8,11 +9,15 @@ import typing
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+import qasync
+
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QWheelEvent, QFont
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QMenu
 from pyqtgraph import AxisItem
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
+
+from widgets.simple_sheet_dialog import SimpleSheetDialog
 
 SIDE_MARGIN = 0.05  # 5% margin between line end and right axis
 
@@ -100,11 +105,45 @@ class ChartWidget(QWidget):
         self._data = data
         self._drawLines()
 
-    def onScroll(self, ev: QWheelEvent):
+    def _onScroll(self, ev: QWheelEvent):
         angle = ev.angleDelta().y() / 8.0
         scale = np.power(1.05, -angle/15)  # 15 degree is usually one step on mouse wheel
 
         self._updateChart(scale)
+
+    @qasync.asyncSlot()
+    async def _onExportData(self):
+        if self._data is None or self._data.empty:
+            return
+
+        dialog = SimpleSheetDialog(self, ['Time step'] + self._data.columns.tolist(), self._data.reset_index().values.tolist(), readOnly=False)
+        try:
+            await dialog.show()
+        except asyncio.exceptions.CancelledError:
+            return
+
+    def _showContextMenu(self, position):
+        menu = QMenu(self._chart)
+        menu.setStyleSheet('''
+            QMenu {
+                background-color: white;
+                border: 1px solid #cccccc;
+                padding: 2px;
+            }
+            QMenu::item {
+                color: #5f5f5f;
+                background-color: transparent;
+            }
+            QMenu::item:selected {
+                background-color: #0078d7;
+                color: white;
+            }
+        ''')
+
+        action = menu.addAction('Export Data')
+        action.triggered.connect(self._onExportData)
+
+        menu.exec(self._chart.mapToGlobal(position))
 
     def _updateChart(self, scale: float):
         if self._data is None:
@@ -166,7 +205,7 @@ class ChartWidget(QWidget):
 
     def clear(self):
         if self._chart:
-            self._chart.onScroll.disconnect(self.onScroll)
+            self._chart.onScroll.disconnect(self._onScroll)
             self.layout().removeWidget(self._chart)
             self._chart.deleteLater()
 
@@ -174,6 +213,9 @@ class ChartWidget(QWidget):
         self._lines = {}
 
         self._chart = WheelPlotWidget(enableMenu=False, background='w')
+
+        self._chart.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._chart.customContextMenuRequested.connect(self._showContextMenu)
 
         plotItem: pg.PlotItem = self._chart.getPlotItem()
 
@@ -201,7 +243,7 @@ class ChartWidget(QWidget):
         self._chart.setTitle(self._title, color='#5f5f5f', size='12pt')
         self._chart.setLogMode(False, self._logScale)
         self._chart.setXRange(0, self._width)
-        self._chart.onScroll.connect(self.onScroll)
+        self._chart.onScroll.connect(self._onScroll)
 
         self.layout().addWidget(self._chart)
 

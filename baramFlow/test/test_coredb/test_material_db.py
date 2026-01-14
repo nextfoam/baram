@@ -1,7 +1,8 @@
 import unittest
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB
+from base.material.material import UNIVERSAL_GAS_CONSTANT
 
 
 class TestMaterialDB(unittest.TestCase):

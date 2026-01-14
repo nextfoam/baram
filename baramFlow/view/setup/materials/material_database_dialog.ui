@@ -41,22 +41,19 @@
          </sizepolicy>
         </property>
         <property name="contextMenuPolicy">
-         <enum>Qt::CustomContextMenu</enum>
+         <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
         </property>
         <property name="verticalScrollBarPolicy">
-         <enum>Qt::ScrollBarAsNeeded</enum>
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
         </property>
         <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAsNeeded</enum>
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
         </property>
         <property name="autoScroll">
          <bool>false</bool>
         </property>
         <property name="selectionMode">
-         <enum>QAbstractItemView::ExtendedSelection</enum>
-        </property>
-        <property name="indentation">
-         <number>0</number>
+         <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
         </property>
         <property name="columnCount">
          <number>0</number>
@@ -78,7 +75,7 @@
          <item>
           <spacer name="horizontalSpacer_2">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -124,7 +121,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>

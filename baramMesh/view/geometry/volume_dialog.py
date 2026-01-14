@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 
@@ -14,13 +14,22 @@ from baramMesh.app import app
 from baramMesh.db.configurations_schema import Shape, GeometryType, CFDType
 from baramMesh.rendering.vtk_loader import hexPolyData, cylinderPolyData, spherePolyData, polyDataToActor
 from .geometry import RESERVED_NAMES
+from .transform_widget import TransformWidget
 from .volume_dialog_ui import Ui_VolumeDialog
+
+
+BASE_NAMES = {
+    Shape.HEX:      'Hex_',
+    Shape.CYLINDER: 'Cylinder_',
+    Shape.SPHERE:   'Sphere_',
+    Shape.HEX6:     'Hex6_'
+}
+
 
 def showStackPage(stack, page):
     for i in range(stack.count()):
         widget = stack.widget(i)
         if widget.objectName() == page:
-            widget.show()
             stack.setCurrentIndex(i)
         else:
             widget.hide()
@@ -34,13 +43,6 @@ class VolumeDialog(QDialog):
         'cellZone': CFDType.CELL_ZONE.value
     }
 
-    _baseNames = {
-        Shape.HEX.value: 'Hex_',
-        Shape.CYLINDER.value: 'Cylinder_',
-        Shape.SPHERE.value: 'Sphere_',
-        Shape.HEX6.value: 'Hex6_'
-    }
-
     def __init__(self, parent, renderingView):
         super().__init__(parent)
         self._ui = Ui_VolumeDialog()
@@ -49,16 +51,21 @@ class VolumeDialog(QDialog):
         self._renderingView = renderingView
         self._typeRadios = None
 
+        self._transformWidget = TransformWidget(self)
+
         self._gId = None
         self._shape = None
 
         self._dbElement = None
         self._creationMode = True
 
-        self._actor = None
-        self._existingActors = None
+        self._sources = None
+        self._actors = []
 
         self._editable = True
+        self._transformed = False
+
+        self._ui.dialogContent.layout().addWidget(self._transformWidget)
 
         self._connectSignalsSlots()
 
@@ -73,33 +80,34 @@ class VolumeDialog(QDialog):
 
         self._creationMode = True
         self._gId = None
+        self._sources = None
         self._dbElement = app.db.newElement('geometry')
         self._shape = shape
 
         self._dbElement.setValue('shape', shape)
 
+        self._transformWidget.hide()
+
         self._load()
+        self._previewCustomVolume()
+
         self.adjustSize()
 
-    def setupForEdit(self, gId):
+    def setupForEdit(self, gId, sources):
         self.setWindowTitle(self.tr('Edit Volume'))
 
         self._creationMode = False
         self._gId = gId
+        self._sources = sources
         self._dbElement = app.db.checkout(f'geometry/{gId}')
-        self._shape = self._dbElement.getValue('shape')
+        self._shape = Shape(self._dbElement.getValue('shape'))
 
         self._load()
+
         self.adjustSize()
 
-    def enableEdit(self):
-        self._ui.form.setEnabled(True)
-        self._ui.ok.show()
-        self._ui.cancel.setText(self.tr('Cancel'))
-        self._editable = True
-
     def disableEdit(self):
-        self._ui.form.setEnabled(False)
+        self._ui.dialogContent.setEnabled(False)
         self._ui.ok.hide()
         self._ui.cancel.setText(self.tr('Close'))
         self._editable = False
@@ -111,21 +119,23 @@ class VolumeDialog(QDialog):
         return super().event(ev)
 
     def done(self, result):
-        if self._actor:
-            self._renderingView.removeActor(self._actor)
-            self._renderingView.refresh()
+        for actor in self._actors:
+            self._renderingView.removeActor(actor)
+
+        self._renderingView.refresh()
 
         super().done(result)
 
     def _connectSignalsSlots(self):
-        self._ui.preview.clicked.connect(self._preview)
+        self._transformWidget.transformed.connect(self._onTransformed)
+        self._ui.preview.clicked.connect(self._previewCustomVolume)
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         name = self._dbElement.getValue('name')
         if not name:
-            baseName = self._baseNames[self._shape]
+            baseName = BASE_NAMES[self._shape]
             name = f"{baseName}{app.db.getUniqueSeq('geometry', 'name', baseName, 1)}"
 
         self._ui.name.setText(name)
@@ -133,20 +143,24 @@ class VolumeDialog(QDialog):
         self._typeRadios = RadioGroup(self._ui.typeRadios)
         self._typeRadios.setObjectMap(self._cfdTypes, self._dbElement.getValue('cfdType'))
 
-        if self._shape == Shape.HEX.value or self._shape == Shape.HEX6.value:
-            self._loadHexPage()
-        elif self._shape == Shape.SPHERE.value:
-            self._loadSpherePage()
-        elif self._shape == Shape.CYLINDER.value:
-            self._loadCylinderpage()
-        else:
-            showStackPage(self._ui.geometryStack, None)     # triSurfaceMesh
-
-        if self._shape == Shape.TRI_SURFACE_MESH.value:
+        if self._shape == Shape.TRI_SURFACE_MESH:
+            self._ui.geometryStack.hide()
             self._ui.preview.hide()
+            if self._editable:
+                self._displayPreview()
+                self._transformWidget.setMeshes(self._sources)
+            else:
+                self._transformWidget.hide()
         else:
             self._ui.preview.setVisible(self._editable)
-            self._preview()
+            self._transformWidget.hide()
+
+            if self._shape == Shape.HEX or self._shape == Shape.HEX6:
+                self._loadHexPage()
+            elif self._shape == Shape.SPHERE:
+                self._loadSpherePage()
+            elif self._shape == Shape.CYLINDER:
+                self._loadCylinderpage()
 
     def _loadHexPage(self):
         showStackPage(self._ui.geometryStack, 'hex')
@@ -201,21 +215,25 @@ class VolumeDialog(QDialog):
 
         if app.db.getKeys('geometry', lambda i, e: e['name'] == name and i != self._gId):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                    self.tr('geometry "{0}" already exists.').format(name))
+                                                self.tr('geometry "{0}" already exists.').format(name))
             return False
 
         self._dbElement.setValue('gType', GeometryType.VOLUME.value)
         self._dbElement.setValue('name', name)
         self._dbElement.setValue('cfdType', self._typeRadios.value())
 
-        if self._shape == Shape.HEX.value or self._shape == Shape.HEX6.value:
+        if self._shape == Shape.HEX or self._shape == Shape.HEX6:
             return self._updateHexData()
-        elif self._shape == Shape.SPHERE.value:
+        elif self._shape == Shape.SPHERE:
             return self._updateSphereData()
-        elif self._shape == Shape.CYLINDER.value:
+        elif self._shape == Shape.CYLINDER:
             return self._updateCylinderData()
-        else:
-            return True     # triSurfaceMesh
+        elif self._transformed:     # triSurfaceMesh transformed
+            for gId, polyData in self._sources.items():
+                surface = app.db.getElement('geometry', gId)
+                self._dbElement.updateGeometryPolyData(surface.value('path'), polyData)
+
+        return True
 
     def _updateHexData(self):
         if not self._validateHex():
@@ -250,21 +268,24 @@ class VolumeDialog(QDialog):
 
         return True
 
-    def _preview(self):
-        if self._actor:
-            self._renderingView.removeActor(self._actor)
+    def _onTransformed(self):
+        self._transformed = True
+        self._sources = self._transformWidget.meshes()
+        self._displayPreview()
 
+    @qasync.asyncSlot()
+    async def _previewCustomVolume(self):
         polyData = None
         try:
-            if self._shape == Shape.HEX.value or self._shape == Shape.HEX6.value:
+            if self._shape == Shape.HEX or self._shape == Shape.HEX6:
                 if points := self._validateHex():
                     polyData = hexPolyData(*points)
-            elif self._shape == Shape.CYLINDER.value:
+            elif self._shape == Shape.CYLINDER:
                 polyData = cylinderPolyData(
                     (float(self._ui.axis1X.text()), float(self._ui.axis1Y.text()), float(self._ui.axis1Z.text())),
                     (float(self._ui.axis2X.text()), float(self._ui.axis2Y.text()), float(self._ui.axis2Z.text())),
                     float(self._ui.cylinderRadius.text()))
-            elif self._shape == Shape.SPHERE.value:
+            elif self._shape == Shape.SPHERE:
                 polyData = spherePolyData(
                     (float(self._ui.centerX.text()), float(self._ui.centerY.text()), float(self._ui.centerZ.text())),
                     float(self._ui.sphereRadius.text()))
@@ -272,19 +293,12 @@ class VolumeDialog(QDialog):
             pass
 
         if polyData:
-            self._actor = polyDataToActor(polyData)
-            self._actor.GetProperty().SetRepresentationToSurface()
-            self._actor.GetProperty().EdgeVisibilityOn()
-            self._actor.GetProperty().SetLineWidth(1.0)
-            self._actor.GetProperty().SetDiffuse(0.6)
-            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('burlywood'))
-            self._actor.GetProperty().SetLineWidth(2)
-            self._renderingView.addActor(self._actor)
-            self._renderingView.refresh()
+            self._sources = {self._gId: polyData}
         else:
-            self._renderingView.refresh()
-            QMessageBox.information(self, self.tr('Add Geometry Failed'), self.tr('Invalid coordinates'))
-            return False
+            self._sources.clear()
+            await AsyncMessageBox().information(self, self.tr('Preview Failed'), self.tr('Invalid coordinates'))
+
+        self._displayPreview()
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -297,7 +311,7 @@ class VolumeDialog(QDialog):
                 self._gId = db.addElement('geometry', self._dbElement)
 
                 name = self._ui.name.text()
-                if self._shape == Shape.HEX6.value:
+                if self._shape == Shape.HEX6:
                     for plate in Shape.PLATES.value:
                         element = app.db.newElement('geometry')
                         element.setValue('gType', GeometryType.SURFACE.value)
@@ -339,3 +353,22 @@ class VolumeDialog(QDialog):
             return None
 
         return point1, point2
+
+    def _displayPreview(self):
+        for actor in self._actors:
+            self._renderingView.removeActor(actor)
+
+        self._actors.clear()
+
+        for polyData in self._sources.values():
+            actor = polyDataToActor(polyData)
+            actor.GetProperty().SetRepresentationToSurface()
+            actor.GetProperty().EdgeVisibilityOn()
+            actor.GetProperty().SetLineWidth(1.0)
+            actor.GetProperty().SetDiffuse(0.6)
+            actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('burlywood'))
+            actor.GetProperty().SetLineWidth(2)
+            self._actors.append(actor)
+            self._renderingView.addActor(actor)
+
+        self._renderingView.refresh()

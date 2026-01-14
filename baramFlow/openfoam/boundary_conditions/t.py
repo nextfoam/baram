@@ -39,8 +39,11 @@ class T(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
+                    BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(xpath, constant)),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath)),
+                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructZeroGradient()),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructFixedValue(constant)),
@@ -52,7 +55,7 @@ class T(BoundaryCondition):
                     BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(float(self._db.getValue(xpath + '/supersonicInflow/staticTemperature')))),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructWallT(xpath, constant)),
-                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleturbulentTemperatureRadCoupledMixed()),
+                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleturbulentTemperatureRadCoupledMixed(xpath, type_)),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
@@ -91,13 +94,21 @@ class T(BoundaryCondition):
             'T0': ('uniform', constant)
         }
 
-    def _constructCompressibleturbulentTemperatureRadCoupledMixed(self):
-        return {
+    def _constructCompressibleturbulentTemperatureRadCoupledMixed(self, xpath, type_=None):
+        data = {
             'type': 'compressible::turbulentTemperatureRadCoupledMixed',
             'Tnbr': 'T',
             'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
             'value': self._initialValueByTime()
         }
+
+        if type_ == BoundaryType.THERMO_COUPLED_WALL.value:
+            wallLayersXpath = xpath + '/thermoCoupledWall/temperature/wallLayers'
+            if self._db.getAttribute(wallLayersXpath, 'disabled') == 'false':
+                data['thicknessLayers'] = self._db.getValue(wallLayersXpath + '/thicknessLayers').split()
+                data['kappaLayers'] = self._db.getValue(wallLayersXpath + '/thermalConductivityLayers').split()
+
+        return data
 
     def _constructFlowRateInletT(self, xpath, constant):
         spec = self._db.getValue(xpath + '/flowRateInlet/flowRate/specification')
@@ -116,7 +127,7 @@ class T(BoundaryCondition):
     def _constructInterfaceT(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
-            return self._constructCompressibleturbulentTemperatureRadCoupledMixed()
+            return self._constructCompressibleturbulentTemperatureRadCoupledMixed(xpath)
         else:
             return self._constructCyclicAMI()
 
@@ -140,9 +151,6 @@ class T(BoundaryCondition):
                     'value': self._initialValueByTime()
                 }
             elif spec == WallTemperature.CONVECTION.value:
-                thicknessLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thicknessLayers').split()
-                kappaLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thermalConductivityLayers').split()
-
                 data = {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',
@@ -153,9 +161,10 @@ class T(BoundaryCondition):
                     'value': self._initialValueByTime()
                 }
 
-                if thicknessLayers:
-                    data['thicknessLayers'] = thicknessLayers
-                    data['kappaLayers'] = kappaLayers
+                wallLayersXpath = xpath + '/wall/temperature/wallLayers'
+                if self._db.getAttribute(wallLayersXpath, 'disabled') == 'false':
+                    data['thicknessLayers'] = self._db.getValue(wallLayersXpath + '/thicknessLayers').split()
+                    data['kappaLayers'] = self._db.getValue(wallLayersXpath + '/thermalConductivityLayers').split()
 
                 return data
 

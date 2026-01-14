@@ -2,58 +2,28 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
-from enum import Enum
 
 from xml.sax.saxutils import escape
 
 import baramFlow.coredb.libdb as xml
-from .materials_base import MaterialsBase
-
-
-class Phase(Enum):
-    GAS = 'gas'
-    LIQUID = 'liquid'
-    SOLID = 'solid'
-
-
-class Specification(Enum):
-    CONSTANT = 'constant'
-    PERFECT_GAS = 'perfectGas'
-    SUTHERLAND = 'sutherland'
-    POLYNOMIAL = 'polynomial'
-
-
-class DensitySpecification(Enum):
-    CONSTANT = 'constant'
-    PERFECT_GAS = 'perfectGas'
-    POLYNOMIAL = 'polynomial'
-    INCOMPRESSIBLE_PERFECT_GAS = 'incompressiblePerfectGas'
-    REAL_GAS_PENG_ROBINSON = 'PengRobinsonGas'
-
-
-class ViscositySpecification(Enum):
-    CONSTANT = 'constant'
-    PERFECT_GAS = 'perfectGas'
-    SUTHERLAND = 'sutherland'
-    POLYNOMIAL = 'polynomial'
-    CROSS_POWER_LAW = 'cross'
-    HERSCHEL_BULKLEY = 'herschelBulkley'
-    BIRD_CARREAU = 'carreau'
-    POWER_LAW = 'nonNewtonianPowerLaw'
-
-
-class MaterialType(Enum):
-    NONMIXTURE = 'nonmixture'
-    MIXTURE = 'mixture'
-    SPECIE = 'specie'
+from baramFlow.base.material.database import materialsBase
+from baramFlow.base.material.material import Phase, MaterialType
 
 
 @dataclass
 class Specifications:
     density: str = 'constant'
     specificHeat: str = 'constant'
-    thermalConductivity: str = 'constant'
-    viscosity: str = 'constant'
+    transport: str = 'constant'
+
+
+@dataclass
+class JanafSpecificHeat:
+    lowTemperature: str = '200'
+    commonTemperature: str = '1000'
+    highTemperature: str = '6000'
+    lowCoefficients: str = '0 0 0 0 0 0 0'
+    highCoefficients: str = '0 0 0 0 0 0 0'
 
 
 @dataclass
@@ -156,31 +126,45 @@ def _pengRobinsonXML(values):
     return ("<pengRobinsonParameters>"
             f"  <criticalTemperature>{values['criticalTemperature']}</criticalTemperature>"
             f"  <criticalPressure>{values['criticalPressure']}</criticalPressure>"
-            f"  <criticalSpecificVolume>{round(1 / float(values['criticalDensity']), 4)}</criticalSpecificVolume>"
+            f"  <criticalSpecificVolume>{round(1 / float(values['criticalSpecificVolume']), 4)}</criticalSpecificVolume>"
             f"  <acentricFactor>{values['acentricFactor']}</acentricFactor>"
             "</pengRobinsonParameters>")
 
 
-def _viscosityXML(phase, specification, values, viscosityProperties):
+def _boussinesqXML():
+    return ('<boussinesq xmlns="http://www.baramcfd.org/baram">'
+            '   <rho0>1</rho0>'
+            '   <T0>300</T0>'
+            '   <beta>3e-03</beta>'
+            '</boussinesq>')
+
+
+def _perfectFluidXML():
+    return ('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
+            '   <rho0>997</rho0>'
+            '   <T>288</T>'
+            '   <beta>4.609e-10</beta>'
+            '</perfectFluid>')
+
+
+def _transportXML(phase, specification, values, viscosityProperties):
     def sutherland(values_):
         return ("<sutherland>"
                 f"  <coefficient>{values_['sutherlandCoefficient']}</coefficient>"
                 f"  <temperature>{values_['sutherlandTemperature']}</temperature>"
                 "</sutherland>")
 
-    if phase == Phase.SOLID.value:
-        return ''
-
-    return ("<viscosity>"
+    return ("<transport>"
             f"  <specification>{specification}</specification>"
-            f"  <constant>{values['viscosity']}</constant>"
-            "   <polynomial>0</polynomial>"
+            f"  <viscosity>{values['viscosity']}</viscosity>"
+            f"  <thermalConductivity>{values['thermalConductivity']}</thermalConductivity>"
+            "   <polynomial><viscosity>0</viscosity><thermalConductivity>0</thermalConductivity></polynomial>"
             f"  {sutherland(values) if phase == 'gas' else ''}"
             f"  {viscosityProperties.crossViscosity.toXML() if phase == 'liquid' else ''}"
             f"  {viscosityProperties.hershelBulkleyViscosity.toXML() if phase == 'liquid' else ''}"
             f"  {viscosityProperties.carreauViscosity.toXML() if phase == 'liquid' else ''}"
             f"  {viscosityProperties.nonNewtonianPowerLawViscosity.toXML() if phase == 'liquid' else ''}"
-            "</viscosity>")
+            "</transport>")
 
 
 def _typeXML(type, typeProperties):
@@ -199,7 +183,7 @@ def _materialXML(mid: str, name: str, base: dict, defaults: MaterialDefaults, ty
 
     phase = base['phase']
     chemicalFormula = (f"<chemicalFormula>{escape(base['chemicalFormula'])}</chemicalFormula>"
-                       if base['chemicalFormula'] else '')
+                       if base.get('chemicalFormula', None) else '')
 
     typeXML = _typeXML(type_, typeProperties)
 
@@ -209,28 +193,51 @@ def _materialXML(mid: str, name: str, base: dict, defaults: MaterialDefaults, ty
             <type>{type_.value}</type>
             {chemicalFormula}
             <phase>{phase}</phase>
-            {_propertyElement('molecularWeight', base['molecularWeight'])}
-            {_propertyElement('absorptionCoefficient', base['absorptionCoefficient'])}
-            {_propertyElement('saturationPressure', base['saturationPressure'])}
-            {_propertyElement('emissivity', base['emissivity'])}
+            {_propertyElement('molecularWeight', base.get('molecularWeight', None))}
+            {_propertyElement('absorptionCoefficient', base.get('absorptionCoefficient', None))}
+            {_propertyElement('emissivity', base.get('emissivity', None))}
             <density>
                 <specification>{specifications.density}</specification>
                 <constant>{base['density']}</constant>
                 <polynomial>0</polynomial>
-                {_pengRobinsonXML(base) if type_ != MaterialType.MIXTURE and phase == 'gas' else ''}
+                {_boussinesqXML() if type_ != MaterialType.MIXTURE and phase == 'gas' else ''}
+                {_perfectFluidXML() if type_ != MaterialType.MIXTURE and phase == 'liquid' else ''}
             </density>
             <specificHeat>
                 <specification>{specifications.specificHeat}</specification>
                 <constant>{base['specificHeat']}</constant>
                 <polynomial>0</polynomial>
+                <janaf>
+                    <lowTemperature>200</lowTemperature>
+                    <commonTemperature>1000</commonTemperature>
+                    <highTemperature>6000</highTemperature>
+                    <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>
+                    <highCoefficients>0 0 0 0 0 0 0</highCoefficients>
+                </janaf>
             </specificHeat>
-            {_viscosityXML(phase, specifications.viscosity, base, defaults.viscosityProperties)}
-            <thermalConductivity>
-                <specification>{specifications.thermalConductivity}</specification>
-                <constant>{base['thermalConductivity']}</constant>
-                <polynomial>0</polynomial>
-            </thermalConductivity>
+            {_transportXML(phase, specifications.transport, base, defaults.viscosityProperties)}
             {'' if typeXML is None else typeXML}
+            <criticalTemperature>{base['criticalTemperature']}</criticalTemperature>
+            <criticalPressure>{base['criticalPressure']}</criticalPressure>
+            <criticalSpecificVolume>{base['criticalSpecificVolume']}</criticalSpecificVolume>
+            <tripleTemperature>{base['tripleTemperature']}</tripleTemperature>
+            <triplePressure>{base['triplePressure']}</triplePressure>
+            <normalBoilingTemperature>{base['normalBoilingTemperature']}</normalBoilingTemperature>
+            <standardStateEnthalpy>{base['standardStateEnthalpy']}</standardStateEnthalpy>
+            <referenceTemperature>{base['referenceTemperature']}</referenceTemperature>
+            <acentricFactor>{base['acentricFactor']}</acentricFactor>
+            <saturationPressure>
+                <type>constant</type>
+                <constant>{base['saturationPressure']}</constant>
+            </saturationPressure>
+            <enthalpyOfVaporization>
+                <type>constant</type>
+                <constant>{base['enthalpyOfVaporization']}</constant>
+            </enthalpyOfVaporization>
+            <dropletSurfaceTension>
+                <type>constant</type>
+                <constant>{base['dropletSurfaceTension']}</constant>
+            </dropletSurfaceTension>
         </material>
     '''
 
@@ -241,14 +248,14 @@ class MaterialSchema:
     @classmethod
     def newNonMixture(cls, mid: str, name: str, baseName: str):
         return xml.createElement(
-            _materialXML(mid, name, MaterialsBase.getMaterial(baseName),
+            _materialXML(mid, name, materialsBase.getMaterial(baseName),
                          MaterialDefaults(_defaultSpecification, _defaultsViscosityProperties),
                          TypeProperties(MaterialType.NONMIXTURE)))
 
     @classmethod
     def newMixture(cls, mid: str, name: str, specieBaseName: str):
-        base = MaterialsBase.getMixture()
-        base['phase'] = MaterialsBase.getMaterial(specieBaseName)['phase']
+        base = materialsBase.getMixture()
+        base['phase'] = materialsBase.getMaterial(specieBaseName)['phase']
 
         return xml.createElement(
             _materialXML(mid, name, base,
@@ -258,18 +265,18 @@ class MaterialSchema:
     @classmethod
     def newSpecie(cls, mid: str, name: str, baseName: str, defaults: MaterialDefaults, mixtureID: str):
         return xml.createElement(
-            _materialXML(mid, name, MaterialsBase.getMaterial(baseName), defaults,
+            _materialXML(mid, name, materialsBase.getMaterial(baseName), defaults,
                          TypeProperties(MaterialType.SPECIE, mixtureID)))
 
     @classmethod
     def defaultsToInherit(cls, mixture):
         viscosityProperties = None
         if xml.getText(mixture, 'phase') == 'liquid':
-            viscosity = xml.getElement(mixture, 'viscosity')
-            cross = xml.getElement(viscosity, 'cross')
-            herSchelBulkley = xml.getElement(viscosity, 'herschelBulkley')
-            carreau = xml.getElement(viscosity, 'carreau')
-            nonNewtonianPowerLaw = xml.getElement(viscosity, 'nonNewtonianPowerLaw')
+            transport = xml.getElement(mixture, 'transport')
+            cross = xml.getElement(transport, 'cross')
+            herSchelBulkley = xml.getElement(transport, 'herschelBulkley')
+            carreau = xml.getElement(transport, 'carreau')
+            nonNewtonianPowerLaw = xml.getElement(transport, 'nonNewtonianPowerLaw')
 
             viscosityProperties = ViscosityProperties(
                 crossViscosity=CrossViscosity(
@@ -296,9 +303,8 @@ class MaterialSchema:
             )
 
         return MaterialDefaults(specifications=Specifications(
-                                    density=xml.getText(mixture, 'density/specification'),
-                                    specificHeat=xml.getText(mixture, 'specificHeat/specification'),
-                                    thermalConductivity=xml.getText(mixture, 'thermalConductivity/specification'),
-                                    viscosity=xml.getText(mixture, 'viscosity/specification')
-                                ),
-                                viscosityProperties=viscosityProperties)
+            density=xml.getText(mixture, 'density/specification'),
+            specificHeat=xml.getText(mixture, 'specificHeat/specification'),
+            transport=xml.getText(mixture, 'transport/specification')
+        ),
+            viscosityProperties=viscosityProperties)

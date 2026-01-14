@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="12">
 
     <!-- type definitions -->
     <xs:simpleType name="uuidType">
@@ -9,7 +9,7 @@
         </xs:restriction>
     </xs:simpleType>
 
-   <xs:simpleType name="positive">
+    <xs:simpleType name="positive">
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
         </xs:restriction>
@@ -49,14 +49,14 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="exclusvie0-10">
+    <xs:simpleType name="exclusive0-10">
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
             <xs:maxExclusive value="10"/>
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="inclusvie0-10">
+    <xs:simpleType name="inclusive0-10">
         <xs:restriction base="xs:double">
             <xs:minInclusive value="0"/>
             <xs:maxInclusive value="10"/>
@@ -89,6 +89,14 @@
     <xs:complexType name="inputNonNegativeNumberType">
         <xs:simpleContent>
             <xs:extension base="nonNegative">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputPositiveIntegerType">
+        <xs:simpleContent>
+            <xs:extension base="xs:positiveInteger">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -128,7 +136,7 @@
 
     <xs:complexType name="inputExclusive0-10Type">
         <xs:simpleContent>
-            <xs:extension base="exclusvie0-10">
+            <xs:extension base="exclusive0-10">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -136,7 +144,7 @@
 
     <xs:complexType name="inputInclusive0-10Type">
         <xs:simpleContent>
-            <xs:extension base="inclusvie0-10">
+            <xs:extension base="inclusive0-10">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -178,29 +186,67 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="scalarFieldType">
+    <xs:complexType name="function1BaseType">
         <xs:sequence>
-            <xs:element name="field" default="pressure">
+            <xs:element name="type" default="constant">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
-                        <xs:enumeration value="pressure"/>
-                        <xs:enumeration value="speed"/>
-                        <xs:enumeration value="xVelocity"/>
-                        <xs:enumeration value="yVelocity"/>
-                        <xs:enumeration value="zVelocity"/>
-                        <xs:enumeration value="turbulentKineticEnergy"/>
-                        <xs:enumeration value="turbulentDissipationRate"/>
-                        <xs:enumeration value="specificDissipationRate"/>
-                        <xs:enumeration value="modifiedTurbulentViscosity"/>
-                        <xs:enumeration value="temperature"/>
-                        <xs:enumeration value="density"/>
-                        <xs:enumeration value="material"/>
-                        <xs:enumeration value="scalar"/>
+                        <xs:enumeration value="constant"/>
+                        <xs:enumeration value="table"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            <xs:element name="fieldID" type="xs:positiveInteger" default="1"/>  <!-- set if "field" is "material" or "scalar" -->
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="function1ScalarType">
+        <xs:complexContent>
+            <xs:extension base="function1BaseType">
+                <xs:sequence>
+                    <xs:element name="constant" type="inputNumberType"/>
+                    <xs:element name="table" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="row" minOccurs="0" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:sequence>
+                                            <xs:element name="t" type="xs:double"/>
+                                            <xs:element name="v" type="xs:double"/>
+                                        </xs:sequence>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="function1VectorType">
+        <xs:complexContent>
+            <xs:extension base="function1BaseType">
+                <xs:sequence>
+                    <xs:element name="constant" type="vector"/>
+                    <xs:element name="table" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="row" minOccurs="0" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:sequence>
+                                            <xs:element name="t" type="xs:double"/>
+                                            <xs:element name="x" type="xs:double"/>
+                                            <xs:element name="y" type="xs:double"/>
+                                            <xs:element name="z" type="xs:double"/>
+                                        </xs:sequence>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="userDefinedScalarListType">
@@ -243,7 +289,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="mid" type="xs:positiveInteger"/>
-                        <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="specie" maxOccurs="unbounded">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger"/>
@@ -305,12 +351,50 @@
             <xs:element name="atmosphericBoundaryLayer">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="flowDirection" type="vector"/>
+                        <xs:element name="flowDirection">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="specMethod" default="direct">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="direct"/>
+                                                <xs:enumeration value="surfaceNormal"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="value" type="vector"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="groundNormalDirection" type="vector"/>
                         <xs:element name="referenceFlowSpeed" type="inputNumberType" default="10"/>
                         <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
                         <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
                         <xs:element name="minimumZCoordinate" type="inputNumberType" default="0.0"/>
+                        <xs:element name="pasquillStability">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="stabilityClass" default="D">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="A"/>
+                                                <xs:enumeration value="B"/>
+                                                <xs:enumeration value="C"/>
+                                                <xs:enumeration value="D"/>
+                                                <xs:enumeration value="E"/>
+                                                <xs:enumeration value="F"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="latitude" type="inputNumberType" default="37"/>
+                                    <xs:element name="surfaceHeatFlux" type="inputNumberType" default="0"/>
+                                    <xs:element name="referenceDensity" type="inputNumberType" default="1.225"/>
+                                    <xs:element name="referenceSpecificHeat" type="inputNumberType" default="1006.0"/>
+                                    <xs:element name="referenceTemperature" type="inputNumberType" default="298.15"/>
+                                </xs:sequence>
+                                <xs:attribute name="disabled" type="xs:boolean" default="true"/>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -361,18 +445,28 @@
                                     <xs:enumeration value="polynomial"/>
                                     <xs:enumeration value="incompressiblePerfectGas"/>
                                     <xs:enumeration value="PengRobinsonGas"/>
+                                    <xs:enumeration value="boussinesq"/>
+                                    <xs:enumeration value="perfectFluid"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="pengRobinsonParameters" minOccurs="0">
+                        <xs:element name="boussinesq" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="criticalTemperature" type="inputNumberType"/>
-                                    <xs:element name="criticalPressure" type="inputNumberType"/>
-                                    <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
-                                    <xs:element name="acentricFactor" type="inputNumberType"/>
+                                    <xs:element name="rho0" type="inputNumberType"/>
+                                    <xs:element name="T0" type="inputNumberType"/>
+                                    <xs:element name="beta" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="perfectFluid" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="rho0" type="inputNumberType"/>
+                                    <xs:element name="T" type="inputNumberType"/>
+                                    <xs:element name="beta" type="inputNumberType"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -387,15 +481,27 @@
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="polynomial"/>
+                                    <xs:enumeration value="janaf"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
+                        <xs:element name="janaf">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="lowTemperature" type="inputNumberType" default="200"/>
+                                    <xs:element name="commonTemperature" type="inputNumberType" default="1000"/>
+                                    <xs:element name="highTemperature" type="inputNumberType" default="6000"/>
+                                    <xs:element name="lowCoefficients" type="inputNumberListType"/>
+                                    <xs:element name="highCoefficients" type="inputNumberListType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="viscosity" minOccurs="0">
+            <xs:element name="transport">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="specification">
@@ -411,8 +517,16 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="constant" type="inputPositiveNumberType"/>
-                        <xs:element name="polynomial" type="inputNumberListType"/>
+                        <xs:element name="viscosity" type="inputPositiveNumberType"/>
+                        <xs:element name="thermalConductivity" type="inputNumberType"/>
+                        <xs:element name="polynomial">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="viscosity" type="inputNumberListType"/>
+                                    <xs:element name="thermalConductivity" type="inputNumberListType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="sutherland" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
@@ -465,25 +579,20 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="thermalConductivity">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="specification">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:string">
-                                    <xs:enumeration value="constant"/>
-                                    <xs:enumeration value="polynomial"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="constant" type="inputNumberType"/>
-                        <xs:element name="polynomial" type="inputNumberListType"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="molecularWeight" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalPressure" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalSpecificVolume" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="tripleTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="triplePressure" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="normalBoilingTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="standardStateEnthalpy" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="referenceTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="acentricFactor" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="saturationPressure" type="function1ScalarType" minOccurs="0"/>
+            <xs:element name="enthalpyOfVaporization" type="function1ScalarType" minOccurs="0"/>
+            <xs:element name="dropletSurfaceTension" type="function1ScalarType" minOccurs="0"/>
             <xs:element name="absorptionCoefficient" type="inputNumberType" minOccurs="0"/>
-            <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
             <xs:element name="mixture" minOccurs="0">
                 <xs:complexType>
@@ -825,12 +934,10 @@
                                                     <xs:element name="specification" default="constant">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
-                                                                <xs:enumeration
-                                                                        value="constant"/>
-                                                                <xs:enumeration
-                                                                        value="piecewiseLinear"/>
-                                                                <xs:enumeration
-                                                                        value="polynomial"/>
+                                                                <xs:enumeration value="constant"/>
+                                                                <xs:enumeration value="piecewiseLinear"/>
+                                                                <xs:enumeration value="polynomial"/>
+                                                                <xs:enumeration value="janaf"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
@@ -1069,7 +1176,7 @@
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="mid" type="xs:positiveInteger"/>
-                                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                    <xs:element name="specie" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
@@ -1205,6 +1312,14 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="temperatureWallLayerType">
+        <xs:sequence>
+            <xs:element name="thicknessLayers" type="inputNumberListType"/>
+            <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
+        </xs:sequence>
+        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="volumeFractionListType">
@@ -1518,15 +1633,7 @@
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
                         <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
-                        <xs:element name="wallLayers">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="thicknessLayers" type="inputNumberListType"/>
-                                    <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
-                                </xs:sequence>
-                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1571,6 +1678,18 @@
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="thermoCoupledWallType">
+        <xs:sequence>
+            <xs:element name="temperature">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1636,8 +1755,11 @@
                         <xs:restriction base="xs:string">
                             <xs:enumeration value="velocityInlet"/>
                             <xs:enumeration value="flowRateInlet"/>
+                            <xs:enumeration value="flowRateOutlet"/>
                             <xs:enumeration value="pressureInlet"/>
                             <xs:enumeration value="pressureOutlet"/>
+                            <xs:enumeration value="intakeFan"/>
+                            <xs:enumeration value="exhaustFan"/>
                             <xs:enumeration value="ablInlet"/>
                             <xs:enumeration value="openChannelInlet"/>
                             <xs:enumeration value="openChannelOutlet"/>
@@ -1669,6 +1791,7 @@
 
                 <xs:element name="velocityInlet" type="velocityInletType"/>
                 <xs:element name="flowRateInlet" type="flowRateInletType"/>
+                <xs:element name="flowRateOutlet" type="flowRateInletType"/>
                 <xs:element name="pressureInlet" type="pressureInletType"/>
                 <xs:element name="pressureOutlet" type="pressureOutletType"/>
                 <xs:element name="openChannelInlet" type="openChannelInletType"/>
@@ -1683,13 +1806,13 @@
                 <!-- no setting for supersonicOutflow -->
                 <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
                 <xs:element name="wall" type="wallType"/>
-                <!-- no setting for thermoCoupledWall -->
+                <xs:element name="thermoCoupledWall" type="thermoCoupledWallType"/>
                 <!-- <xs:element name="thermoCoupledWall" type="thermoCoupledWallType" /> -->
                 <!-- no setting for symmetry -->
                 <!--  <xs:element name="symmetry" type="symmetryType" /> -->
                 <xs:element name="interface" type="interfaceType"/>
                 <xs:element name="porousJump" type="porousJumpType"/>
-                <xs:element name="fan" type="fanType"/>
+                <!-- <xs:element name="fan" type="fanType"/> -->
                 <!-- no setting for empty -->
                 <!-- <xs:element name="empty" type="emptyType" /> -->
                 <!-- xs:element name="cyclic" type="cyclicType"/> -->
@@ -1715,6 +1838,47 @@
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="species" type="speciesListType"/>
+                <xs:element name="pressure" type="inputNumberType" default="0"/>
+                <xs:element name="fanCurveName" type="uuidType"/>
+                <xs:element name="patchInteraction">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="type" default="none">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="none"/>
+                                        <xs:enumeration value="reflect"/>
+                                        <xs:enumeration value="escape"/>
+                                        <xs:enumeration value="trap"/>
+                                        <xs:enumeration value="recycle"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="reflect">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="coefficientOfRestitution">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="normal" type="inputRatioType" default="1"/>
+                                                    <xs:element name="tangential" type="inputRatioType" default="1"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="recycle">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="recycleBoundary" type="inputNumberType" default="1"/>
+                                        <xs:element name="recycleFraction" type="inputRatioType" default="1"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
@@ -1941,42 +2105,42 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-<!--            <xs:element name="species">-->
-<!--                <xs:complexType>-->
-<!--                    <xs:sequence>-->
-<!--                        <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">-->
-<!--                            <xs:complexType>-->
-<!--                                <xs:sequence>-->
-<!--                                    <xs:element name="mid" type="xs:positiveInteger"/>-->
-<!--                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">-->
-<!--                                        <xs:complexType>-->
-<!--                                            <xs:sequence>-->
-<!--                                                <xs:element name="mid" type="xs:positiveInteger"/>-->
-<!--                                                <xs:element name="discretizationScheme" default="firstOrderUpwind">-->
-<!--                                                    <xs:simpleType>-->
-<!--                                                        <xs:restriction base='xs:string'>-->
-<!--                                                            <xs:enumeration value='firstOrderUpwind'/>-->
-<!--                                                            <xs:enumeration value='secondOrderUpwind'/>-->
-<!--                                                        </xs:restriction>-->
-<!--                                                    </xs:simpleType>-->
-<!--                                                </xs:element>-->
-<!--                                                <xs:element name="underRelaxationFactor"-->
-<!--                                                            type="underRelaxationFactorNumberType" default="0.3"/>-->
-<!--                                                <xs:element name="underRelaxationFactorFinal"-->
-<!--                                                            type="underRelaxationFactorNumberType" default="1"/>-->
-<!--                                                <xs:element name="absoluteConvergenceCriteria" type="inputRatioType"-->
-<!--                                                            default="0.001"/>-->
-<!--                                                <xs:element name="relativeConvergenceCriteria" type="inputRatioType"-->
-<!--                                                            default="0.05"/>-->
-<!--                                            </xs:sequence>-->
-<!--                                        </xs:complexType>-->
-<!--                                    </xs:element>-->
-<!--                                </xs:sequence>-->
-<!--                            </xs:complexType>-->
-<!--                        </xs:element>-->
-<!--                    </xs:sequence>-->
-<!--                </xs:complexType>-->
-<!--            </xs:element>-->
+            <!--            <xs:element name="species">-->
+            <!--                <xs:complexType>-->
+            <!--                    <xs:sequence>-->
+            <!--                        <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">-->
+            <!--                            <xs:complexType>-->
+            <!--                                <xs:sequence>-->
+            <!--                                    <xs:element name="mid" type="xs:positiveInteger"/>-->
+            <!--                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">-->
+            <!--                                        <xs:complexType>-->
+            <!--                                            <xs:sequence>-->
+            <!--                                                <xs:element name="mid" type="xs:positiveInteger"/>-->
+            <!--                                                <xs:element name="discretizationScheme" default="firstOrderUpwind">-->
+            <!--                                                    <xs:simpleType>-->
+            <!--                                                        <xs:restriction base='xs:string'>-->
+            <!--                                                            <xs:enumeration value='firstOrderUpwind'/>-->
+            <!--                                                            <xs:enumeration value='secondOrderUpwind'/>-->
+            <!--                                                        </xs:restriction>-->
+            <!--                                                    </xs:simpleType>-->
+            <!--                                                </xs:element>-->
+            <!--                                                <xs:element name="underRelaxationFactor"-->
+            <!--                                                            type="underRelaxationFactorNumberType" default="0.3"/>-->
+            <!--                                                <xs:element name="underRelaxationFactorFinal"-->
+            <!--                                                            type="underRelaxationFactorNumberType" default="1"/>-->
+            <!--                                                <xs:element name="absoluteConvergenceCriteria" type="inputRatioType"-->
+            <!--                                                            default="0.001"/>-->
+            <!--                                                <xs:element name="relativeConvergenceCriteria" type="inputRatioType"-->
+            <!--                                                            default="0.05"/>-->
+            <!--                                            </xs:sequence>-->
+            <!--                                        </xs:complexType>-->
+            <!--                                    </xs:element>-->
+            <!--                                </xs:sequence>-->
+            <!--                            </xs:complexType>-->
+            <!--                        </xs:element>-->
+            <!--                    </xs:sequence>-->
+            <!--                </xs:complexType>-->
+            <!--            </xs:element>-->
             <xs:element name="advanced">
                 <xs:complexType>
                     <xs:sequence>
@@ -2071,7 +2235,9 @@
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="interval" type="xs:positiveInteger" default="1"/>
                 <xs:element name="coordinate" type="vector"/>
                 <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
@@ -2102,7 +2268,9 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="surface" type="xs:nonNegativeInteger"/>  <!-- boundary condition bcid -->
             </xs:sequence>
         </xs:complexType>
@@ -2125,7 +2293,9 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="volume" type="xs:nonNegativeInteger"/>   <!-- cellZone czid -->
             </xs:sequence>
         </xs:complexType>
@@ -2204,6 +2374,365 @@
                                                     </xs:element>
                                                 </xs:sequence>
                                                 <xs:attribute name="scalarID" type="xs:integer" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="DPMModels">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="properties">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="particleType" default="none">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="none"/>
+                                                                <xs:enumeration value="inert"/>
+                                                                <xs:enumeration value="droplet"/>
+                                                                <xs:enumeration value="combusting"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="inert">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="inertParticle" type="xs:nonNegativeInteger"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="droplet">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="composition">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="material" minOccurs="0" maxOccurs="unbounded">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="mid" type="xs:positiveInteger"/>
+                                                                                        <xs:element name="composition" type="inputNumberType"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="temperature" type="inputNumberType"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="numericalConditions">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="interactionWithContinuousPhase" type="xs:boolean" default="true"/>
+                                                                <xs:element name="maxParticleCourantNumber" type="inputNonNegativeNumberType" default="0.3"/>  <!-- For Transient Case -->
+                                                                <xs:element name="DPMIterationInterval" type="xs:positiveInteger" default="10"/>  <!-- For Steady Case -->
+                                                                <xs:element name="nodeBasedAveraging" type="xs:boolean" default="true"/>
+                                                                <xs:element name="trackingScheme" default="implicit">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="implicit"/>
+                                                                            <xs:enumeration value="analytic"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="kinematicModel">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="dragForce">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="specification" default="sphereDrag">
+                                                                                <xs:simpleType>
+                                                                                    <xs:restriction base="xs:string">
+                                                                                        <xs:enumeration value="sphereDrag"/>
+                                                                                        <xs:enumeration value="nonSphereDrag"/>
+                                                                                        <xs:enumeration value="distortedSphereDrag"/>
+                                                                                        <xs:enumeration value="WenYuDrag"/>
+                                                                                        <xs:enumeration value="ErgunWenYuDrag"/>
+                                                                                        <xs:enumeration value="PlessisMasliyahDrag"/>
+                                                                                        <xs:enumeration value="TomiyamaDrag"/>
+                                                                                    </xs:restriction>
+                                                                                </xs:simpleType>
+                                                                            </xs:element>
+                                                                            <xs:element name="nonSphereDrag">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="shapeFactor" type="inputNumberType" default="0.9"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                            <xs:element name="TomiyamaDrag">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="surfaceTension" type="inputNumberType" default="0.9"/>
+                                                                                        <xs:element name="contamination" default="pure">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="pure"/>
+                                                                                                    <xs:enumeration value="slight"/>
+                                                                                                    <xs:enumeration value="full"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="liftForce">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="specification" default="none">
+                                                                                <xs:simpleType>
+                                                                                    <xs:restriction base="xs:string">
+                                                                                        <xs:enumeration value="none"/>
+                                                                                        <xs:enumeration value="SaffmanMeiLiftForce"/>
+                                                                                        <xs:enumeration value="TomiyamaLift"/>
+                                                                                    </xs:restriction>
+                                                                                </xs:simpleType>
+                                                                            </xs:element>
+                                                                            <xs:element name="TomiyamaLift">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="surfaceTension" type="inputNumberType" default="0.9"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="gravity" type="xs:boolean" default="false"/>
+                                                                <xs:element name="pressureGradient" type="xs:boolean" default="false"/>
+                                                                <xs:element name="brownianMotionForce">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="molecularFreePathLength" type="inputNonNegativeNumberType" default="0.9"/>
+                                                                            <xs:element name="useTurbulence" type="xs:boolean" default="false"/>
+                                                                        </xs:sequence>
+                                                                        <xs:attribute name="disabled" type="xs:boolean" default="true"/>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="turbulentDispersion" default="none">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="none"/>
+                                                                <xs:enumeration value="stochasticDispersionRAS"/>
+                                                                <xs:enumeration value="gradientDispersionRAS"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="heatTransfer">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="specification" default="none">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="none"/>
+                                                                            <xs:enumeration value="RanzMarshall"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="ranzMarshall">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="birdCorrection" type="xs:boolean" default="true"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="evaporation">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="model" default="none">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="none"/>
+                                                                            <xs:enumeration value="diffusionControlled"/>
+                                                                            <xs:enumeration value="convectionDiffusionControlled"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="enthalpyTransferType">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="enthalpyDifference"/>
+                                                                            <xs:enumeration value="latentHeat"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="injections">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="injection" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="name" type="xs:string"/>
+                                                                <xs:element name="type" default="cone">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="point"/>
+                                                                            <xs:enumeration value="surface"/>
+                                                                            <xs:enumeration value="cone"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="injectorProperties">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="pointInjection">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="numberOfParticlesPerPoint" type="inputPositiveIntegerType" default="100"/>
+                                                                                        <xs:element name="injectionTime" type="inputNumberType" default="0"/>
+                                                                                        <xs:element name="particleVelocity" type="vector"/>
+                                                                                        <xs:element name="positions">
+                                                                                            <xs:complexType>
+                                                                                                <xs:sequence>
+                                                                                                    <xs:element name="position" type="vector" minOccurs="0" maxOccurs="unbounded"/>
+                                                                                                </xs:sequence>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                            <xs:element name="flowRate">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="specification" default="particleCount">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="particleCount"/>
+                                                                                                    <xs:enumeration value="particleVolume"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="particleCount">
+                                                                                            <xs:complexType>
+                                                                                                <xs:sequence>
+                                                                                                    <xs:element name="parcelPerSecond" type="inputPositiveNumberType" default="100"/>
+                                                                                                    <xs:element name="numberOfParticlesPerParcel" type="inputPositiveNumberType" default="100"/>
+                                                                                                </xs:sequence>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="particleVolume">
+                                                                                            <xs:complexType>
+                                                                                                <xs:sequence>
+                                                                                                    <xs:element name="parcelPerSecond" type="inputPositiveNumberType" default="100"/>
+                                                                                                    <xs:element name="totalMass" type="inputPositiveNumberType" default="100"/>
+                                                                                                    <xs:element name="volumeFlowRate" type="function1ScalarType"/>
+                                                                                                    <xs:element name="massFlowRate" type="inputPositiveNumberType" default="100"/>
+                                                                                                </xs:sequence>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="startTime" type="inputNumberType" default="0"/>
+                                                                                        <xs:element name="stopTime" type="inputPositiveNumberType" default="1"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                            <xs:element name="coneInjection">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="injectorType" default="disc">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="point"/>
+                                                                                                    <xs:enumeration value="disc"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="position" type="function1VectorType"/>
+                                                                                        <xs:element name="axis" type="function1VectorType"/>
+                                                                                        <xs:element name="outerConeAngle" type="function1ScalarType"/>
+                                                                                        <xs:element name="innerConeAngle" type="function1ScalarType"/>
+                                                                                        <xs:element name="outerRadius" type="inputNonNegativeNumberType" default="1"/>
+                                                                                        <xs:element name="innerRadius" type="inputNonNegativeNumberType" default="0"/>
+                                                                                        <xs:element name="swirlVelocity" type="function1ScalarType"/>
+                                                                                        <xs:element name="particleSpeed" default="fromInjectionSpeed">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="fromInjectionSpeed"/>
+                                                                                                    <xs:enumeration value="fromPressure"/>
+                                                                                                    <xs:enumeration value="fromDischargeCoeff"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="injectionSpeed" type="inputNonNegativeNumberType" default="100"/>
+                                                                                        <xs:element name="injectorPressure" type="function1ScalarType"/>
+                                                                                        <xs:element name="dischargeCoeff" type="function1ScalarType"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                            <xs:element name="surfaceInjection">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="particleVelocity">
+                                                                                            <xs:complexType>
+                                                                                                <xs:sequence>
+                                                                                                    <xs:element name="type" default="constant">
+                                                                                                        <xs:simpleType>
+                                                                                                            <xs:restriction base="xs:string">
+                                                                                                                <xs:enumeration value="constant"/>
+                                                                                                                <xs:enumeration value="faceValue"/>
+                                                                                                                <xs:enumeration value="cellValue"/>
+                                                                                                            </xs:restriction>
+                                                                                                        </xs:simpleType>
+                                                                                                    </xs:element>
+                                                                                                    <xs:element name="value" type="vector"/>
+                                                                                                </xs:sequence>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="surface" type="xs:nonNegativeInteger"/>  <!-- boundary condition bcid -->
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="diameterDistribution">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="type" default="uniform">
+                                                                                <xs:simpleType>
+                                                                                    <xs:restriction base="xs:string">
+                                                                                        <xs:enumeration value="uniform"/>
+                                                                                        <xs:enumeration value="linear"/>
+                                                                                        <xs:enumeration value="rosinRammler"/>
+                                                                                        <xs:enumeration value="massRosinRammler"/>
+                                                                                        <xs:enumeration value="normal"/>
+                                                                                    </xs:restriction>
+                                                                                </xs:simpleType>
+                                                                            </xs:element>
+                                                                            <xs:element name="diameter" type="inputNonNegativeNumberType"/>
+                                                                            <xs:element name="minDiameter" type="inputNonNegativeNumberType"/>
+                                                                            <xs:element name="maxDiameter" type="inputNonNegativeNumberType"/>
+                                                                            <xs:element name="meanDiameter" type="inputNonNegativeNumberType"/>
+                                                                            <xs:element name="spreadParameter" type="inputNonNegativeNumberType"/>
+                                                                            <xs:element name="stdDeviation" type="inputNonNegativeNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -2425,7 +2954,7 @@
                                                                                                         <xs:complexType>
                                                                                                             <xs:sequence>
                                                                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
-                                                                                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                                                                                <xs:element name="specie" maxOccurs="unbounded">
                                                                                                                     <xs:complexType>
                                                                                                                         <xs:sequence>
                                                                                                                             <xs:element name="mid" type="xs:positiveInteger"/>

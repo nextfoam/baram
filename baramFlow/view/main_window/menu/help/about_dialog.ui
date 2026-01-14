@@ -90,7 +90,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 25.2.5&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+         <string>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 26.1.0&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
@@ -147,6 +147,9 @@
        <widget class="QPushButton" name="thirdPartySoftwares">
         <property name="text">
          <string>Third-party Softwares</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

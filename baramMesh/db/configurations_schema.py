@@ -4,7 +4,7 @@
 
 from enum import Enum, auto, IntEnum
 
-from libbaram.validation import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, VectorComposite
+from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, VectorComposite
 
 
 CURRENT_CONFIGURATIONS_VERSION = 5
@@ -171,7 +171,7 @@ schema = {
     'castellation': {
         'vtkNonManifoldEdges': BoolType(False),
         'vtkBoundaryEdges': BoolType(True),
-        'nCellsBetweenLevels': IntType().setDefault(3),
+        'nCellsBetweenLevels': IntType().setDefault(3).setLowLimit(1),
         'resolveFeatureAngle': FloatType().setDefault(30),
         'maxGlobalCells': IntType().setDefault('1e8'),
         'maxLocalCells': IntType().setDefault('1e7'),

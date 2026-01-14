@@ -20,7 +20,7 @@ class ViscosityHerschelBulkleyDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._xpath = xpath + '/viscosity/herschelBulkley'
+        self._xpath = xpath + '/transport/herschelBulkley'
         self._load(data)
 
     def getValues(self):

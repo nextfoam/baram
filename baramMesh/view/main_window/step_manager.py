@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
+from enum import Enum, auto
+
 from PySide6.QtCore import QObject, Signal
 
+import qasync
+
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from libbaram.utils import rmtree
 
 from baramMesh.app import app
@@ -16,45 +20,77 @@ from baramMesh.view.snap.snap_page import SnapPage
 from baramMesh.view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
 from baramMesh.view.export.export_page import ExportPage
 from baramMesh.view.region.region_page import RegionPage
+from widgets.async_message_box import AsyncMessageBox
 
 
-class StepControlButtons:
+class ButtonID(Enum):
+    NEXT    = auto()
+    FINISH  = auto()
+    CANCEL  = auto()
+    UNLOCK  = auto()
+
+
+class StepControlButtons(QObject):
+    nextButtonClicked = Signal()
+    finishButtonClicked = Signal()
+    cancelButtonClicked = Signal()
+    unlockButtonClicked = Signal()
+
     def __init__(self, ui):
-        self._next = ui.next
-        self._unlock = ui.unlock
+        super().__init__()
 
-    @property
-    def nextButton(self):
-        return self._next
+        self._cancelClicked = False
 
-    @property
-    def unlockButton(self):
-        return self._unlock
+        self._buttons = {
+            ButtonID.NEXT:      ui.next,
+            ButtonID.FINISH:    ui.finishSteps,
+            ButtonID.CANCEL:    ui.finishCancel,
+            ButtonID.UNLOCK:    ui.unlock
+        }
 
-    def setToOpenedMode(self):
-        self._next.show()
-        self._unlock.hide()
+        ui.next.clicked.connect(self.nextButtonClicked)
+        ui.finishSteps.clicked.connect(self.finishButtonClicked)
+        ui.finishCancel.clicked.connect(self._onCancelButtonClicked)
+        ui.unlock.clicked.connect(self.unlockButtonClicked)
 
-    def setToLockedMode(self):
-        self._next.hide()
-        self._unlock.show()
+    def isCancelClicked(self):
+        return self._cancelClicked
 
-    def setNextEnabled(self, enabled):
-        self._next.setEnabled(enabled)
+    def showButton(self, id_, enabled=True):
+        self._cancelClicked = False
+
+        for i, button in self._buttons.items():
+            if i == id_:
+                button.show()
+                button.setEnabled(enabled)
+            else:
+                button.hide()
+
+    def enableNextButton(self):
+        self._buttons[ButtonID.NEXT].setEnabled(True)
+
+    def disableNextButton(self):
+        self._buttons[ButtonID.NEXT].setEnabled(False)
+
+    def _onCancelButtonClicked(self):
+        self._cancelClicked = True
+        self.cancelButtonClicked.emit()
 
 
 class StepManager(QObject):
-    currentStepChanged = Signal(Step)
-    openedStepChanged = Signal(Step)
+    displayStepChanged = Signal(Step)
+    workingStepChanged = Signal(Step)
 
     def __init__(self, navigation, ui):
         super().__init__()
 
         self._navigation = navigation
-        self._openedStep = None
+        self._workingStep = Step.NONE
         self._contentStack = ui.content
         self._buttons = StepControlButtons(ui)
         self._contentPages = {}
+
+        self._batchRunning = False
 
         self._pages = {
             Step.NONE: StepPage(ui, None),
@@ -72,6 +108,7 @@ class StepManager(QObject):
     def load(self):
         for page in self._pages.values():
             page.unload()
+            page.load()
 
         savedStep = app.db.getEnum('step')
 
@@ -101,11 +138,8 @@ class StepManager(QObject):
     async def saveCurrentPage(self):
         return await self.currentPage().save()
 
-    def isOpenedStep(self, step):
-        return step == self._openedStep
-
     def openNextStep(self):
-        self._open(self._navigation.currentStep() + 1)
+        self._open(self._workingStep + 1)
 
     def retranslatePages(self):
         for page in self._pages.values():
@@ -113,52 +147,136 @@ class StepManager(QObject):
 
     def _connectSignalsSlots(self):
         self._navigation.currentStepChanged.connect(self._moveToStep)
-        self._buttons.nextButton.clicked.connect(self.openNextStep)
-        self._buttons.unlockButton.clicked.connect(self._unlockCurrentStep)
+        self._buttons.nextButtonClicked.connect(self.openNextStep)
+        self._buttons.finishButtonClicked.connect(self._finishSteps)
+        self._buttons.cancelButtonClicked.connect(self._cancelFinishSteps)
+        self._buttons.unlockButtonClicked.connect(self._unlockCurrentStep)
 
-    def _setOpendedStep(self, step):
-        prev = self._openedStep
+        for step in range(Step.GEOMETRY, Step.CASTELLATION):
+            self._pages[step].stepCompleted.connect(self._buttons.enableNextButton)
+            self._pages[step].stepReset.connect(self._buttons.disableNextButton)
 
+        for step in range(Step.CASTELLATION, Step.EXPORT):
+            self._pages[step].stepCompleted.connect(lambda: self._buttons.showButton(ButtonID.NEXT))
+            self._pages[step].stepReset.connect(lambda: self._buttons.showButton(ButtonID.FINISH))
+
+        self._pages[Step.GEOMETRY].geometryRemoved.connect(self._geometryRemoved)
+
+    def _isWorkingStep(self, step):
+        return step == self._workingStep
+
+    def _setWorkingStep(self, step):
         self._pages[step].unlock()
-        self._navigation.enableStep(step)
-        self._openedStep = step
+        self._navigation.setWorkingStep(step)
+        self._workingStep = step
 
         db = app.db.checkout()
         db.setValue('step', step)
         app.db.commit(db)
 
-        self.openedStepChanged.emit(step)
+        self.workingStepChanged.emit(step)
 
     def _open(self, step):
         self._pages[step].open()
-        self._setOpendedStep(step)
-        self._navigation.setCurrentStep(self._openedStep)
+        self._navigation.setCurrentStep(step)
+        self._setWorkingStep(step)
 
     @qasync.asyncSlot()
     async def _moveToStep(self, step, prev):
-        self._pages[prev].deselected()
+        if step == prev:
+            return
+
+        if not await self._pages[prev].hide():
+            self._navigation.setCurrentStep(prev)
+            return
 
         page = self._pages[step]
-        await page.selected()
+        await page.show(self._isWorkingStep(step), self._batchRunning)
+        if step < self._workingStep or self._batchRunning or snappyHexMesh.isRunning():
+            page.lock()
+        else:
+            page.unlock()
+
         self._contentStack.setCurrentIndex(step)
 
-        if self.isOpenedStep(step):
-            self._buttons.setToOpenedMode()
-            self._buttons.setNextEnabled(page.isNextStepAvailable())
+        self._updateControlButtons(step)
+        self.displayStepChanged.emit(step)
+
+    @qasync.asyncSlot()
+    async def _finishSteps(self):
+        self._batchRunning = True
+        self._buttons.showButton(ButtonID.CANCEL)
+
+        snappyHexMesh.snappyStarted.emit()
+
+        while self._workingStep < Step.EXPORT:
+            # Only change workingStep
+            self._pages[self._workingStep].load()
+            self._navigation.setWorkingStep(self._workingStep)
+
+            if self._buttons.isCancelClicked() or not await self._pages[self._workingStep].runInBatchMode():
+                break
+
+            self._workingStep += 1
         else:
-            page.lock()
-            self._buttons.setToLockedMode()
+            await AsyncMessageBox().information(self._contentStack, self.tr('Process Completed'),
+                                                self.tr('All steps complete.'))
 
-        self.currentStepChanged.emit(step)
+        # Apply current workingStep
+        self._setWorkingStep(self._workingStep)
 
-    def _unlockCurrentStep(self):
+        self._batchRunning = False
+
+        displayStep = self._navigation.currentStep()
+        self._updateControlButtons(displayStep)
+        if displayStep < self._workingStep:
+            self.currentPage().lock()
+
+        snappyHexMesh.snappyStopped.emit()
+
+        self.currentPage().updateWorkingStatus()
+
+    def _cancelFinishSteps(self):
+        snappyHexMesh.cancel()
+
+    @qasync.asyncSlot()
+    async def _unlockCurrentStep(self):
         currentStep = self._navigation.currentStep()
 
-        for step in range(currentStep + 1, self._openedStep + 1):
-            self._navigation.disableStep(step)
-            self._pages[Step(step)].clearResult()
+        try:
+            for step in range(currentStep + 1, self._workingStep + 1):
+                self._navigation.disableStep(step)
+                self._pages[Step(step)].clearResult()
+        except PermissionError:
+            await AsyncMessageBox().information(
+                self._contentStack,
+                self.tr('Permission Error'),
+                self.tr('Permission Error:\n'
+                        'A file in the project folder might be open in another program.\n'
+                        'Close the file and try again.'))
 
-        self._setOpendedStep(currentStep)
+            return
 
-        self._buttons.nextButton.setEnabled(True)
-        self._buttons.setToOpenedMode()
+        self._setWorkingStep(currentStep)
+
+        # self._buttons.nextButton.setEnabled(True)
+        # self._buttons.setToOpenedMode()
+        self._updateControlButtons(currentStep)
+
+    def _geometryRemoved(self):
+        self._pages[Step.CASTELLATION].unload()
+        self._pages[Step.BOUNDARY_LAYER].unload()
+
+    def _updateControlButtons(self, step):
+        if self._batchRunning:
+            return
+
+        if self._pages[step].isNextStepAvailable():
+            if self._isWorkingStep(step):
+                self._buttons.showButton(ButtonID.NEXT)
+            else:
+                self._buttons.showButton(ButtonID.UNLOCK)
+        elif self._isWorkingStep(step) and step in (Step.CASTELLATION, Step.SNAP, Step.BOUNDARY_LAYER):
+            self._buttons.showButton(ButtonID.FINISH)
+        else:
+            self._buttons.showButton(ButtonID.NEXT, False)

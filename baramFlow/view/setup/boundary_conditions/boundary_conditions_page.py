@@ -5,23 +5,28 @@ import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.openfoam import parallel
+from widgets.async_message_box import AsyncMessageBox
+
 from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, GeometricalType
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
-from widgets.async_message_box import AsyncMessageBox
 from .ABL_inlet_dialog import ABLInletDialog
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .boundary_type_picker import BoundaryTypePicker
 from .boundary_widget import BoundaryWidget
 from .copy_dialog import CopyDialog
 from .cyclic_dialog import CyclicDialog
+from .exhaust_fan_dialog import ExhaustFanDialog
 from .fan_dialog import FanDialog
 from .farfield_riemann_dialog import FarfieldRiemannDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
+from .flow_rate_outlet_dialog import FlowRateOutletDialog
 from .free_stream_dialog import FreeStreamDialog
 from .interface_dialog import InterfaceDialog
 from .open_channel_inlet_dialog import OpenChannelInletDialog
@@ -29,6 +34,7 @@ from .open_channel_outlet_dialog import OpenChannelOutletDialog
 from .porous_jump_dialog import PorousJumpDialog
 from .pressure_inlet_dialog import PressureInletDialog
 from .pressure_outlet_dialog import PressureOutletDialog
+from .intake_fan_dialog import IntakeFanDialog
 from .subsonic_inlet_dialog import SubsonicInletDialog
 from .subsonic_outflow_dialog import SubsonicOutflowDialog
 from .supersonic_inflow_dialog import SupersonicInflowDialog
@@ -38,29 +44,32 @@ from .wall_dialog import WallDialog
 
 
 DIALOGS = {
-    BoundaryType.VELOCITY_INLET.value: VelocityInletDialog,
-    BoundaryType.FLOW_RATE_INLET.value: FlowRateInletDialog,
-    BoundaryType.PRESSURE_INLET.value: PressureInletDialog,
-    BoundaryType.ABL_INLET.value: ABLInletDialog,
-    BoundaryType.OPEN_CHANNEL_INLET.value: OpenChannelInletDialog,
-    BoundaryType.FREE_STREAM.value: FreeStreamDialog,
-    BoundaryType.FAR_FIELD_RIEMANN.value: FarfieldRiemannDialog,
-    BoundaryType.SUBSONIC_INLET.value: SubsonicInletDialog,
-    BoundaryType.SUPERSONIC_INFLOW.value: SupersonicInflowDialog,
-    BoundaryType.PRESSURE_OUTLET.value: PressureOutletDialog,
-    BoundaryType.OPEN_CHANNEL_OUTLET.value: OpenChannelOutletDialog,
-    BoundaryType.OUTFLOW.value: None,
-    BoundaryType.SUBSONIC_OUTFLOW.value: SubsonicOutflowDialog,
-    BoundaryType.SUPERSONIC_OUTFLOW.value: None,
-    BoundaryType.WALL.value: WallDialog,
-    BoundaryType.THERMO_COUPLED_WALL.value: ThermoCoupledWallDialog,
-    BoundaryType.POROUS_JUMP.value: PorousJumpDialog,
-    BoundaryType.FAN.value: FanDialog,
-    BoundaryType.SYMMETRY.value: None,
-    BoundaryType.INTERFACE.value: InterfaceDialog,
-    BoundaryType.EMPTY.value: None,
-    BoundaryType.CYCLIC.value: CyclicDialog,
-    BoundaryType.WEDGE.value: None,
+    BoundaryType.VELOCITY_INLET: VelocityInletDialog,
+    BoundaryType.FLOW_RATE_INLET: FlowRateInletDialog,
+    BoundaryType.PRESSURE_INLET: PressureInletDialog,
+    BoundaryType.INTAKE_FAN: IntakeFanDialog,
+    BoundaryType.ABL_INLET: ABLInletDialog,
+    BoundaryType.OPEN_CHANNEL_INLET: OpenChannelInletDialog,
+    BoundaryType.FREE_STREAM: FreeStreamDialog,
+    BoundaryType.FAR_FIELD_RIEMANN: FarfieldRiemannDialog,
+    BoundaryType.SUBSONIC_INLET: SubsonicInletDialog,
+    BoundaryType.SUPERSONIC_INFLOW: SupersonicInflowDialog,
+    BoundaryType.FLOW_RATE_OUTLET: FlowRateOutletDialog,
+    BoundaryType.PRESSURE_OUTLET: PressureOutletDialog,
+    BoundaryType.EXHAUST_FAN: ExhaustFanDialog,
+    BoundaryType.OPEN_CHANNEL_OUTLET: OpenChannelOutletDialog,
+    BoundaryType.OUTFLOW: None,
+    BoundaryType.SUBSONIC_OUTFLOW: SubsonicOutflowDialog,
+    BoundaryType.SUPERSONIC_OUTFLOW: None,
+    BoundaryType.WALL: WallDialog,
+    BoundaryType.THERMO_COUPLED_WALL: ThermoCoupledWallDialog,
+    BoundaryType.POROUS_JUMP: PorousJumpDialog,
+    BoundaryType.FAN: FanDialog,
+    BoundaryType.SYMMETRY: None,
+    BoundaryType.INTERFACE: InterfaceDialog,
+    BoundaryType.EMPTY: None,
+    BoundaryType.CYCLIC: CyclicDialog,
+    BoundaryType.WEDGE: None,
 }
 
 
@@ -99,21 +108,29 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.setSortingEnabled(True)
         self._ui.boundaries.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
+        self._ui.edit.setEnabled(False)
+
         self._connectSignalsSlots()
-        self._updateEnabled()
+        self._updateCopyEnabled()
         self._load()
 
-    def _connectSignalsSlots(self):
-        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
 
-        # app.meshUpdated.connect(self._meshUpdated)
+        super().closeEvent(event)
+
+    def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
-        self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
+
+        Project.instance().solverStatusChanged.connect(self._updateCopyEnabled)
+
+    def _disconnectSignalsSlots(self):
+        Project.instance().solverStatusChanged.disconnect(self._updateCopyEnabled)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -135,10 +152,20 @@ class BoundaryConditionsPage(ContentPage):
             self._selectPickedBoundary()
             self._meshUpdated()
 
-    def _updateEnabled(self):
-        caseManager = CaseManager()
-        self._ui.copy.setEnabled(not caseManager.isActive())
-        self._ui.edit.setEnabled(not caseManager.isActive())
+    def _updateCopyEnabled(self):
+        self._ui.copy.setEnabled(not CaseManager().isActive())
+
+    def _updateEditEnabled(self):
+        item = self._ui.boundaries.currentItem()
+        index = self._ui.boundaries.indexOfTopLevelItem(item)
+
+        if index == -1:  # Not Top level item
+            bctype = item.bctype()
+            if bctype and DIALOGS[bctype]:
+                self._ui.edit.setEnabled(True)
+                return
+
+        self._ui.edit.setEnabled(False)
 
     def _meshUpdated(self):
         app.meshModel().currentActorChanged.connect(self._selectPickedBoundary)
@@ -160,17 +187,9 @@ class BoundaryConditionsPage(ContentPage):
         db = coredb.CoreDB()
         boundaries = db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
-            widget = BoundaryWidget(rname, bcid, bcname, bctype)
+            widget = BoundaryWidget(rname, bcid, bcname, BoundaryType(bctype))
             widget.rightClicked.connect(self._showTypePicker)
             self._boundaries[bcid] = BoundaryItem(parent, widget)
-
-    def _updateEditEnabled(self):
-        bctype = self._ui.boundaries.currentItem().bctype()
-        if bctype and DIALOGS[bctype]:
-            self._ui.edit.setEnabled(True)
-            return
-
-        self._ui.edit.setEnabled(False)
 
     def _itemChanged(self, item, column):
         bcid = item.type()
@@ -181,42 +200,70 @@ class BoundaryConditionsPage(ContentPage):
                 app.meshModel().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
-        if column and not CaseManager().isActive():
+        if column:
             self._edit()
 
     @qasync.asyncSlot()
-    async def _changeBoundaryType(self, bcid, bctype):
+    async def _changeBoundaryType(self, bcid, bctype: BoundaryType):
         db = coredb.CoreDB()
         currentType = BoundaryDB.getBoundaryType(bcid)
         if currentType != bctype:
             xpath = BoundaryDB.getXPath(bcid)
-            db.setValue(xpath + '/physicalType', bctype)
+            db.setValue(xpath + '/physicalType', bctype.value)
             self._boundaries[bcid].reloadType()
             self._updateEditEnabled()
 
             cpid = db.getValue(xpath + '/coupledBoundary')
             if cpid != '0':
-                db.setValue(xpath + '/coupledBoundary', '0')
-                db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
+                if (BoundaryDB.needsCoupledBoundary(bctype)
+                        and BoundaryDB.getBoundaryType(cpid) == currentType
+                        and bcid == int(db.getValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary'))):
+                    db.setValue(BoundaryDB.getXPath(cpid) + '/physicalType', bctype.value)
+                    self._boundaries[int(cpid)].reloadType()
+                else:
+                    db.setValue(xpath + '/coupledBoundary', '0')
+                    db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
+                    cpid = '0'
 
-            if BoundaryDB.needsCoupledBoundary(bctype):
-                await AsyncMessageBox().information(
-                    self, self.tr('Need to edit boundary condition'),
-                    self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
+            if cpid == '0'and BoundaryDB.needsCoupledBoundary(bctype):
+                if parallel.getNP() > 1 and BoundaryDB.getGeometryType(bctype) in [GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI]:
+                    message = self.tr('1. This boundary type requires a coupled boundary. It is configured in the next dialog.\n\n' \
+                                      '2. The current decomposed mesh could potentially be incompatible with this boundary type change.' \
+                                      ' It is recommended to work in serial mode (single processor) when making this change.')
+                else:
+                    message = self.tr('This boundary type requires a coupled boundary.\nIt is configured in the next dialog.')
+
+                await AsyncMessageBox().information(self, self.tr('Warning for ')+BoundaryDB.dbBoundaryTypeToText(bctype), message)
+
+            interactionType = DPMModelManager.getDefaultPatchInteractionType(bctype)
+            db.setValue(xpath + '/patchInteraction/type', interactionType.value)
 
             self._edit()
 
     def _boundaryTypeChanged(self, bcid):
         self._boundaries[bcid].reloadType()
 
-    def _copy(self):
-        self._dialog = CopyDialog(self)
-        self._dialog.boundariesCopied.connect(self._refresh)
-        self._dialog.open()
+    @qasync.asyncSlot()
+    async def _copy(self):
+        if item := self._ui.boundaries.currentItem():
+            bcid = item.type()
+            bctype = self._boundaries[bcid].bctype()
+            if BoundaryDB.needsCoupledBoundary(bctype):
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('{} boundary conditions cannot be copied.'.format(BoundaryDB.dbBoundaryTypeToText(bctype))))
+                return
+
+            self._dialog = CopyDialog(self, bcid)
+            self._dialog.boundariesCopied.connect(self._refresh)
+            self._dialog.open()
+        else:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), self.tr('Select a source boundary to copy its conditions'))
+
 
     def _edit(self):
-        item = self._ui.boundaries.currentItem()
-        if item:
+        if item := self._ui.boundaries.currentItem():
             bcid = item.type()
             if bcid:
                 bctype = self._boundaries[bcid].bctype()
@@ -233,6 +280,7 @@ class BoundaryConditionsPage(ContentPage):
         self._typePicker.open(bcid, point)
 
     def _currentBoundaryChanged(self, current):
+        self._updateEditEnabled()
         app.meshModel().setCurrentId(current.type())
 
     def _selectPickedBoundary(self):

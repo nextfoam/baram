@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import copy
 from enum import Enum
 
 import baramFlow.coredb.libdb as xml
@@ -40,8 +41,6 @@ class TemporalProfileType(Enum):
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = '/regions/region/cellZones'
 
-    _cellzones = None
-
     @classmethod
     def getXPath(cls, czid):
         return f'{CELL_ZONE_CONDITION_XPATH}[@czid="{czid}"]'
@@ -72,20 +71,39 @@ class CellZoneDB:
     def getCellZoneSelectorItems(cls):
         db = coredb.CoreDB()
 
-        if not cls._cellzones:
-            cls._cellzones = []
+        items = []
 
-            for rname in db.getRegions():
-                r = '' if rname == '' else rname + ':'
-                for czid, czname in db.getCellZones(rname):
-                    # if czname != cls.NAME_FOR_ALL:
-                    cls._cellzones.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
+        for rname in db.getRegions():
+            r = '' if rname == '' else rname + ':'
+            for czid, czname in db.getCellZones(rname):
+                # if czname != cls.NAME_FOR_ALL:
+                items.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
 
-        return cls._cellzones
-
+        return items
 
 def getCellZoneElements(rname=None):
     return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/cellZones/cellZone')
+
+
+def copyCellZoneConditions(sourceID, targetID):
+    db = coredb.CoreDB()
+    old = db.getElement(CellZoneDB.getXPath(targetID))
+    parent = old.getparent()
+    name = old.find('name', namespaces=xml.nsmap).text
+
+    new = copy.deepcopy(db.getElement(CellZoneDB.getXPath(sourceID)))
+    new.set('czid', str(targetID))
+    new.find('name', namespaces=xml.nsmap).text = name
+    parent.replace(old, new)
+    
+    if CellZoneDB.isRegion(name):
+        sourceRegion = db.getElement(RegionDB.getXPath(CellZoneDB.getCellZoneRegion(sourceID)))
+        targetRegion = parent.getparent()
+
+        for item in ['material', 'secondaryMaterials', 'phaseInteractions']:
+            old = targetRegion.find(item, namespaces=xml.nsmap)
+            new = copy.deepcopy(sourceRegion.find(item, namespaces=xml.nsmap))
+            targetRegion.replace(old, new)
 
 
 def _addMaterialSourceTerm(parent, mid):

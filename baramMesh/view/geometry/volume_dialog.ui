@@ -21,21 +21,15 @@
     <number>9</number>
    </property>
    <item>
-    <widget class="QWidget" name="form" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
+    <widget class="QWidget" name="dialogContent" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QWidget" name="widget_5" native="true">
         <layout class="QFormLayout" name="formLayout_3">
          <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
           <number>0</number>
          </property>
          <property name="rightMargin">
@@ -64,6 +58,9 @@
           <number>6</number>
          </property>
          <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
           <number>0</number>
          </property>
          <property name="rightMargin">
@@ -121,7 +118,7 @@
       <item>
        <widget class="QStackedWidget" name="geometryStack">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="hex">
          <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -263,49 +260,74 @@
            <widget class="QWidget" name="widget_11" native="true">
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QGroupBox" name="groupBox">
-               <property name="title">
-                <string>Center Point</string>
-               </property>
-               <layout class="QFormLayout" name="formLayout">
+              <widget class="QWidget" name="widget" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_4">
                 <property name="leftMargin">
-                 <number>9</number>
+                 <number>0</number>
                 </property>
                 <property name="topMargin">
                  <number>0</number>
                 </property>
-                <property name="bottomMargin">
-                 <number>9</number>
-                </property>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>X</string>
+                <item>
+                 <widget class="QGroupBox" name="groupBox">
+                  <property name="title">
+                   <string>Center Point</string>
                   </property>
+                  <layout class="QFormLayout" name="formLayout">
+                   <property name="leftMargin">
+                    <number>9</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>9</number>
+                   </property>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>X</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="centerX"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_7">
+                     <property name="text">
+                      <string>Y</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="centerY"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_8">
+                     <property name="text">
+                      <string>Z</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="centerZ"/>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="centerX"/>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_7">
-                  <property name="text">
-                   <string>Y</string>
+                <item>
+                 <spacer name="verticalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
                   </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="centerY"/>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_8">
-                  <property name="text">
-                   <string>Z</string>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
                   </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLineEdit" name="centerZ"/>
+                 </spacer>
                 </item>
                </layout>
               </widget>
@@ -359,19 +381,6 @@
              </item>
             </layout>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>
@@ -570,6 +579,13 @@
     <widget class="QWidget" name="widget_6" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
+       <widget class="QPushButton" name="preview">
+        <property name="text">
+         <string>Preview</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -581,13 +597,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="preview">
-        <property name="text">
-         <string>Preview</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="ok">

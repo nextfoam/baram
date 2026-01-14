@@ -1,92 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
-
 import qasync
 from PySide6.QtGui import QIntValidator
-from vtkmodules.vtkCommonDataModel import vtkPlane
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
-    vtkTriangleFilter
-from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
-from libbaram.run import RunParallelUtility
-from libbaram.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
-from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
+from baramMesh.db.configurations_schema import GeometryType
 from baramMesh.db.configurations import defaultsDB
-from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh, CASTELLATION_OUTPUT_TIME
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 from baramMesh.view.step_page import StepPage
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
 
 
-def Plane(ox, oy, oz, nx, ny, nz):
-    plane = vtkPlane()
-    plane.SetOrigin(ox, oy, oz)
-    plane.SetNormal(nx, ny, nz)
-
-    return plane
-
-
-def _writeFeatureFile(path: Path, pd):
-    edges = vtkFeatureEdges()
-    edges.SetInputData(pd)
-    edges.SetNonManifoldEdges(app.db.getValue('castellation/vtkNonManifoldEdges'))
-    edges.SetBoundaryEdges(app.db.getValue('castellation/vtkBoundaryEdges'))
-    edges.SetFeatureAngle(float(app.db.getValue('castellation/resolveFeatureAngle')))
-    edges.Update()
-
-    features = vtkAppendPolyData()
-    features.AddInputData(edges.GetOutput())
-
-    _, geometry = app.window.geometryManager.getBoundingHex6()
-    if geometry is not None:  # boundingHex6 is configured
-        x1, y1, z1 = geometry.vector('point1')
-        x2, y2, z2 = geometry.vector('point2')
-
-        planes = [
-            Plane(x1, 0, 0, -1, 0, 0),
-            Plane(x2, 0, 0, 1, 0, 0),
-            Plane(0, y1, 0, 0, -1, 0),
-            Plane(0, y2, 0, 0, 1, 0),
-            Plane(0, 0, z1, 0, 0, -1),
-            Plane(0, 0, z2, 0, 0, 1)
-        ]
-
-        # vtkTriangleFilter is used to convert "Triangle Strips" to Triangles
-        tf = vtkTriangleFilter()
-        tf.SetInputData(pd)
-        tf.Update()
-
-        # "cutter" should be created in the loop
-        # because its pointer is handed over to vtkAppendPolyData
-        for p in planes:
-            cutter = vtkPolyDataPlaneCutter()
-            cutter.SetInputData(tf.GetOutput())
-            cutter.SetPlane(p)
-            cutter.Update()
-
-            if cutter.GetOutput().GetNumberOfCells() > 0:
-                features.AddInputData(cutter.GetOutput())
-
-    features.Update()
-
-    writer = vtkOBJWriter()
-    writer.SetFileName(str(path))
-    writer.SetInputData(features.GetOutput())
-    writer.Write()
-
-
 class CastellationPage(StepPage):
-    OUTPUT_TIME = 1
+    OUTPUT_TIME = CASTELLATION_OUTPUT_TIME
 
     def __init__(self, ui: Ui_MainWindow):
         super().__init__(ui, ui.castellationPage)
@@ -108,17 +43,13 @@ class CastellationPage(StepPage):
 
         ui.nCellsBetweenLevels.setValidator(QIntValidator(1, 1000000))
 
+        ui.castellationCancel.hide()
+
         self._connectSignalsSlots()
 
-    def open(self):
-        self._load()
-
-    async def selected(self):
-        if not self._loaded:
-            self._load()
-
-        self._updateControlButtons()
-        self.updateMesh()
+    async def show(self, isCurrentStep, batchRunning):
+        self.load()
+        self.updateWorkingStatus()
 
     async def save(self):
         try:
@@ -148,15 +79,11 @@ class CastellationPage(StepPage):
             await AsyncMessageBox().information(self._widget, self.tr('Input Error'), e.toMessage())
             return False
 
-    def _connectSignalsSlots(self):
-        self._ui.loadCastellationDefaults.clicked.connect(self._loadDefaults)
-        self._ui.surfaceRefinementAdd.clicked.connect(lambda: self._openSurfaceRefinementDialog())
-        self._ui.volumeRefinementAdd.clicked.connect(lambda: self._openVolumeRefinementDialog())
-        self._ui.refine.clicked.connect(self._refine)
-        self._ui.castellationReset.clicked.connect(self._reset)
-
-    def _load(self):
+    def load(self):
         self._db = app.db.checkout()
+
+        if self._loaded:
+            return
 
         castellation = self._db.getElement('castellation')
         self._setConfigurastions(castellation)
@@ -186,7 +113,22 @@ class CastellationPage(StepPage):
                 self._db.removeElement('castellation/refinementVolumes', groupId)
 
         self._loaded = True
-        self._updateControlButtons()
+
+    async def runInBatchMode(self):
+        if not await self.save():
+            return False
+
+        self._ui.refine.setEnabled(False)
+
+        return await self._run()
+
+    def _connectSignalsSlots(self):
+        self._ui.loadCastellationDefaults.clicked.connect(self._loadDefaults)
+        self._ui.surfaceRefinementAdd.clicked.connect(lambda: self._openSurfaceRefinementDialog())
+        self._ui.volumeRefinementAdd.clicked.connect(lambda: self._openVolumeRefinementDialog())
+        self._ui.refine.clicked.connect(self._refine)
+        self._ui.castellationCancel.clicked.connect(snappyHexMesh.cancel)
+        self._ui.castellationReset.clicked.connect(self._reset)
 
     @qasync.asyncSlot()
     async def _loadDefaults(self):
@@ -226,80 +168,32 @@ class CastellationPage(StepPage):
 
     @qasync.asyncSlot()
     async def _refine(self):
-        if self._cm:
-            self._cm.cancel()
+        if not await self.save():
             return
 
-        nCellsBetweenLevels = int(self._ui.nCellsBetweenLevels.text())
-        if nCellsBetweenLevels < 1:
-            await AsyncMessageBox().warning(self._widget, self.tr('Invalid Parameter'), self.tr('"Number of Cells between Levels" should be bigger than or equal to 1'))
-            return
+        self._ui.refine.hide()
+        self._ui.castellationCancel.show()
+        snappyHexMesh.snappyStarted.emit()
 
+        app.consoleView.clear()
 
-        buttonText = self._ui.refine.text()
-        try:
-            if not await self.save():
-                return
+        if await self._run():
+            self.stepCompleted.emit()
 
-            self._disableEdit()
-            self._disableControlsForRunning()
-            self._ui.refine.setText(self.tr('Cancel'))
+            await AsyncMessageBox().information(self._widget, self.tr('Complete'),
+                                                self.tr('Castellation refinement is completed.'))
 
-            progressDialog = ProgressDialog(self._widget, self.tr('Castellation Refinement'))
-            progressDialog.setLabelText(self.tr('Updating Configurations'))
-            progressDialog.open()
+        snappyHexMesh.snappyStopped.emit()
+        self._enableEdit()
+        self._ui.castellationCancel.hide()
 
-            progressDialog.setLabelText(self.tr('Writing Geometry Files'))
-            self._writeGeometryFiles(progressDialog)
-
-            snapDict = SnappyHexMeshDict(castellationMesh=True).build()
-            if app.db.elementCount('region') > 1:
-                snapDict.write()
-            else:
-                snapDict.updateForCellZoneInterfacesSnap().write()
-
-            progressDialog.close()
-
-            console = app.consoleView
-            console.clear()
-
-            self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            self._cm.output.connect(console.append)
-            self._cm.errorOutput.connect(console.appendError)
-            await self._cm.start()
-            rc = await self._cm.wait()
-            if rc != 0:
-                raise ProcessError(rc)
-
-            self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
-                                    cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            self._cm.output.connect(console.append)
-            self._cm.errorOutput.connect(console.appendError)
-            await self._cm.start()
-            await self._cm.wait()
-
-            await app.window.meshManager.load(self.OUTPUT_TIME)
-            self._updateControlButtons()
-
-            await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Castellation refinement is completed.'))
-        except ProcessError as e:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
-        except CanceledException:
-            self.clearResult()
-            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
-                                                self.tr('Castellation refinement has been canceled.'))
-        finally:
-            self._enableEdit()
-            self._enableControlsForSettings()
-            self._ui.refine.setText(buttonText)
-            self._cm = None
+        self.updateWorkingStatus()
 
     def _reset(self):
         self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
+        self.stepReset.emit()
 
     def _surfaceRefinementDialogAccepted(self):
         element = self._dialog.dbElement()
@@ -347,57 +241,14 @@ class CastellationPage(StepPage):
 
         self._ui.volumeRefinement.removeItem(groupId)
 
-    def _writeGeometryFiles(self, progressDialog):
-        def writeGeometryFile(path: Path, pd):
-            writer = vtkSTLWriter()
-            writer.SetFileName(str(path))
-            writer.SetInputData(pd)
-            writer.Write()
-
-        filePath = app.fileSystem.triSurfacePath()
-        geometryManager = app.window.geometryManager
-        geometries = app.db.getElements('geometry')
-
-        for gId, geometry in geometries.items():
-            if progressDialog.isCanceled():
-                return
-
-            if geometryManager.isBoundingHex6(gId):
-                continue
-
-            if geometry.value('gType') == GeometryType.SURFACE.value:
-                polyData = geometryManager.polyData(gId)
-                _writeFeatureFile(filePath / f"{geometry.value('name')}.obj", polyData)
-
-                if geometry.value('shape') == Shape.TRI_SURFACE_MESH.value:
-                    volume = geometries[geometry.value('volume')] if geometry.value('volume') else None
-                    if (geometry.value('cfdType') != CFDType.NONE.value
-                            or geometry.value('castellationGroup')
-                            or (volume is not None and volume.value('cfdType') != CFDType.NONE.value)):
-                        writeGeometryFile(filePath / f"{geometry.value('name')}.stl", polyData)
-
-            else:  # geometry['gType'] == GeometryType.VOLUME.value
-                if geometry.value('shape') == Shape.TRI_SURFACE_MESH.value and (
-                        geometry.value('cfdType') != CFDType.NONE.value or geometry.value('castellationGroup')):
-                    appendFilter = vtkAppendPolyData()
-                    for surfaceId in geometryManager.subSurfaces(gId):
-                        appendFilter.AddInputData(geometryManager.polyData(surfaceId))
-
-                    cleanFilter = vtkCleanPolyData()
-                    cleanFilter.SetInputConnection(appendFilter.GetOutputPort())
-                    cleanFilter.Update()
-
-                    writeGeometryFile(filePath / f"{geometry.value('name')}.stl", cleanFilter.GetOutput())
-
     def _updateControlButtons(self):
         if self.isNextStepAvailable():
             self._ui.refine.hide()
             self._ui.castellationReset.show()
-            self._setNextStepEnabled(True)
         else:
             self._ui.refine.show()
+            self._ui.refine.setEnabled(True)
             self._ui.castellationReset.hide()
-            self._setNextStepEnabled(False)
 
     def _enableStep(self):
         self._enableEdit()
@@ -424,3 +275,25 @@ class CastellationPage(StepPage):
         self._ui.surfaceRefinement.disableEdit()
         self._ui.volumeRefinementAdd.setEnabled(False)
         self._ui.volumeRefinement.disableEdit()
+
+    async def _run(self):
+        self._disableEdit()
+
+        result = False
+        try:
+            await snappyHexMesh.castellation()
+            result = True
+        except ProcessError as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Castellation refinement Failed [') + str(e.returncode) + ']')
+        except CanceledException:
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Castellation refinement has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Castellation refinement Failed:') + str(e))
+
+        if not result:
+            self.clearResult()
+
+        return result

@@ -6,13 +6,16 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
+from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
 
 from baramFlow.app import app
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import DPMParticleType
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
@@ -20,8 +23,10 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from baramFlow.openfoam.constant.g import G
+from baramFlow.openfoam.constant.kinematic_cloud_properties import KinematicCloudProperties
 from baramFlow.openfoam.constant.MRF_properties import MRFProperties
 from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
+from baramFlow.openfoam.constant.reacting_cloud1_properties import ReactingCloud1Properties
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from baramFlow.openfoam.constant.transport_properties import TransportProperties
@@ -101,6 +106,9 @@ class CaseGenerator(QObject):
             self._files.append(FvOptions(rname))
             self._files.append(SetFieldsDict(region))
 
+            if DPMModelManager.particleType() != DPMParticleType.NONE:
+                self._files.append(CloudProperties(rname))
+
         # Files that should be created in case root folder in addition to the region folders.
 
         if len(regions) > 1:
@@ -136,10 +144,10 @@ class CaseGenerator(QObject):
             boundaries = self._db.getBoundaryConditions(rname)
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
-                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
+                if BoundaryDB.needsCoupledBoundary(BoundaryType(bctype)) and self._db.getValue(xpath + '/coupledBoundary') == '0':
                     errors += QCoreApplication.translate(
                         'CaseGenerator',
-                        f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
+                        f'{BoundaryDB.dbBoundaryTypeToText(BoundaryType(bctype))} boundary "{bcname}" needs a coupled boundary.\n')
 
         return errors
 
@@ -200,6 +208,11 @@ class CaseGenerator(QObject):
         if errors := self._gatherFiles():
             raise RuntimeError(errors)
 
+        hasInitiailied = False
+        boundaryConditionsPath = FileSystem.boundaryConditionsPath(self._db.getRegions()[0])
+        if boundaryConditionsPath.is_dir() and any(boundaryConditionsPath.iterdir()):
+            hasInitiailied = True
+
         errors = await asyncio.to_thread(self._generateFiles)
         if self._canceled:
             raise CanceledException
@@ -227,6 +240,10 @@ class CaseGenerator(QObject):
 
             for time in FileSystem.times(parent=caseRoot):
                 utils.rmtree(caseRoot / time)
+
+        if not hasInitiailied:
+            self.progress.emit(self.tr('Initialize Case...'))
+            await self.initialize()
 
     async def initialize(self):
         self._canceled = False
