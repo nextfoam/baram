@@ -570,6 +570,20 @@
                         </property>
                        </widget>
                       </item>
+                      <item>
+                       <widget class="FlatPushButton" name="regionMenuButton">
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/icons/ellipsis-vertical.svg</normaloff>:/icons/ellipsis-vertical.svg</iconset>
+                        </property>
+                        <property name="toolTip">
+                         <string>More options</string>
+                        </property>
+                       </widget>
+                      </item>
                      </layout>
                     </widget>
                    </item>
