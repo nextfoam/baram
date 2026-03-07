@@ -17,11 +17,16 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
 # load implementations for rendering and interaction factory classes
+from vtkmodules.vtkFiltersCore import vtkExtractCells
+from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget, vtkOrientationMarkerWidget
 from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
+from vtkmodules.vtkRenderingCore import (
+    vtkActor, vtkRenderer, vtkPropPicker, vtkCellPicker,
+    vtkLightKit, vtkProp, vtkPolyDataMapper,
+)
 
 from libbaram.vtk_threads import isRenderingHold
 
@@ -75,6 +80,7 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
 
 class MouseHandler(QObject):
     mouseClicked = Signal(float, float, bool)
+    cellSelectionRequested = Signal(float, float)
 
     def __init__(self, style):
         super().__init__()
@@ -125,7 +131,10 @@ class MouseHandler(QObject):
         return False
 
     def _leftButtonClicked(self, x, y):
-        self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
+        if self._style.GetInteractor().GetShiftKey():
+            self.cellSelectionRequested.emit(x, y)
+        else:
+            self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
         return False
 
     def _mouseMoved(self, x, y, px, py):
@@ -136,6 +145,8 @@ class RenderingWidget(QWidget):
     actorPicked = Signal(vtkActor, bool)
     viewClosed = Signal()
 
+    cellSelected = Signal(object, int)
+
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
@@ -145,6 +156,11 @@ class RenderingWidget(QWidget):
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._actorPicker = vtkPropPicker()
+
+        self._cellPicker = vtkCellPicker()
+        self._cellPicker.SetTolerance(0.005)
+
+        self._cellSelectionActor: Optional[vtkActor] = None
 
         self._style = vtkInteractorStyleTrackballCamera()
         self._widget = RenderWindowInteractor(self)
@@ -176,6 +192,8 @@ class RenderingWidget(QWidget):
         self._mouseObserver = self._originalMouseObserver
 
         self._mouseObserver.mouseClicked.connect(self._mouseClicked)
+
+        self._originalMouseObserver.cellSelectionRequested.connect(self._onCellSelectionRequested)
 
         # To pick actors
         self._style.AddObserver(vtkCommand.LeftButtonPressEvent, self._leftButtonPressEvent)
@@ -228,7 +246,60 @@ class RenderingWidget(QWidget):
 
         return actor
 
+    def pickCell(self, x, y):
+        self._cellPicker.Pick(x, y, 0, self._renderer)
+        actor = self._cellPicker.GetActor()
+        cellId = self._cellPicker.GetCellId()
+        return actor, cellId
+
+    def showCellSelection(self, polyData, cellIds):
+        self.clearCellSelection()
+
+        if not cellIds:
+            return
+
+        from vtkmodules.vtkCommonCore import vtkIdList
+        idList = vtkIdList()
+        for cid in cellIds:
+            idList.InsertNextId(cid)
+
+        extractor = vtkExtractCells()
+        extractor.SetInputData(polyData)
+        extractor.SetCellList(idList)
+        extractor.Update()
+
+        geom = vtkGeometryFilter()
+        geom.SetInputConnection(extractor.GetOutputPort())
+        geom.Update()
+
+        mapper = vtkPolyDataMapper()
+        mapper.SetInputConnection(geom.GetOutputPort())
+        mapper.ScalarVisibilityOff()
+        mapper.SetResolveCoincidentTopologyToPolygonOffset()
+        mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(0.0, -1.0)
+
+        self._cellSelectionActor = vtkActor()
+        self._cellSelectionActor.SetMapper(mapper)
+        prop = self._cellSelectionActor.GetProperty()
+        prop.SetColor(1.0, 1.0, 1.0)
+        prop.SetOpacity(1.0)
+        prop.SetRepresentationToSurface()
+        prop.EdgeVisibilityOn()
+        prop.SetEdgeColor(1.0, 0.0, 1.0)
+        prop.SetLineWidth(2.0)
+        prop.SetLighting(False)
+
+        self._renderer.AddActor(self._cellSelectionActor)
+        self._widget.Render()
+
+    def clearCellSelection(self):
+        if self._cellSelectionActor is not None:
+            self._renderer.RemoveActor(self._cellSelectionActor)
+            self._cellSelectionActor = None
+            self._widget.Render()
+
     def clear(self):
+        self.clearCellSelection()
         self._renderer.RemoveAllViewProps()
         self._showLogo()
 
@@ -376,6 +447,9 @@ class RenderingWidget(QWidget):
     def _leftButtonReleaseEvent(self, obj, event):
         self._mouseObserver.leftButtonReleased(obj, event)
 
+    def rightButtonReleaseEvent(self):
+        self._style.GetInteractor().InvokeEvent(vtkCommand.RightButtonReleaseEvent)
+
     def _mouseMoveEvent(self, obj, event):
         self._mouseObserver.mouseMoved(obj, event)
 
@@ -401,6 +475,10 @@ class RenderingWidget(QWidget):
     # def _interactionEvent(self, obj, event):
     #     self._resizeOriginAxis()
     #     self._widget.Render()
+
+    def _onCellSelectionRequested(self, x, y):
+        actor, cellId = self.pickCell(x, y)
+        self.cellSelected.emit(actor, cellId)
 
     def _showLogo(self):
         reader = vtkPNGReader()

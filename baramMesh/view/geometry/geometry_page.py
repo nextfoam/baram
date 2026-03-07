@@ -22,6 +22,7 @@ from .geometry_list import GeometryList
 from .split_dialog import SplitDialog
 from .stl_utility import StlImporter
 from .surface_dialog import SurfaceDialog
+from .surface_splitter import splitPolyData
 from .volume_dialog import VolumeDialog
 
 
@@ -79,6 +80,8 @@ class GeometryPage(StepPage):
         self._list.load()
 
         self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
+
+        app.window.displayControl.splitRequested.connect(self._splitSurface)
 
         self._loaded = True
 
@@ -211,6 +214,66 @@ class GeometryPage(StepPage):
         self._updateNextStepAvailable()
 
         self.geometryRemoved.emit()
+
+    def _splitSurface(self, actorId: str, cellIds: list):
+        if self._locked:
+            return
+
+        actorInfo = self._geometryManager.actorInfo(actorId)
+        if actorInfo is None:
+            return
+
+        polyData = actorInfo.dataSet()
+        if polyData is None:
+            return
+
+        totalCells = polyData.GetNumberOfCells()
+        if len(cellIds) == 0 or len(cellIds) == totalCells:
+            app.window.displayControl.clearCellSelection()
+            return
+
+        polyData1, polyData2 = splitPolyData(polyData, cellIds)
+
+        db = app.db.checkout()
+
+        original = db.getElement('geometry', actorId)
+        originalPath = original.value('path')
+
+        if originalPath:
+            db.removeGeometryPolyData(originalPath)
+
+        path1 = db.addGeometryPolyData(polyData1)
+        path2 = db.addGeometryPolyData(polyData2)
+
+        db.setValue(f'geometry/{actorId}/path', path1)
+
+        baseName = original.value('name')
+        newName = db.getUniqueSeq('geometry', 'name', baseName + '_split', '')
+        newName = baseName + '_split' + newName
+
+        element = db.newElement('geometry')
+        element.setValue('gType', original.value('gType'))
+        element.setValue('name', newName)
+        element.setValue('shape', original.value('shape'))
+        element.setValue('cfdType', original.value('cfdType'))
+        element.setValue('path', path2)
+
+        volumeId = original.value('volume')
+        if volumeId:
+            element.setValue('volume', volumeId)
+
+        newGId = db.addElement('geometry', element)
+
+        app.db.commit(db)
+
+        self._geometryManager.splitSurface(actorId, polyData1, newGId, newName, polyData2)
+
+        newGeometry = app.db.getElement('geometry', newGId)
+        self._list.add(newGId, newGeometry)
+
+        app.window.displayControl._clearPendingSplit()
+
+        self._updateNextStepAvailable()
 
     @qasync.asyncSlot()
     async def _importSTL(self):

@@ -152,6 +152,10 @@ class GeometryManager(ActorManager):
                 (y2 - y1) / baseGrid.float('numCellsY'),
                 (z2 - z1) / baseGrid.float('numCellsZ'))
 
+    def splitSurface(self, gId: str, polyData1, newGId: str, newName: str, polyData2):
+        self.update(gId, polyData1)
+        self.add(GeometryActor(polyData2, newGId, newName))
+        self.applyToDisplay()
 
     def _add(self, gId, geometry, volume):
         if geometry.value('gType') == GeometryType.SURFACE.value:
