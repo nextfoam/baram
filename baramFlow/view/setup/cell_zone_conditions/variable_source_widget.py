@@ -24,15 +24,14 @@ class VariableSourceWidget(QWidget):
         self._units = units
 
         self._ui.groupBox.setTitle(title)
-        self._ui.specificationMethod.addEnumItems({
-            SpecificationMethod.VALUE_PER_UNIT_VOLUME: self.tr("Value per Unit Volume"),
-            SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: self.tr("Value for Entire Cell Zone"),
-        })
-        self._ui.temporalProfileType.addEnumItems({
-            TemporalProfileType.CONSTANT: self.tr("Constant"),
-            TemporalProfileType.PIECEWISE_LINEAR: self.tr("Piecewise Linear"),
-            TemporalProfileType.POLYNOMIAL: self.tr("Polynomial"),
-        })
+        self._ui.specificationMethod.addItem(self.tr("Value per Unit Volume"),
+                                             SpecificationMethod.VALUE_PER_UNIT_VOLUME)
+        self._ui.specificationMethod.addItem(self.tr("Value for Entire Cell Zone"),
+                                             SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE)
+
+        self._ui.temporalProfileType.addItem(self.tr("Constant"),           TemporalProfileType.CONSTANT)
+        self._ui.temporalProfileType.addItem(self.tr("Piecewise Linear"),   TemporalProfileType.PIECEWISE_LINEAR)
+        self._ui.temporalProfileType.addItem(self.tr("Polynomial"),         TemporalProfileType.POLYNOMIAL)
 
         self._connectSignalsSlots()
 
@@ -43,28 +42,33 @@ class VariableSourceWidget(QWidget):
         db = coredb.CoreDB()
         if db.exists(self._xpath):
             self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
-            self._ui.specificationMethod.setCurrentData(SpecificationMethod(db.getValue(self._xpath + '/unit')))
+            self._ui.specificationMethod.setCurrentIndex(
+                self._ui.specificationMethod.findData(SpecificationMethod(db.getValue(self._xpath + '/unit'))))
 
             if GeneralDB.isTimeTransient():
-                self._ui.temporalProfileType.setCurrentData(
-                    TemporalProfileType(db.getValue(self._xpath + '/specification')))
+                self._ui.temporalProfileType.setCurrentIndex(
+                    self._ui.temporalProfileType.findData(
+                        TemporalProfileType(db.getValue(self._xpath + '/specification'))))
             else:
-                self._ui.temporalProfileType.setCurrentData(TemporalProfileType(TemporalProfileType.CONSTANT))
+                self._ui.temporalProfileType.setCurrentIndex(
+                    self._ui.temporalProfileType.findData(TemporalProfileType(TemporalProfileType.CONSTANT)))
 
-            self._ui.temporalProfileType.setCurrentData(
-                TemporalProfileType(db.getValue(self._xpath + '/specification')))
             self._ui.constantValue.setText(db.getValue(self._xpath + '/constant'))
         else:
             self._ui.groupBox.setChecked(False)
-            self._ui.specificationMethod.setCurrentData(SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE)
+            self._ui.specificationMethod.setCurrentIndex(
+                self._ui.specificationMethod.findData(SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE))
 
         self._ui.temporalProfileType.setEnabled(GeneralDB.isTimeTransient())
+
+        self._onSpecificationMethodChanged()
+        self._onTemporalProfileTypeChanged()
 
     async def updateDB(self, newDB):
         db = coredb.CoreDB()
         if self._ui.groupBox.isChecked():
             newDB.setAttribute(self._xpath, 'disabled', 'false')
-            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
+            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentData().value, None)
             specification = self._ui.temporalProfileType.currentData()
             newDB.setValue(self._xpath + '/specification', specification.value, None)
             if specification == TemporalProfileType.CONSTANT:
@@ -93,20 +97,17 @@ class VariableSourceWidget(QWidget):
         return True
 
     def _connectSignalsSlots(self):
-        # self._ui.groupBox.toggled.connect(self._toggled)
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
-        self._ui.temporalProfileType.currentDataChanged.connect(self._temporalProfileTypeChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
+        self._ui.temporalProfileType.currentIndexChanged.connect(self._onTemporalProfileTypeChanged)
         self._ui.edit.clicked.connect(self._edit)
-    #
-    # def _toggled(self, on):
-    #     if on:
-    #         self._temporalProfileTypeChanged(self._ui.temporalProfileType.currentData())
 
-    def _specificationMethodChanged(self, method):
+    def _onSpecificationMethodChanged(self):
         if self._units:
-            self._ui.label.setText(self.tr('Value') + f' ({self._units.get(method, "")})')
+            self._ui.label.setText(
+                self.tr('Value') + f' ({self._units.get(self._ui.specificationMethod.currentData(), "")})')
 
-    def _temporalProfileTypeChanged(self, temporalProfileType):
+    def _onTemporalProfileTypeChanged(self):
+        temporalProfileType = self._ui.temporalProfileType.currentData()
         self._ui.edit.setEnabled(temporalProfileType != TemporalProfileType.CONSTANT)
         self._ui.constantValue.setEnabled(temporalProfileType == TemporalProfileType.CONSTANT)
 

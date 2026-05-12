@@ -65,7 +65,10 @@ class UserDefiendScalarDialog(ResizableDialog):
         else:
             self._ui.basicsLayout.setRowVisible(self._ui.target, False)
 
-        self._ui.specificationMethod.addEnumItems(SCALAR_SPECIFICATION_METHODS)
+        self._ui.specificationMethod.addItem(self.tr('Constant'),
+                                             ScalarSpecificationMethod.CONSTANT)
+        self._ui.specificationMethod.addItem(self.tr('Laminar and Turbulent Viscosity'),
+                                             ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY)
 
         if scalar.fieldName:
             self._ui.fieldName.setEnabled(False)
@@ -95,7 +98,7 @@ class UserDefiendScalarDialog(ResizableDialog):
         return self._scalar
 
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self, scalar):
@@ -108,12 +111,15 @@ class UserDefiendScalarDialog(ResizableDialog):
             self._ui.target.setCurrentText(scalar.rname)
 
         self._ui.fieldName.setText(scalar.fieldName)
-        self._ui.specificationMethod.setCurrentData(scalar.specificationMethod)
+        self._ui.specificationMethod.setCurrentIndex(self._ui.specificationMethod.findData(scalar.specificationMethod))
         self._ui.diffusivity.setText(scalar.constantDiffusivity)
         self._ui.laminarViscosityCoefficient.setText(scalar.laminarViscosityCoefficient)
         self._ui.turbulentViscosityCoefficient.setText(scalar.turbulentViscosityCoefficient)
 
-    def _specificationMethodChanged(self, method):
+        self._onSpecificationMethodChanged()
+
+    def _onSpecificationMethodChanged(self):
+        method = self._ui.specificationMethod.currentData()
         self._ui.constant.setVisible(method == ScalarSpecificationMethod.CONSTANT)
         self._ui.laminarAndTurbulentViscosity.setVisible(
             method == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY)

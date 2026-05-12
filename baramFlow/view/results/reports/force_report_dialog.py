@@ -45,10 +45,8 @@ class ForceReportDialog(QDialog):
 
         self._db = coredb.CoreDB()
 
-        self._ui.specificationMethod.addEnumItems({
-            DirectionSpecificationMethod.DIRECT: self.tr('Direct'),
-            DirectionSpecificationMethod.AOA_AOS: self.tr('AOA and AOS')
-        })
+        self._ui.specificationMethod.addItem(self.tr('Direct'),         DirectionSpecificationMethod.DIRECT)
+        self._ui.specificationMethod.addItem(self.tr('AOA and AOS'),    DirectionSpecificationMethod.AOA_AOS)
 
         self._setupValidators()
 
@@ -56,10 +54,10 @@ class ForceReportDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._ui.specificationMethod.setCurrentData(DirectionSpecificationMethod.DIRECT)
+        self._onSpecificationMethodChanged()
 
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
         self._ui.select.clicked.connect(self._selectBoundaries)
         self._ui.compute.clicked.connect(self._compute)
         self._ui.close.clicked.connect(self.close)
@@ -96,7 +94,8 @@ class ForceReportDialog(QDialog):
         self._rname = self._dialog.region()
         self._setBoundaries(self._dialog.selectedItems())
 
-    def _specificationMethodChanged(self, method):
+    def _onSpecificationMethodChanged(self):
+        method = self._ui.specificationMethod.currentData()
         if method == DirectionSpecificationMethod.DIRECT:
             self._ui.direction.setTitle(self.tr('Direction'))
             self._ui.angles.hide()

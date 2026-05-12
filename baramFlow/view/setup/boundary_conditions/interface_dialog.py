@@ -3,6 +3,7 @@
 
 import qasync
 
+from baramFlow.services.region.region_service import RegionService
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
@@ -55,10 +56,11 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _connectSignalsSlots(self):
-        self._ui.mode.currentDataChanged.connect(self._modeChanged)
+        self._ui.mode.currentIndexChanged.connect(self._onModeChanged)
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
 
-    def _modeChanged(self, mode):
+    def _onModeChanged(self):
+        mode = self._ui.mode.currentData()
         self._ui.rotationalPeriodic.setVisible(mode == InterfaceMode.ROTATIONAL_PERIODIC)
         self._ui.translationalPeriodic.setVisible(mode == InterfaceMode.TRANSLATIONAL_PERIODIC)
         self._dialog = None
@@ -74,7 +76,7 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.mode.setCurrentData(InterfaceMode(db.getValue(path + '/mode')))
+        self._ui.mode.setCurrentIndex(self._ui.mode.findData(InterfaceMode(db.getValue(path + '/mode'))))
         self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
         self._ui.rotationAxisX.setText(db.getValue(path + '/rotationAxisOrigin/x'))
         self._ui.rotationAxisY.setText(db.getValue(path + '/rotationAxisOrigin/y'))
@@ -86,17 +88,16 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         self._ui.translationVectorY.setText(db.getValue(path + '/translationVector/y'))
         self._ui.translationVectorZ.setText(db.getValue(path + '/translationVector/z'))
 
+        self._onModeChanged()
+
     def _setupModeCombo(self):
-        db = coredb.CoreDB()
-        self._ui.mode.addEnumItems({
-            InterfaceMode.INTERNAL_INTERFACE: self.tr('Internal Interface'),
-            InterfaceMode.ROTATIONAL_PERIODIC: self.tr('Rotational Periodic'),
-            InterfaceMode.TRANSLATIONAL_PERIODIC: self.tr('Translational Periodic')
-        })
+        self._ui.mode.addItem(self.tr('Internal Interface'),        InterfaceMode.INTERNAL_INTERFACE)
+        self._ui.mode.addItem(self.tr('Rotational Periodic'),       InterfaceMode.ROTATIONAL_PERIODIC)
+        self._ui.mode.addItem(self.tr('Translational Periodic'),    InterfaceMode.TRANSLATIONAL_PERIODIC)
 
         if (not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn() and ModelsDB.isSpeciesModelOn()
-                and len(db.getRegions()) > 1):
-            self._ui.mode.addEnumItem(InterfaceMode.REGION_INTERFACE, self.tr('Region Interface'))
+                and RegionService.isMultiRegion()):
+            self._ui.mode.addItem(self.tr('Region Interface'), InterfaceMode.REGION_INTERFACE)
 
     def _selectCoupledBoundary(self):
         if not self._dialog:

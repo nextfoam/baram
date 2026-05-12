@@ -29,23 +29,26 @@ class ConstantSourceWidget(QWidget):
         self._ui.groupBox.setTitle(title)
         self._ui.label.setText(label)
 
-        self._ui.specificationMethod.addEnumItems({
-            SpecificationMethod.VALUE_PER_UNIT_VOLUME: self.tr("Value per Unit Volume"),
-            SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: self.tr("Value for Entire Cell Zone"),
-        })
+        self._ui.specificationMethod.addItem(self.tr("Value per Unit Volume"),
+                                             SpecificationMethod.VALUE_PER_UNIT_VOLUME)
+        self._ui.specificationMethod.addItem(self.tr("Value for Entire Cell Zone"),
+                                             SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE)
 
         self._connectSignalsSlots()
 
     def load(self):
         db = coredb.CoreDB()
         self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
-        self._ui.specificationMethod.setCurrentData(SpecificationMethod(db.getValue(self._xpath + '/unit')))
+        self._ui.specificationMethod.setCurrentIndex(
+            self._ui.specificationMethod.findData(SpecificationMethod(db.getValue(self._xpath + '/unit'))))
         self._ui.value.setText(db.getValue(self._xpath + '/constant'))
+
+        self._onSpecificationMethodChanged()
 
     def updateDB(self, newDB):
         if self._ui.groupBox.isChecked():
             newDB.setAttribute(self._xpath, 'disabled', 'false')
-            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
+            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentData().value, None)
             newDB.setValue(self._xpath + '/constant', self._ui.value.text(), self._title)
         else:
             newDB.setAttribute(self._xpath, 'disabled', 'true')
@@ -53,7 +56,7 @@ class ConstantSourceWidget(QWidget):
         return True
 
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
 
-    def _specificationMethodChanged(self, method):
-        self._ui.label.setText(f'{self._label} ({self._units.get(method, "")})')
+    def _onSpecificationMethodChanged(self):
+        self._ui.label.setText(f'{self._label} ({self._units.get(self._ui.specificationMethod.currentData(), "")})')
