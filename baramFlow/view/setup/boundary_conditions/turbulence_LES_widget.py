@@ -16,10 +16,10 @@ class TurbulenceLESWidget(QWidget):
         self._ui = Ui_TurbulenceLESWidget()
         self._ui.setupUi(self)
 
-        self._ui.specificationMethod.addEnumItems({
-            SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_K:            self.tr('Subgrid-Scale K'),
-            SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_INTENSITY:    self.tr('Subgrid-Scale Intensity')
-        })
+        self._ui.specificationMethod.addItem(self.tr('Subgrid-Scale K'),
+                                             SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_K)
+        self._ui.specificationMethod.addItem(self.tr('Subgrid-Scale Intensity'),
+                                             SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_INTENSITY)
 
         self._xpath = xpath
 
@@ -32,11 +32,14 @@ class TurbulenceLESWidget(QWidget):
         db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.specificationMethod.setCurrentData(
-            SubgridKineticEnergySpecificationMethod(db.getValue(xpath + '/specification')))
+        self._ui.specificationMethod.setCurrentIndex(
+            self._ui.specificationMethod.findData(
+                SubgridKineticEnergySpecificationMethod(db.getValue(xpath + '/specification'))))
         self._ui.kineticEnergy.setText(db.getValue(xpath + '/subgridKineticEnergy'))
         self._ui.turbulentIntensity.setText(db.getValue(xpath + '/subgridTurbulentIntensity'))
         self._ui.turbulentViscosityRatio.setText(db.getValue(xpath + '/turbulentViscosityRatio'))
+
+        self._onSpecificationMethodChanged()
 
     def appendToWriter(self, writer):
         xpath = self._xpath + self.RELATIVE_XPATH
@@ -59,9 +62,10 @@ class TurbulenceLESWidget(QWidget):
         return None
 
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
 
-    def _specificationMethodChanged(self, specification):
+    def _onSpecificationMethodChanged(self):
+        specification = self._ui.specificationMethod.currentData()
         self._ui.parametersLayout.setRowVisible(
             self._ui.kineticEnergy, specification == SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_K)
         self._ui.parametersLayout.setRowVisible(

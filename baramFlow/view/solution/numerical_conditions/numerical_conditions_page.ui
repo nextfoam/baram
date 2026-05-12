@@ -93,7 +93,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="EnumComboBox" name="pressureVelocityCouplingScheme"/>
+           <widget class="QComboBox" name="pressureVelocityCouplingScheme"/>
           </item>
          </layout>
         </widget>
@@ -121,7 +121,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="EnumComboBox" name="formulation"/>
+           <widget class="QComboBox" name="formulation"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_6">
@@ -131,7 +131,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="EnumComboBox" name="fluxType"/>
+           <widget class="QComboBox" name="fluxType"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_10">
@@ -180,7 +180,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="PythonComboBox" name="discretizationSchemeTime"/>
+           <widget class="QComboBox" name="discretizationSchemeTime"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="discretizationSchemesMomentumLabel">
@@ -190,7 +190,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeMomentum"/>
+           <widget class="QComboBox" name="discretizationSchemeMomentum"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_19">
@@ -200,7 +200,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeEnergy"/>
+           <widget class="QComboBox" name="discretizationSchemeEnergy"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_22">
@@ -210,7 +210,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeTurbulence"/>
+           <widget class="QComboBox" name="discretizationSchemeTurbulence"/>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_3">
@@ -220,7 +220,7 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeVolumeFraction"/>
+           <widget class="QComboBox" name="discretizationSchemeVolumeFraction"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_4">
@@ -230,7 +230,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemePressure"/>
+           <widget class="QComboBox" name="discretizationSchemePressure"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_14">
@@ -240,7 +240,7 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeScalar"/>
+           <widget class="QComboBox" name="discretizationSchemeScalar"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_37">
@@ -250,7 +250,7 @@
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeSpecies"/>
+           <widget class="QComboBox" name="discretizationSchemeSpecies"/>
           </item>
          </layout>
         </widget>
@@ -742,18 +742,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>EnumComboBox</class>
-   <extends>QComboBox</extends>
-   <header>widgets.enum_combo_box</header>
-  </customwidget>
-  <customwidget>
-   <class>PythonComboBox</class>
-   <extends>QComboBox</extends>
-   <header location="global">widgets.python_combo_box</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>pressureVelocityCouplingScheme</tabstop>
   <tabstop>formulation</tabstop>

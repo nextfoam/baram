@@ -17,16 +17,15 @@ class PorousZoneWidget(QWidget):
 
         self._xpath = xpath + '/porous'
 
-        self._ui.model.addEnumItems({
-            PorousZoneModel.DARCY_FORCHHEIMER: self.tr('Darcy Forchheimer'),
-            PorousZoneModel.POWER_LAW: self.tr('Power Law'),
-        })
+        self._ui.model.addItem(self.tr('Darcy Forchheimer'),    PorousZoneModel.DARCY_FORCHHEIMER)
+        self._ui.model.addItem(self.tr('Power Law'),            PorousZoneModel.POWER_LAW)
 
         self._connectSignalsSlots()
 
     def load(self):
         db = coredb.CoreDB()
-        self._ui.model.setCurrentData(PorousZoneModel(db.getValue(self._xpath + '/model')))
+        self._ui.model.setCurrentIndex(
+            self._ui.model.findData(PorousZoneModel(db.getValue(self._xpath + '/model'))))
         self._ui.direction1VectorX.setText(db.getValue(self._xpath + '/darcyForchheimer/direction1Vector/x'))
         self._ui.direction1VectorY.setText(db.getValue(self._xpath + '/darcyForchheimer/direction1Vector/y'))
         self._ui.direction1VectorZ.setText(db.getValue(self._xpath + '/darcyForchheimer/direction1Vector/z'))
@@ -48,6 +47,8 @@ class PorousZoneWidget(QWidget):
 
         self._ui.c0.setText(db.getValue(self._xpath + '/powerLaw/c0'))
         self._ui.c1.setText(db.getValue(self._xpath + '/powerLaw/c1'))
+
+        self._onModelChanged()
 
     def updateDB(self, newDB):
         model = self._ui.model.currentData()
@@ -85,8 +86,9 @@ class PorousZoneWidget(QWidget):
         return True
 
     def _connectSignalsSlots(self):
-        self._ui.model.currentDataChanged.connect(self._modelChanged)
+        self._ui.model.currentIndexChanged.connect(self._onModelChanged)
 
-    def _modelChanged(self, model):
+    def _onModelChanged(self):
+        model = self._ui.model.currentData()
         self._ui.darcyForchheimer.setVisible(model == PorousZoneModel.DARCY_FORCHHEIMER)
         self._ui.powerLaw.setVisible(model == PorousZoneModel.POWER_LAW)
