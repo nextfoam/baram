@@ -93,8 +93,9 @@ class CellZoneConditionsPage(ContentPage):
         if not ev.spontaneous():
             if self._actor:
                 view = app.renderingView
-                view.removeActor(self._actor)
-                view.refresh()
+                if view is not None:
+                    view.removeActor(self._actor)
+                    view.refresh()
 
                 self._ui.cellZones.clearSelection()
                 self._actor = None

@@ -40,6 +40,9 @@ class App(QObject):
 
     @property
     def renderingView(self):
+        if self._window is None:
+            return None
+
         return self._window.renderingView()
 
     @property
