@@ -225,7 +225,6 @@ class SnapPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.snap.hide()
             self._ui.snapReset.show()
-            print(self._locked)
         else:
             self._ui.snap.show()
             self._ui.snap.setEnabled(True)

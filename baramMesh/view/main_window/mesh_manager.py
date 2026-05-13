@@ -71,17 +71,21 @@ class MeshManager(ActorManager):
     def boundaries(self):
         return self._actorInfos.keys()
 
-    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+    def getScalarRange(self, index: MeshQualityIndex) -> tuple[float, float]:
         actorInfo: ActorInfo
         for actorInfo in self._actorInfos.values():
             if isinstance(actorInfo, MeshActor):
                 return actorInfo.getScalarRange(index)
+
+        return 0.0, 0.0
 
     def getNumberOfDisplayedCells(self) -> int:
         actorInfo: ActorInfo
         for actorInfo in self._actorInfos.values():
             if isinstance(actorInfo, MeshActor):
                 return actorInfo.getNumberOfDisplayedCells()
+
+        return 0
 
     def setScalar(self, index: MeshQualityIndex):
         for actorInfo in self._actorInfos.values():
