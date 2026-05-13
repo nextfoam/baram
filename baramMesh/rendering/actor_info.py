@@ -271,7 +271,7 @@ class MeshActor(ActorInfo):
     def getNumberOfDisplayedCells(self) -> int:
         return self._cutFilters[-1].GetOutput().GetNumberOfCells()
 
-    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+    def getScalarRange(self, index: MeshQualityIndex) -> tuple[float, float]:
         # print(f'Name: {self.name()} Field: {index.value}')
         scalars = self._dataSet.GetCellData().GetScalars(index.value)
         if scalars is None:
@@ -338,7 +338,7 @@ class BoundaryActor(ActorInfo):
 class GeometryActor(ActorInfo):
     def __init__(self, dataSet, id_, name):
         super().__init__(dataSet, id_, name, ActorType.GEOMETRY)
-        
+
         self.setOpacity(0.9)
 
     def _initMapper(self) -> vtkPolyDataMapper:
