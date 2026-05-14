@@ -23,7 +23,9 @@ class MeshManager(ActorManager):
 
         self._name = 'Mesh'
 
-    async def load(self, time):
+    async def load(self, time: int):
+        assert time >= 0
+
         if not self._displayControl.isEnabled():
             return
 
@@ -31,9 +33,6 @@ class MeshManager(ActorManager):
         self._visibility = True
 
         self._time = time
-
-        if self._time < 0:
-            return
 
         progressDialog = ProgressDialog(app.window, self.tr('Loading Mesh'))
         progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -61,8 +60,17 @@ class MeshManager(ActorManager):
         self.hide()
         self._time = None
 
+    async def reload(self):
+        if self._time is None:
+            return
+
+        await self.load(self._time)
+
     @qasync.asyncSlot()
-    async def show(self, time):
+    async def show(self, time: int):
+        if time < 0:
+            return
+
         if self._time == time:
             self._show()
         else:

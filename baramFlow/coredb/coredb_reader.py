@@ -9,7 +9,8 @@ from thermo import PR
 from libbaram.math import calucateDirectionsByRotation
 
 from baramFlow.base.base import DirectionSpecificationMethod
-from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, TransportSpecification
+from baramFlow.base.material.material import (
+    UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, SpecificHeatSpecification, TransportSpecification)
 from baramFlow.libbaram.calculation import AverageCalculator
 
 from . import coredb
@@ -294,15 +295,29 @@ class CoreDBReader(_CoreDB):
     def getSpecificHeat(self, materials, t: float) -> float:
         def specificHeat(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = self.getValue(xpath + '/specificHeat/specification')
-            if spec == 'constant':
+            spec = SpecificHeatSpecification(self.getValue(xpath + '/specificHeat/specification'))
+            if spec == SpecificHeatSpecification.CONSTANT:
                 return float(self.getValue(xpath + '/specificHeat/constant'))
-            elif spec == 'polynomial':
+            elif spec == SpecificHeatSpecification.POLYNOMIAL:
                 coeffs = list(map(float, self.getValue(xpath + '/specificHeat/polynomial').split()))
                 cp = 0.0
                 for exp, c in enumerate(coeffs):
                     cp += c * t ** exp
                 return cp
+            elif spec == SpecificHeatSpecification.JANAF:
+                janafXpath = xpath + '/specificHeat/janaf'
+                tCommon = float(self.getValue(janafXpath + '/commonTemperature'))
+                tHigh   = float(self.getValue(janafXpath + '/highTemperature'))
+                tLow    = float(self.getValue(janafXpath + '/lowTemperature'))
+                tc = min(max(t, tLow), tHigh)  # cap the temperature with low and high limits
+                if tc < tCommon:
+                    path = janafXpath + '/lowCoefficients'
+                else:
+                    path = janafXpath + '/highCoefficients'
+
+                a = list(map(float, self.getValue(path).split()))
+                mw = float(self.getValue(xpath + '/molecularWeight'))
+                return (a[0] + a[1]*tc + a[2]*tc**2 + a[3]*tc**3 + a[4]*tc**4) * UNIVERSAL_GAS_CONSTANT / mw
             else:
                 raise KeyError
 
