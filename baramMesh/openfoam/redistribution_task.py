@@ -39,7 +39,7 @@ class RedistributionTask(QObject):
         try:
             await self.reconstruct()
             await self.decompose(numCores)
-            await app.window.meshManager.load()
+            await app.window.meshManager.reload()
 
         except Exception as ex:
             logger.info(ex, exc_info=True)
