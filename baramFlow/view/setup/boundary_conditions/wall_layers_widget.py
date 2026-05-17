@@ -140,7 +140,7 @@ class WallLayersWidget(QWidget):
                 row.validate()
 
     def _connectSignalsSlots(self):
-        self._ui.addWallLayer.clicked.connect(self.addRow)
+        self._ui.addWallLayer.clicked.connect(lambda: self.addRow('0.001', '10'))
 
     def _removeRow(self, index):
         self._rows[index].hide()
