@@ -68,9 +68,6 @@ class MeshManager(ActorManager):
 
     @qasync.asyncSlot()
     async def show(self, time: int):
-        if time < 0:
-            return
-
         if self._time == time:
             self._show()
         else:
