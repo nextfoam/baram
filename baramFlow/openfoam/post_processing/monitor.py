@@ -62,7 +62,8 @@ class Worker(QObject):
         if changedFiles:
             for path in changedFiles:
                 data = self._reader.readDataFrame(path)
-                self.dataUpdated.emit(data)
+                if not data.empty:
+                    self.dataUpdated.emit(data)
 
         self._appending = False
 
