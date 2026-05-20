@@ -30,7 +30,7 @@
        <widget class="QWidget" name="widget_6" native="true">
         <layout class="QFormLayout" name="formLayout_2">
          <property name="rowWrapPolicy">
-          <enum>QFormLayout::WrapLongRows</enum>
+          <enum>QFormLayout::RowWrapPolicy::WrapLongRows</enum>
          </property>
          <item row="0" column="0">
           <widget class="QLabel" name="label_5">
@@ -115,7 +115,7 @@
             <item>
              <spacer name="horizontalSpacer_4">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -126,21 +126,21 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="x">
+             <widget class="PFloatLineEdit" name="x">
               <property name="text">
                <string>0</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="y">
+             <widget class="PFloatLineEdit" name="y">
               <property name="text">
                <string>0</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="z">
+             <widget class="PFloatLineEdit" name="z">
               <property name="text">
                <string>0</string>
               </property>
@@ -164,7 +164,7 @@
          <item>
           <spacer name="horizontalSpacer_5">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -202,6 +202,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.pfloat_line_edit</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
