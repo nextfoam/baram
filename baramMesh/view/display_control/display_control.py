@@ -103,8 +103,8 @@ class DisplayControl(QObject):
         self._meshQualityInfo = MeshQualityInfo(ui)
         self._menu = ContextMenu(self._list)
 
-        self._items = {}
-        self._selectedItems = None
+        self._items: dict[str, DisplayItem] = {}
+        self._selectedItems: list[DisplayItem] = []
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
 
@@ -183,7 +183,7 @@ class DisplayControl(QObject):
         self._list.clear()
         self._view.clear()
         self._items = {}
-        self._selectedItems = None
+        self._selectedItems = []
 
     def setSelectedActors(self, ids):
         self._list.clearSelection()
@@ -313,15 +313,21 @@ class DisplayControl(QObject):
         if not ctrlKeyPressed and not forContextMenu:
             self._list.clearSelection()
 
-        if actor:
-            item = self._items[actor.GetObjectName()]
-            if not item.isSelected() and forContextMenu:
-                self._list.clearSelection()
+        if not actor:
+            return
 
-            if ctrlKeyPressed:
-                item.setSelected(not item.isSelected())
-            else:
-                item.setSelected(True)
+        actorInfoId: str = actor.GetObjectName()
+        if actorInfoId not in self._items:
+            return
+
+        item = self._items[actorInfoId]
+        if not item.isSelected() and forContextMenu:
+            self._list.clearSelection()
+
+        if ctrlKeyPressed:
+            item.setSelected(not item.isSelected())
+        else:
+            item.setSelected(True)
 
     def _actorSourceUpdated(self, id_):
         cutType, planes = self._cutTool.option()
