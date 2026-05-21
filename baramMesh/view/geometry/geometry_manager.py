@@ -33,16 +33,10 @@ def platePolyData(shape, volume):
 class GeometryManager(ActorManager):
     selectedActorsChanged = Signal(list)
 
-    SYNCING_FROM_DISPLAY = 1
-    SYNCING_TO_DISPLAY = 2
-
     def __init__(self):
         super().__init__()
 
-        self._syncingMode = None
-
-        self._displayControl.selectedActorsChanged.connect(self._selectedActorsChanged)
-        self._displayControl.selectionApplied.connect(self._clearSyncingToDisplay)
+        self._displayControl.selectedActorsChanged.connect(self.selectedActorsChanged)
 
     def subSurfaces(self, gId):
         return app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
@@ -88,29 +82,7 @@ class GeometryManager(ActorManager):
         self._show()
 
     def selectActors(self, ids):
-        if self._syncingMode == self.SYNCING_FROM_DISPLAY:
-            return
-
-        self._syncingMode = self.SYNCING_TO_DISPLAY
         self._displayControl.setSelectedActors(ids)
-
-    def clearSyncingFromDisplay(self):
-        if self._syncingMode != self.SYNCING_FROM_DISPLAY:
-            raise RuntimeError
-
-        self._syncingMode = None
-
-    def startSyncingFromDisplay(self):
-        self._displayControl.selectedItemsChanged()
-
-    def enableSyncingToDisplay(self):
-        if self._syncingMode == self.SYNCING_TO_DISPLAY:
-            return
-
-        self._syncingMode = None
-
-    def disableSyncingToDisplay(self):
-        self._syncingMode = self.SYNCING_FROM_DISPLAY
 
     def getBoundingHex6(self):
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
@@ -176,16 +148,3 @@ class GeometryManager(ActorManager):
                 polyData = platePolyData(shape, volume)
 
         return polyData
-
-    def _selectedActorsChanged(self, gIds):
-        if self._syncingMode == self.SYNCING_TO_DISPLAY:
-            return
-
-        self._syncingMode = self.SYNCING_FROM_DISPLAY
-        self.selectedActorsChanged.emit(gIds)
-
-    def _clearSyncingToDisplay(self):
-        if self._syncingMode != self.SYNCING_TO_DISPLAY:
-            raise RuntimeError
-
-        self._syncingMode = None

@@ -37,7 +37,7 @@ class BaseGridPage(StepPage):
     #     self.load()
     #     self._updatePage()
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         if not self._loaded:
             self.load()
 

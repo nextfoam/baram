@@ -185,13 +185,11 @@ class DisplayControl(QObject):
         self._items = {}
         self._selectedItems = []
 
-    def setSelectedActors(self, ids):
+    def setSelectedActors(self, ids: list[str]):
         self._list.clearSelection()
         for i in ids:
             if i in self._items:
                 self._items[i].setSelected(True)
-
-        self.selectionApplied.emit()
 
     def selectedItemsChanged(self):
         ids = []

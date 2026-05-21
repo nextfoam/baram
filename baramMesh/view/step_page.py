@@ -42,7 +42,7 @@ class StepPage(QObject):
     def open(self):
         return
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.updateWorkingStatus()
 
     async def hide(self):

@@ -46,10 +46,10 @@ class SnapPage(StepPage):
     def open(self):
         self._loadSurfaces()
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.updateWorkingStatus()
 
-        self._ui.snap.setEnabled(isCurrentStep and not batchRunning)
+        self._ui.snap.setEnabled(isWorkingStep and not batchRunning)
 
     async def save(self):
         try:
