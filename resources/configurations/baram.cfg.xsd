@@ -3614,6 +3614,7 @@
                                         <xs:element name="vectorFieldCategory">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="geometry"/>
                                                     <xs:enumeration value="basic"/>
                                                     <xs:enumeration value="collateral"/>
                                                     <xs:enumeration value="phase"/>
