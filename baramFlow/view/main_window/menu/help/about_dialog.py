@@ -11,9 +11,6 @@ from .about_dialog_ui import Ui_AboutDialog
 from .license_dialog import LicenseDialog
 
 
-VERSION = '23.0.0'
-
-
 class AboutDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
@@ -21,6 +18,12 @@ class AboutDialog(QDialog):
         self._ui.setupUi(self)
 
         self._ui.logo.setPixmap(flowAppProperties.logo())
+        self._ui.description.setText(self.tr(
+            '<p><b><font size="4">{name} {version}</font></b></p>'
+            '<p>Powered by open-source software</p>'
+            '<p>Copyright &#169; 2022-2026 nextfoam</p>').format(
+                name=flowAppProperties.fullName,
+                version=flowAppProperties.version))
 
         self._dialog = None
         self._position = 0

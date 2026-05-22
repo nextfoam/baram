@@ -17,7 +17,7 @@ class Analytics:
     """Process-wide singleton for PostHog analytics + consent.
 
     Lifecycle:
-        Analytics().configure(app_name, config_dir)   # called once from main()
+        Analytics().configure(app_name, app_version, config_dir)  # called once from main()
         Analytics().ensureConsent()                   # first-launch dialog
         Analytics().init()                            # spin up PostHog; auto-fires APP_LAUNCHED
         Analytics().capture(event, properties)        # fire-and-forget
@@ -26,7 +26,7 @@ class Analytics:
     Every public method silently no-ops when the singleton is not configured
     or the user has not consented, so call sites need no guards.
 
-    Default properties (`app`, `$session_id`, `platform`) are merged into every
+    Default properties (`app`, `app_version`, `$session_id`, `platform`) are merged into every
     captured event automatically — callers only need to supply event-specific
     context.
     """
@@ -45,6 +45,7 @@ class Analytics:
             self._initialized = True
 
         self._app_name: Optional[str] = None
+        self._app_version: Optional[str] = None
         self._config_dir: Optional[Path] = None
         self._distinct_id_file: Optional[Path] = None
         self._session_id: Optional[str] = None
@@ -54,8 +55,8 @@ class Analytics:
         self._consent = None
         self._launch_captured = False
 
-    def configure(self, app_name: str, config_dir: Path) -> None:
-        """Bind the singleton to an app's name + config dir.
+    def configure(self, app_name: str, app_version: str, config_dir: Path) -> None:
+        """Bind the singleton to an app's name, version, and config dir.
 
         Silently no-ops when `analytics/_config.py` is absent or empty — that's
         the signal that this build (e.g. dev source tree, OEM variant without
@@ -67,6 +68,7 @@ class Analytics:
             return
         from .consent import AnalyticsConsent
         self._app_name = app_name
+        self._app_version = app_version
         self._config_dir = Path(config_dir)
         self._distinct_id_file = self._config_dir / 'analytics_id'
         self._api_key = api_key
@@ -181,6 +183,7 @@ class Analytics:
     def _mergeProperties(self, properties: Optional[dict]) -> dict:
         merged = {
             'app': self._app_name,
+            'app_version': self._app_version,
             '$session_id': self._session_id,
             'platform': sys.platform,
         }

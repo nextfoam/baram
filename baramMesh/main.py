@@ -76,7 +76,10 @@ def main():
 
     app.setupApplication(meshAppProperties)
 
-    Analytics().configure(app_name=meshAppProperties.name, config_dir=app.settings.settingsPath())
+    Analytics().configure(
+        app_name=meshAppProperties.name,
+        app_version=meshAppProperties.version,
+        config_dir=app.settings.settingsPath())
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()

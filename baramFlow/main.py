@@ -83,7 +83,10 @@ def main():
     app.setupApplication(flowAppProperties)
     app.setPlug(AppPlugIn())
 
-    Analytics().configure(app_name=flowAppProperties.name, config_dir=AppSettings.settingsPath())
+    Analytics().configure(
+        app_name=flowAppProperties.name,
+        app_version=flowAppProperties.version,
+        config_dir=AppSettings.settingsPath())
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
