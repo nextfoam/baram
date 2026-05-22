@@ -671,7 +671,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             await asyncio.sleep(0.1)
 
             async with OpenFOAMReader() as reader:
+                reader.readerProgressEvent.connect(lambda progress: progressDialog.setLabelText(self.tr('Loading Case: ') + str(progress) +'%'))
                 await reader.setupReader()
+                reader.readerProgressEvent.disconnect()
 
             ScaffoldsDB().load()
             await GraphicsDB().load()
