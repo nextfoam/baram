@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication
 from resources import resource
 
 
-APP_VERSION = '26.2.0'
+APP_VERSION = '26.2.1'
 
 
 @dataclass

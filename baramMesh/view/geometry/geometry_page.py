@@ -97,6 +97,9 @@ class GeometryPage(StepPage):
         self._menu.removeActionTriggered.connect(self._removeGeometry)
 
     def _executeContextMenu(self, pos):
+        if not self._list.selectedItems():
+            return
+
         if self._locked:
             self._menu.disableEditActions()
         else:
