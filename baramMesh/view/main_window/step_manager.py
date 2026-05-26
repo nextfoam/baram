@@ -209,6 +209,14 @@ class StepManager(QObject):
         if self._batchRunning:
             return
 
+        # Commit any uncommitted UI state on the current (working) page first.
+        # The load() call inside the loop checks out a fresh self._db from app.db,
+        # which would otherwise drop refinements/layers the user just added via a
+        # dialog but hasn't saved yet — leaving zombie list items pointing at
+        # keys that no longer exist in self._db.
+        if not await self._pages[self._workingStep].save():
+            return
+
         self._batchRunning = True
         self._buttons.showButton(ButtonID.CANCEL)
 
