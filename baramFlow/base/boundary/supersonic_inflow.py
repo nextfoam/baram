@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.base import Vector
 from baramFlow.coredb.libdb import E
 
 

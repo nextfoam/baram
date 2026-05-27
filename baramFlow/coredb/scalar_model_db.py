@@ -6,12 +6,13 @@ from enum import Enum
 
 from PySide6.QtCore import QObject
 
+from libbaram.pfloat import PFloat
+
 import baramFlow.coredb.libdb as xml
 from baramFlow.base.constants import FieldCategory
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
-
 
 USER_DEFINED_SCALAR_XPATH = 'models/userDefinedScalars/scalar'
 
@@ -29,9 +30,9 @@ class UserDefinedScalar:
     rname: str
     material: str
     specificationMethod: ScalarSpecificationMethod
-    constantDiffusivity: str
-    laminarViscosityCoefficient: str
-    turbulentViscosityCoefficient: str
+    constantDiffusivity: PFloat
+    laminarViscosityCoefficient: PFloat
+    turbulentViscosityCoefficient: PFloat
 
 
 class IUserDefinedScalarObserver(QObject):
@@ -82,11 +83,11 @@ class UserDefinedScalarsDB:
             rname=db.getValue(xpath + '/region'),
             material=db.getValue(xpath + '/material'),
             specificationMethod=ScalarSpecificationMethod(db.getValue(xpath + '/diffusivity/specificationMethod')),
-            constantDiffusivity=db.getValue(xpath + '/diffusivity/constant'),
-            laminarViscosityCoefficient=db.getValue(
-                xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient'),
-            turbulentViscosityCoefficient=db.getValue(
-                xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient'))
+            constantDiffusivity=PFloat(db.getValue(xpath + '/diffusivity/constant')),
+            laminarViscosityCoefficient=PFloat(
+                db.getValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')),
+            turbulentViscosityCoefficient=PFloat(
+                db.getValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')))
 
     @classmethod
     def addUserDefinedScalar(cls, db, scalar):

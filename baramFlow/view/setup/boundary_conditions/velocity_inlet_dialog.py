@@ -10,9 +10,8 @@ from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 from widgets.simple_sheet_dialog import SimpleSheetDialog
 
-from baramFlow.base.base import SpatialVectorList, TemporalVectorList, TemporalScalarList
+from baramFlow.base.base import SpatialVectorList, TemporalVectorList, TemporalScalarList, Vector
 from baramFlow.base.boundary.boundary_patch import VelocityInletPatch
-from baramFlow.base.xml_helper import Vector
 from baramFlow.base.boundary.velocity_inlet import VelocitySpecification, VelocityProfile, CoordinateSystem
 from baramFlow.base.boundary.velocity_inlet import VelocityInlet
 from baramFlow.base.boundary.velocity_inlet import InletVelocity, VelocityMagnitude, VelocityComponentCartesian

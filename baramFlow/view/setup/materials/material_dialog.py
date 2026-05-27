@@ -371,15 +371,15 @@ class MaterialDialog(ResizableDialog):
                             mixture = MaterialDB.getMixture(self._mid)
                             xpath = MaterialDB.getXPath(mixture)
                             for subXPath, value in properties:
-                                db.setValue(xpath + subXPath, value)
+                                db.setValue(xpath + subXPath, str(value))
 
                             for mid in MaterialDB.getSpecies(mixture):
                                 xpath = MaterialDB.getXPath(mid)
                                 for subXPath, value in properties:
-                                    db.setValue(xpath + subXPath, value)
+                                    db.setValue(xpath + subXPath, str(value))
                         else:
                             for subXPath, value in properties:
-                                db.setValue(self._xpath + subXPath, value)
+                                db.setValue(self._xpath + subXPath, str(value))
 
                 if ModelsDB.isEnergyModelOn():
                     if transportSpec == TransportSpecification.CONSTANT:
@@ -423,13 +423,13 @@ class MaterialDialog(ResizableDialog):
                         db.setValue(self._xpath + '/normalBoilingTemperature',
                                     self._ui.boilingTemperature.text(), self.tr('Boiling Temperature'))
 
-                        self._ui.saturationPressure.updateData(self._saturationPressure)
+                        self._saturationPressure = self._ui.saturationPressure.data(self.tr('Saturation Pressure'))
                         db.replaceElement(self._xpath + '/saturationPressure', self._saturationPressure.toElement('saturationPressure'))
 
-                        self._ui.enthalpyOfVaporization.updateData(self._enthalpyOfVaporization)
+                        self._enthalpyOfVaporization = self._ui.enthalpyOfVaporization.data('Latent Heat')
                         db.replaceElement(self._xpath + '/enthalpyOfVaporization', self._enthalpyOfVaporization.toElement('enthalpyOfVaporization'))
 
-                        self._ui.dropletSurfaceTension.updateData(self._dropletSurfaceTension)
+                        self._dropletSurfaceTension = self._ui.dropletSurfaceTension.data(self.tr('Surface Tension'))
                         db.replaceElement(self._xpath + '/dropletSurfaceTension', self._dropletSurfaceTension.toElement('dropletSurfaceTension'))
 
                 if ModelsDB.isEnergyModelOn():
@@ -537,10 +537,11 @@ class MaterialDialog(ResizableDialog):
 
             self._dialog = PolynomialDialog(self, self.tr('Polynomial Specific Heat'),
                                             self._specificHeats[specification])
+            self._dialog.accepted.connect(lambda: self._speicificHeatEditAccepted(specification))
         elif specification == SpecificHeatSpecification.JANAF:
             self._dialog = JanafDialog(self, self.tr('JANAF Specific Heat'),
-                                                     self._xpath, self._specificHeats[specification])
-        self._dialog.accepted.connect(lambda: self._speicificHeatEditAccepted(specification))
+                                       self._xpath, self._specificHeats[specification])
+            self._dialog.dataAccepted.connect(self._setJanafSpecificHeat)
         self._dialog.open()
 
     @qasync.asyncSlot()
@@ -579,6 +580,9 @@ class MaterialDialog(ResizableDialog):
 
     def _speicificHeatEditAccepted(self, specification):
         self._specificHeats[specification] = self._dialog.getValues()
+
+    def _setJanafSpecificHeat(self, data):
+        self._specificHeats[SpecificHeatSpecification.JANAF] = data
 
     def _viscosityEditAccepted(self, specification):
         self._viscosities[specification] = self._dialog.getValues()

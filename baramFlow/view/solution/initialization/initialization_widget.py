@@ -15,14 +15,13 @@ from resources import resource
 from widgets.flat_push_button import FlatPushButton
 
 from baramFlow.app import app
-from baramFlow.base.base import DirectionSpecificationMethod
+from baramFlow.base.base import DirectionSpecificationMethod, Vector
 from baramFlow.base.boundary.temperature import TemperatureProfile
 from baramFlow.base.boundary.turbulence import KEpsilonSpecification, KOmegaSpecification
 from baramFlow.base.boundary.velocity_inlet import VelocitySpecification, VelocityProfile
 from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.base.region.region_data import RegionInitialization, RegionInitialValues
 from baramFlow.base.region.region_patch import RegionInitializationPatch
-from baramFlow.base.xml_helper import Vector
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType

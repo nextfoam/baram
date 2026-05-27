@@ -3,6 +3,8 @@
 
 from dataclasses import dataclass
 
+from libbaram.pfloat import PFloat
+
 from baramFlow.base.boundary.ABL_inlet import AtmosphericBoundaryLayer
 from baramFlow.base.boundary.boundary import UserDefinedScalarValue, SpecieValue, updateUserDefinedScalarsInDB
 from baramFlow.base.boundary.boundary import updateSpeciesInDB
@@ -99,14 +101,17 @@ class PressureOutletPatch:
 # class PressureOutletPatch:
 
 
-@dataclass
+@dataclass(kw_only=True)
 class IntakeFanPatch:
     turbulence: BoundaryTurbulencePatch = None
+    pressure: PFloat
     fanCurve: TableDataForFileDB        = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         if self.turbulence is not None:
             self.turbulence.applyToDB(db, bcid)
+
+        db.setValue(BoundaryDB.getXPath(bcid) + '/pressure', str(self.pressure))
 
         if self.fanCurve is not None:
             self.fanCurve.applyToDB(db, bcid)

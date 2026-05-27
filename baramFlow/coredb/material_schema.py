@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from xml.sax.saxutils import escape
 
 import baramFlow.coredb.libdb as xml
 from baramFlow.base.material.database import materialsBase
 from baramFlow.base.material.material import Phase, MaterialType
+from libbaram.pfloat import PFloat
 
 
 @dataclass
@@ -28,10 +29,10 @@ class JanafSpecificHeat:
 
 @dataclass
 class CrossViscosity:
-    zeroShearViscosity: str = '1e-01'
-    infiniteShearViscosity: str = '1.5e-05'
-    naturalTime: str = '1'
-    powerLawIndex: str = '0.5'
+    zeroShearViscosity: PFloat      = field(default_factory=lambda: PFloat('1e-01'))
+    infiniteShearViscosity: PFloat  = field(default_factory=lambda: PFloat('1.5e-05'))
+    naturalTime: PFloat             = field(default_factory=lambda: PFloat('1'))
+    powerLawIndex: PFloat           = field(default_factory=lambda: PFloat('0.5'))
 
     def toXML(self):
         return f'''<cross xmlns="http://www.baramcfd.org/baram">
@@ -44,10 +45,10 @@ class CrossViscosity:
 
 @dataclass
 class HerschelBulkleyViscosity:
-    zeroShearViscosity: str = '1.5e-04'
-    yieldStressThreshold: str = '1.75e-05'
-    consistencyIndex: str = '8.9721e-3'
-    powerLawIndex: str = '0.8601'
+    zeroShearViscosity: PFloat      = field(default_factory=lambda: PFloat('1.5e-04'))
+    yieldStressThreshold: PFloat    = field(default_factory=lambda: PFloat('1.75e-05'))
+    consistencyIndex: PFloat        = field(default_factory=lambda: PFloat('8.9721e-3'))
+    powerLawIndex: PFloat           = field(default_factory=lambda: PFloat('0.8601'))
 
     def toXML(self):
         return f'''<herschelBulkley xmlns="http://www.baramcfd.org/baram">
@@ -60,11 +61,11 @@ class HerschelBulkleyViscosity:
 
 @dataclass
 class CarreauViscosity:
-    zeroShearViscosity: str = '1e-01'
-    infiniteShearViscosity: str = '0'
-    relaxationTime: str = '0.0084033613'
-    powerLawIndex: str = '0.353'
-    linearityDeviation: str = '1.433'
+    zeroShearViscosity: PFloat      = field(default_factory=lambda: PFloat('1e-01'))
+    infiniteShearViscosity: PFloat  = field(default_factory=lambda: PFloat('0'))
+    relaxationTime: PFloat          = field(default_factory=lambda: PFloat('0.0084033613'))
+    powerLawIndex: PFloat           = field(default_factory=lambda: PFloat('0.353'))
+    linearityDeviation: PFloat      = field(default_factory=lambda: PFloat('1.433'))
 
     def toXML(self):
         return f'''<carreau xmlns="http://www.baramcfd.org/baram">
@@ -78,10 +79,10 @@ class CarreauViscosity:
 
 @dataclass
 class NonNewtonianPowerLawViscosity:
-    maximumViscosity: str = '1e-03'
-    minimumViscosity: str = '1e-06'
-    consistencyIndex: str = '8.42'
-    powerLawIndex: str = '0.61'
+    maximumViscosity: PFloat    = field(default_factory=lambda: PFloat('1e-03'))
+    minimumViscosity: PFloat    = field(default_factory=lambda: PFloat('1e-06'))
+    consistencyIndex: PFloat    = field(default_factory=lambda: PFloat('8.42'))
+    powerLawIndex: PFloat       = field(default_factory=lambda: PFloat('0.61'))
 
     def toXML(self):
         return f'''<nonNewtonianPowerLaw xmlns="http://www.baramcfd.org/baram">

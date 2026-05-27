@@ -3,7 +3,6 @@
 
 import qasync
 
-from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.boundary.boundary_patch import FlowRateOutletPatch
@@ -39,9 +38,9 @@ class FlowRateOutletDialog(ResizableDialog):
             specification = self._ui.flowRateSpecificationMethod.currentData()
             flowRate = BoundaryFlowRate(specification=specification)
             if specification == FlowRateSpecification.VOLUME_FLOW_RATE:
-                flowRate.volumeFlowRate = str(PFloat(self._ui.volumeFlowRate.text(), self.tr('Volume Flow Rate')))
+                flowRate.volumeFlowRate = self._ui.volumeFlowRate.pFloat(self.tr('Volume Flow Rate'))
             elif specification == FlowRateSpecification.MASS_FLOW_RATE:
-                flowRate.massFlowRate = str(PFloat(self._ui.massFlowRate.text(), self.tr('Mass Flow Rate')))
+                flowRate.massFlowRate = self._ui.massFlowRate.pFloat(self.tr('Mass Flow Rate'))
 
             data = FlowRateOutletPatch(flowRate=flowRate)
 

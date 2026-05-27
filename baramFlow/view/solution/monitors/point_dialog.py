@@ -13,11 +13,11 @@ from widgets.rendering.point_widget import PointWidget
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
+from baramFlow.base.base import Vector
 from baramFlow.base.constants import FieldCategory
 from baramFlow.base.field import TEMPERATURE, getFieldInstance
 from baramFlow.base.material.material import Phase
 from baramFlow.base.monitor.monitor import MonitorManager, PointMonitorConfiguration, MonitorField
-from baramFlow.base.xml_helper import Vector
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -35,7 +35,7 @@ class PointDialog(QDialog):
         """Constructs point monitor setup dialog.
 
         Args:
-            name: Force Monitor name. If None, create a new monitor.
+            uuid: Force Monitor ID. If None, create a new monitor.
         """
         super().__init__(parent)
         self._ui = Ui_PointDialog()

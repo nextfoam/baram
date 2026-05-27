@@ -31,7 +31,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="BatchableFloatEdit" name="zeroShearViscosity"/>
+       <widget class="PFloatLineEdit" name="zeroShearViscosity"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
@@ -41,7 +41,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="BatchableFloatEdit" name="yieldStressThreshold"/>
+       <widget class="PFloatLineEdit" name="yieldStressThreshold"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_3">
@@ -51,7 +51,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="BatchableFloatEdit" name="consistencyIndex"/>
+       <widget class="PFloatLineEdit" name="consistencyIndex"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_4">
@@ -61,7 +61,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="BatchableFloatEdit" name="powerLawIndex"/>
+       <widget class="PFloatLineEdit" name="powerLawIndex"/>
       </item>
      </layout>
     </widget>
@@ -116,9 +116,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

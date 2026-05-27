@@ -3,7 +3,9 @@
 
 from dataclasses import dataclass
 
-from baramFlow.base.xml_helper import Vector
+from libbaram.pfloat import PFloat
+
+from baramFlow.base.base import Vector
 from baramFlow.coredb.boundary_db import FlowDirectionSpecificationMethod
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import E
@@ -18,12 +20,12 @@ class ABLFlowDirection:
 @dataclass
 class PasquillStability:
     disabled: bool
-    stabilityClass: str = None
-    latitude: str = None
-    surfaceHeatFlux: str = None
-    referenceDensity: str = None
-    referenceSpecificHeat: str = None
-    referenceTemperature: str = None
+    stabilityClass: str             = None
+    latitude: PFloat                = None
+    surfaceHeatFlux: PFloat         = None
+    referenceDensity: PFloat        = None
+    referenceSpecificHeat: PFloat   = None
+    referenceTemperature: PFloat    = None
 
     def toElement(self):
         if self.disabled:
@@ -31,11 +33,11 @@ class PasquillStability:
 
         return E('pasquillStability',
                  E('stabilityClass',        self.stabilityClass),
-                 E('latitude',              self.latitude),
-                 E('surfaceHeatFlux',       self.surfaceHeatFlux),
-                 E('referenceDensity',      self.referenceDensity),
-                 E('referenceSpecificHeat', self.referenceSpecificHeat),
-                 E('referenceTemperature',  self.referenceTemperature),
+                 E('latitude',              str(self.latitude)),
+                 E('surfaceHeatFlux',       str(self.surfaceHeatFlux)),
+                 E('referenceDensity',      str(self.referenceDensity)),
+                 E('referenceSpecificHeat', str(self.referenceSpecificHeat)),
+                 E('referenceTemperature',  str(self.referenceTemperature)),
                  disabled=self.disabled)
 
 
@@ -43,10 +45,10 @@ class PasquillStability:
 class AtmosphericBoundaryLayer:
     flowDirection: ABLFlowDirection
     groundNormalDirection: Vector
-    referenceFlowSpeed: str
-    referenceHeight: str
-    surfaceRoughnessLength: str
-    minimumZCoordinate: str
+    referenceFlowSpeed: PFloat
+    referenceHeight: PFloat
+    surfaceRoughnessLength: PFloat
+    minimumZCoordinate: PFloat
     pasquillStability: PasquillStability
 
     def applyToDB(self, db):
@@ -58,10 +60,10 @@ class AtmosphericBoundaryLayer:
 
         db.replaceElement(xpath + '/groundNormalDirection',
                           self.groundNormalDirection.toElement('groundNormalDirection'))
-        db.setValue(xpath + '/referenceFlowSpeed', self.referenceFlowSpeed)
-        db.setValue(xpath + '/referenceHeight', self.referenceHeight)
-        db.setValue(xpath + '/surfaceRoughnessLength', self.surfaceRoughnessLength)
-        db.setValue(xpath + '/minimumZCoordinate', self.minimumZCoordinate)
+        db.setValue(xpath + '/referenceFlowSpeed', str(self.referenceFlowSpeed))
+        db.setValue(xpath + '/referenceHeight', str(self.referenceHeight))
+        db.setValue(xpath + '/surfaceRoughnessLength', str(self.surfaceRoughnessLength))
+        db.setValue(xpath + '/minimumZCoordinate', str(self.minimumZCoordinate))
 
         if self.pasquillStability.disabled:
             db.setAttribute(xpath + '/pasquillStability', 'disabled', 'true')

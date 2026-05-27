@@ -4,11 +4,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
-from lxml import etree
+from libbaram.pfloat import PFloat
 
-from baramFlow.base.base import BatchableNumber
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.libdb import nsmap, E, ns, xmlToBool
+from baramFlow.coredb.libdb import nsmap, E, xmlToBool
 
 
 class PatchInteractionType(Enum):
@@ -21,41 +20,35 @@ class PatchInteractionType(Enum):
 
 @dataclass
 class CoefficientOfRestitution:
-    normal: BatchableNumber = field(default_factory=lambda: BatchableNumber('1'))
-    tangential: BatchableNumber = field(default_factory=lambda: BatchableNumber('1'))
+    normal: PFloat      = field(default_factory=lambda: PFloat('1'))
+    tangential: PFloat  = field(default_factory=lambda: PFloat('1'))
 
     @staticmethod
     def fromElement(e):
-        return CoefficientOfRestitution(normal=BatchableNumber.fromElement(e.find('normal', namespaces=nsmap)),
-                                        tangential=BatchableNumber.fromElement(e.find('tangential', namespaces=nsmap)))
+        return CoefficientOfRestitution(normal=PFloat.fromElement(e.find('normal', namespaces=nsmap)),
+                                        tangential=PFloat.fromElement(e.find('tangential', namespaces=nsmap)))
 
     def toElement(self):
-        return etree.fromstring(f'''
-            <coefficientOfRestitution xmlns="{ns}">
-                {self.normal.toXML('normal')}
-                {self.tangential.toXML('tangential')}
-            </coefficientOfRestitution>
-        ''')
+        return E('coefficientOfRestitution',
+                 self.normal.toElement('normal'),
+                 self.tangential.toElement('tangential'))
 
 
 @dataclass
 class RecycleProperties:
-    recycleBoundary: str = '0'
-    recycleFraction: BatchableNumber = field(default_factory=lambda: BatchableNumber('1'))
+    recycleBoundary: str    = '0'
+    recycleFraction: PFloat = field(default_factory=lambda: PFloat('1'))
 
     @staticmethod
     def fromElement(e):
         return RecycleProperties(
             recycleBoundary=e.find('recycleBoundary', namespaces=nsmap).text,
-            recycleFraction=BatchableNumber.fromElement(e.find('recycleFraction', namespaces=nsmap)))
+            recycleFraction=PFloat.fromElement(e.find('recycleFraction', namespaces=nsmap)))
 
     def toElement(self):
-        return etree.fromstring(f'''
-            <recycle xmlns="{ns}">
-                <recycleBoundary>{self.recycleBoundary}</recycleBoundary>
-                {self.recycleFraction.toXML('recycleFraction')}
-            </recycle>
-        ''')
+        return E('recycle',
+                 E('recycleBoundary', self.recycleBoundary),
+                 self.recycleFraction.toElement('recycleFraction'))
 
 
 @dataclass
@@ -157,8 +150,8 @@ class SpecieRatios:
 
 @dataclass
 class TemperatureLayer:
-    thickness: str
-    thermalConductivity : str
+    thickness: PFloat
+    thermalConductivity : PFloat
 
 
 @dataclass
@@ -179,8 +172,8 @@ class TemperatureLayers:
         thicknessLayers = ''
         thermalConductivityLayers = ''
         for row in self.layers:
-            thicknessLayers += row.thickness + ' '
-            thermalConductivityLayers += row.thermalConductivity + ' '
+            thicknessLayers += str(row.thickness) + ' '
+            thermalConductivityLayers += str(row.thermalConductivity) + ' '
 
         return E('wallLayers',
                     E('thicknessLayers', thicknessLayers),

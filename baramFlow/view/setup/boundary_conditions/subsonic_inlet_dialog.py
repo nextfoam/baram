@@ -6,9 +6,9 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.base import Vector
 from baramFlow.base.boundary.boundary_patch import SubsonicInletPatch
 from baramFlow.base.boundary.subsonic_inle import SubsonicInlet
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB

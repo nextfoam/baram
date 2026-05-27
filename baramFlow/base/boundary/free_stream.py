@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 
 from baramFlow.base.base import DirectionSpecificationMethod
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.base import Vector
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb import _CoreDB
 from baramFlow.coredb.libdb import nsmap

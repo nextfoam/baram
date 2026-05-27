@@ -86,7 +86,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="BatchableFloatEdit" name="flowDirectionXComponent">
+             <widget class="PFloatLineEdit" name="flowDirectionXComponent">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -103,7 +103,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="BatchableFloatEdit" name="flowDirectionYComponent">
+             <widget class="PFloatLineEdit" name="flowDirectionYComponent">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -120,7 +120,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="BatchableFloatEdit" name="flowDirectionZComponent">
+             <widget class="PFloatLineEdit" name="flowDirectionZComponent">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -149,7 +149,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="BatchableFloatEdit" name="groundNormalDirectionXComponent">
+          <widget class="PFloatLineEdit" name="groundNormalDirectionXComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -166,7 +166,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="BatchableFloatEdit" name="groundNormalDirectionYComponent">
+          <widget class="PFloatLineEdit" name="groundNormalDirectionYComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -183,7 +183,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="BatchableFloatEdit" name="groundNormalDirectionZComponent">
+          <widget class="PFloatLineEdit" name="groundNormalDirectionZComponent">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -206,7 +206,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="BatchableFloatEdit" name="referenceFlowSpeed">
+          <widget class="PFloatLineEdit" name="referenceFlowSpeed">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -223,7 +223,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="BatchableFloatEdit" name="referenceHeight">
+          <widget class="PFloatLineEdit" name="referenceHeight">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -240,7 +240,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="BatchableFloatEdit" name="surfaceRoughnessLength">
+          <widget class="PFloatLineEdit" name="surfaceRoughnessLength">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -257,7 +257,7 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="BatchableFloatEdit" name="minimumZCoordinate"/>
+          <widget class="PFloatLineEdit" name="minimumZCoordinate"/>
          </item>
         </layout>
        </widget>
@@ -285,7 +285,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="BatchableFloatEdit" name="latitude">
+       <widget class="PFloatLineEdit" name="latitude">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -302,7 +302,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="BatchableFloatEdit" name="surfaceHeatFlux">
+       <widget class="PFloatLineEdit" name="surfaceHeatFlux">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -319,7 +319,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="BatchableFloatEdit" name="referenceDensity">
+       <widget class="PFloatLineEdit" name="referenceDensity">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -353,7 +353,7 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="BatchableFloatEdit" name="referenceSpecificHeat">
+       <widget class="PFloatLineEdit" name="referenceSpecificHeat">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -363,7 +363,7 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="BatchableFloatEdit" name="referenceTemperature">
+       <widget class="PFloatLineEdit" name="referenceTemperature">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -415,9 +415,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>baramFlow.view.widgets.batchable_float_edit</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
   <customwidget>
    <class>PythonComboBox</class>

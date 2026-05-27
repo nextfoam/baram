@@ -6,10 +6,9 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
+from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
 from baramFlow.base.boundary.boundary_patch import FarFieldRiemannPatch
 from baramFlow.base.boundary.free_stream import FarFieldRiemann, FlowDirection
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter

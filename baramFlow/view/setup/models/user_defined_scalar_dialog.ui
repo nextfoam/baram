@@ -91,7 +91,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="BatchableFloatEdit" name="diffusivity"/>
+             <widget class="PFloatLineEdit" name="diffusivity"/>
             </item>
            </layout>
           </widget>
@@ -110,7 +110,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="BatchableFloatEdit" name="laminarViscosityCoefficient"/>
+             <widget class="PFloatLineEdit" name="laminarViscosityCoefficient"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_5">
@@ -120,7 +120,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="BatchableFloatEdit" name="turbulentViscosityCoefficient"/>
+             <widget class="PFloatLineEdit" name="turbulentViscosityCoefficient"/>
             </item>
            </layout>
           </widget>
@@ -176,9 +176,9 @@
    <header location="global">widgets.python_combo_box</header>
   </customwidget>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
+   <header location="global">widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -3,9 +3,9 @@
 
 from dataclasses import dataclass, field
 
+from baramFlow.base.base import Vector
 from baramFlow.base.boundary.boundary_data import BoundaryData
 from baramFlow.base.cell_zone.cell_zone import CellZoneData
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.libdb import E, nsmap
 from baramFlow.coredb.region_db import CELL_ZONE_NAME_FOR_REGION
 

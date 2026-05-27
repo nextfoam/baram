@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import QTimer
+from copy import deepcopy
+
 import qasync
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.general_db import GeneralDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.base.material.material import MaterialManager, MaterialType, Materials, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager, Injection
 from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
@@ -66,7 +68,6 @@ class DPMDialog(QDialog):
         self._heatTransferTabIndex = self._ui.tabWidget.indexOf(self._ui.heatTransfreTab)
         self._evaporationTabIndex = self._ui.tabWidget.indexOf(self._ui.evaporationTab)
 
-        self._properties = None
         self._injections: list[Injection] = []
 
         self._particleType = None
@@ -226,26 +227,26 @@ class DPMDialog(QDialog):
                 self._dropletComposition.addLiquid((c.mid, material.name), c.composition)
 
         self._updateDropletTotalComposition()
-        self._ui.temperature.setBatchableNumber(self._properties.droplet.temperature)
+        self._ui.temperature.setPFloat(self._properties.droplet.temperature)
 
         self._ui.interactionWithContinuousPhase.setChecked(
             self._properties.numericalConditions.interactionWithContinuousPhase)
-        self._ui.maxParticleCourantNumber.setBatchableNumber(
+        self._ui.maxParticleCourantNumber.setPFloat(
             self._properties.numericalConditions.maxParticleCourantNumber)
-        self._ui.DPMIterationInterval.setBatchableNumber(
+        self._ui.DPMIterationInterval.setPFloat(
             self._properties.numericalConditions.DPMIterationInterval)
         self._ui.nodeBasedAveraging.setChecked(self._properties.numericalConditions.nodeBasedAveraging)
         self._ui.trackingScheme.setCurrentIndex(
             self._ui.trackingScheme.findData(self._properties.numericalConditions.trackingScheme))
 
         self._dragForceRadios.setCheckedData(self._properties.kinematicModel.dragForce.specification)
-        self._ui.shapeFactor.setBatchableNumber(
+        self._ui.shapeFactor.setPFloat(
             self._properties.kinematicModel.dragForce.nonSphereDrag.shapeFactor)
-        self._ui.dragTomiyamaSurfaceTension.setBatchableNumber(
+        self._ui.dragTomiyamaSurfaceTension.setPFloat(
             self._properties.kinematicModel.dragForce.tomyamaDrag.surfaceTension)
         self._contaminationRadios.setCheckedData(self._properties.kinematicModel.dragForce.tomyamaDrag.contamination)
         self._liftForceRadios.setCheckedData(self._properties.kinematicModel.liftForce.specification)
-        self._ui.liftTomiyamaSurfaceTension.setBatchableNumber(
+        self._ui.liftTomiyamaSurfaceTension.setPFloat(
             self._properties.kinematicModel.liftForce.tomiyamaLift.surfaceTension)
         self._ui.gravity.setChecked(self._properties.kinematicModel.gravity)
         self._ui.pressureGradient.setChecked(self._properties.kinematicModel.pressureGradient)
@@ -253,7 +254,7 @@ class DPMDialog(QDialog):
         if energyOn and turbulenceModel == TurbulenceModel.LAMINAR:
             self._ui.brownianMotionForce.setChecked(not self._properties.kinematicModel.brownianMotionForce.disabled)
 
-        self._ui.molecularFreePathLength.setBatchableNumber(
+        self._ui.molecularFreePathLength.setPFloat(
             self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength)
 
         self._ui.useTurtulence.setChecked(self._properties.kinematicModel.brownianMotionForce.useTurbulence)
@@ -271,33 +272,18 @@ class DPMDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
-        dragForce = self._dragForceRadios.checkedData()
-        liftForce = self._liftForceRadios.checkedData()
-        brownianMotionForceChecked = self._ui.brownianMotionForce.isChecked()
+        data = deepcopy(self._properties)
 
-        if self._particleType != DPMParticleType.NONE:
-            try:
-                self._ui.maxParticleCourantNumber.validate(self.tr('Max. Particle Courant Number'),low=0,
-                                                           lowInclusive=False)
-                self._ui.DPMIterationInterval.validate(self.tr('DPM Iteration Interval'),low=0,
-                                                           lowInclusive=False)
-
-                if dragForce == DPMDragForce.NON_SPHERICAL:
-                    self._ui.shapeFactor.validate(self.tr('Shape Factor'), low=0, high=1, lowInclusive=False)
-                elif dragForce == DPMDragForce.TOMIYAMA:
-                    self._ui.dragTomiyamaSurfaceTension.validate(self.tr('Surface Tension'), low=0)
-
-                if liftForce == DPMLiftForce.TOMIYAMA:
-                    self._ui.liftTomiyamaSurfaceTension.validate(self.tr('Surface Tension'), low=0)
-
-                if brownianMotionForceChecked:
-                    self._ui.molecularFreePathLength.validate(self.tr('Molecular Free Path Length'), low=0)
-
+        data.particleType = self._particleType
+        try:
+            if self._particleType != DPMParticleType.NONE:
                 if self._particleType == DPMParticleType.INERT:
                     if self._inertParticle == '0':
                         await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                             self.tr('Select Inert Particle.'))
                         return
+
+                    data.inert.inertParticle = self._inertParticle
                 elif self._particleType == DPMParticleType.DROPLET:
                     if not self._dropletComposition.hasLiquids():
                         await AsyncMessageBox().information(self, self.tr('Input Error'),
@@ -308,56 +294,60 @@ class DPMDialog(QDialog):
                         await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                             self.tr('Total Composition must be 1.'))
                         return
-                    self._ui.temperature.validate(self.tr('Temperature'))
-            except ValueError as e:
-                await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
-                return
 
-        self._properties.particleType = self._particleType
-        if self._particleType != DPMParticleType.NONE:
-            if self._particleType == DPMParticleType.INERT:
-                self._properties.inert.inertParticle = self._inertParticle
-            elif self._particleType == DPMParticleType.DROPLET:
-                self._properties.droplet.composition = self._dropletComposition.data()
-                self._properties.droplet.temperature = self._ui.temperature.batchableNumber()
+                    data.droplet.composition = self._dropletComposition.data()
+                    data.droplet.temperature = self._ui.temperature.pFloat(self.tr('Temperature'))
 
-            self._properties.numericalConditions.interactionWithContinuousPhase = self._ui.interactionWithContinuousPhase.isChecked()
-            self._properties.numericalConditions.maxParticleCourantNumber = self._ui.maxParticleCourantNumber.batchableNumber()
-            self._properties.numericalConditions.DPMIterationInterval = self._ui.DPMIterationInterval.batchableNumber()
-            self._properties.numericalConditions.nodeBasedAveraging = self._ui.nodeBasedAveraging.isChecked()
-            self._properties.numericalConditions.trackingScheme = self._ui.trackingScheme.currentData()
+                data.numericalConditions.interactionWithContinuousPhase = self._ui.interactionWithContinuousPhase.isChecked()
+                data.numericalConditions.maxParticleCourantNumber = self._ui.maxParticleCourantNumber.pFloat(
+                    self.tr('Max. Particle Courant Number'),low=0, lowInclusive=False)
+                data.numericalConditions.DPMIterationInterval = self._ui.DPMIterationInterval.pFloat(
+                    self.tr('DPM Iteration Interval'),low=0, lowInclusive=False)
+                data.numericalConditions.nodeBasedAveraging = self._ui.nodeBasedAveraging.isChecked()
+                data.numericalConditions.trackingScheme = self._ui.trackingScheme.currentData()
 
-            self._properties.kinematicModel.dragForce.specification = dragForce
-            if dragForce == DPMDragForce.NON_SPHERICAL:
-                self._properties.kinematicModel.dragForce.nonSphereDrag.shapeFactor = self._ui.shapeFactor.batchableNumber()
-            elif dragForce == DPMDragForce.TOMIYAMA:
-                self._properties.kinematicModel.dragForce.tomyamaDrag.surfaceTension = self._ui.dragTomiyamaSurfaceTension.batchableNumber()
-                self._properties.kinematicModel.dragForce.tomyamaDrag.contamination = self._contaminationRadios.checkedData()
+                dragForce = self._dragForceRadios.checkedData()
+                data.kinematicModel.dragForce.specification = dragForce
+                if dragForce == DPMDragForce.NON_SPHERICAL:
+                    data.kinematicModel.dragForce.nonSphereDrag.shapeFactor = self._ui.shapeFactor.pFloat(
+                        self.tr('Shape Factor'), low=0, high=1, lowInclusive=False)
+                elif dragForce == DPMDragForce.TOMIYAMA:
+                    data.kinematicModel.dragForce.tomyamaDrag.surfaceTension = self._ui.dragTomiyamaSurfaceTension.pFloat(
+                        self.tr('Surface Tension'), low=0)
+                    data.kinematicModel.dragForce.tomyamaDrag.contamination = self._contaminationRadios.checkedData()
 
-            self._properties.kinematicModel.liftForce.specification = liftForce
-            if liftForce == DPMLiftForce.TOMIYAMA:
-                self._properties.kinematicModel.liftForce.tomiyamaLift.surfaceTension = self._ui.liftTomiyamaSurfaceTension.batchableNumber()
+                liftForce = self._liftForceRadios.checkedData()
+                data.kinematicModel.liftForce.specification = liftForce
+                if liftForce == DPMLiftForce.TOMIYAMA:
+                    data.kinematicModel.liftForce.tomiyamaLift.surfaceTension = self._ui.liftTomiyamaSurfaceTension.pFloat(
+                        self.tr('Surface Tension'), low=0)
 
-            self._properties.kinematicModel.gravity = self._ui.gravity.isChecked()
-            self._properties.kinematicModel.pressureGradient = self._ui.pressureGradient.isChecked()
-            self._properties.kinematicModel.brownianMotionForce.disabled = not brownianMotionForceChecked
-            if brownianMotionForceChecked:
-                self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength = self._ui.molecularFreePathLength.batchableNumber()
-                self._properties.kinematicModel.brownianMotionForce.useTurbulence = self._ui.useTurtulence.isChecked()
+                data.kinematicModel.gravity = self._ui.gravity.isChecked()
+                data.kinematicModel.pressureGradient = self._ui.pressureGradient.isChecked()
 
-            self._properties.turbulentDispersion = self._turbulentDispersion
+                brownianMotionForceChecked = self._ui.brownianMotionForce.isChecked()
+                data.kinematicModel.brownianMotionForce.disabled = not brownianMotionForceChecked
+                if brownianMotionForceChecked:
+                    data.kinematicModel.brownianMotionForce.molecularFreePathLength = self._ui.molecularFreePathLength.pFloat(
+                        self.tr('Molecular Free Path Length'), low=0)
+                    data.kinematicModel.brownianMotionForce.useTurbulence = self._ui.useTurtulence.isChecked()
 
-            if self._particleType == DPMParticleType.DROPLET:
-                heatTransfer = self._heatTransferRadios.checkedData()
-                self._properties.heatTransfer.specification = heatTransfer
-                if heatTransfer == DPMHeatTransferSpeicification.RANZ_MARHALL:
-                    self._properties.heatTransfer.ranzMarsahll.birdCorrection = self._ui.birdCorrection.isChecked()
+                data.turbulentDispersion = self._turbulentDispersion
 
-                self._properties.evaporation.model = self._evaporationModelRadios.checkedData()
-                self._properties.evaporation.enthalpyTransferType = self._enthalpyTransferTypeRadios.checkedData()
+                if self._particleType == DPMParticleType.DROPLET:
+                    heatTransfer = self._heatTransferRadios.checkedData()
+                    data.heatTransfer.specification = heatTransfer
+                    if heatTransfer == DPMHeatTransferSpeicification.RANZ_MARHALL:
+                        data.heatTransfer.ranzMarsahll.birdCorrection = self._ui.birdCorrection.isChecked()
 
-        with coredb.CoreDB() as db:
-            DPMModelManager.updateDPMModel(db, self._properties, self._injections)
+                    data.evaporation.model = self._evaporationModelRadios.checkedData()
+                    data.evaporation.enthalpyTransferType = self._enthalpyTransferTypeRadios.checkedData()
+
+            with coredb.CoreDB() as db:
+                DPMModelManager.updateDPMModel(db, data, self._injections)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return
 
         self.accept()
 

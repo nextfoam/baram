@@ -3,10 +3,9 @@
 
 import qasync
 
-from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
+from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
 from baramFlow.base.boundary.boundary_patch import FreeStreamPatch
 from baramFlow.base.boundary.free_stream import FlowDirection, FreeStream
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB

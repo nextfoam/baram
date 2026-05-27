@@ -77,7 +77,6 @@ class IntakeFanDialog(ResizableDialog):
 
         try:
             writer = CoreDBWriter()
-            writer.append(self._xpath + '/pressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
 
             if not self._turbulenceWidget.appendToWriter(writer):
                 return
@@ -96,6 +95,7 @@ class IntakeFanDialog(ResizableDialog):
 
             data = IntakeFanPatch(
                 turbulence=self._turbulenceWidget.data(),
+                pressure=self._ui.totalPressure.pFloat(self.tr("Total Pressure")),
                 fanCurve=TableDataForFileDB(data=self._fanCurve.data()) if self._fanCurve.isModified() else None)
 
             BoundaryService.updateBoundaryCondition(self._bcid, data, writer)

@@ -60,7 +60,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="BatchableFloatEdit" name="normal">
+          <widget class="PFloatLineEdit" name="normal">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -77,7 +77,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="BatchableFloatEdit" name="tangential">
+          <widget class="PFloatLineEdit" name="tangential">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -131,7 +131,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="BatchableFloatEdit" name="recycleFraction">
+          <widget class="PFloatLineEdit" name="recycleFraction">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -168,9 +168,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>baramFlow.view.widgets.batchable_float_edit</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

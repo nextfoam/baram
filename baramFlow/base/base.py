@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from uuid import UUID
@@ -8,11 +9,11 @@ from uuid import UUID
 import pandas as pd
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.base.xml_helper import Vector
-from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.constants import Function1Type
-from baramFlow.coredb.libdb import E
+from libbaram.pfloat import PFloat
 
+from baramFlow.base.constants import Function1Type
+from baramFlow.coredb.libdb import nsmap
+from baramFlow.coredb.libdb import E
 
 UUID_ZERO = UUID('00000000-0000-0000-0000-000000000000')
 
@@ -28,42 +29,57 @@ DirectionSpecificationMethodTexts = {
 }
 
 
-class BatchableNumber:
-    def __init__(self, text: str, default=None):
-        self._text = text
-        self._default = default
+@dataclass
+class Vector:
+    x: PFloat
+    y: PFloat
+    z: PFloat
 
-        assert not self.isParameter() or self._default is not None
+    @staticmethod
+    def zero():
+        return Vector(PFloat('0'), PFloat('0'), PFloat('0'))
 
-    @property
-    def text(self):
-        return self._text
+    @staticmethod
+    def xUnit():
+        return Vector(PFloat('1'), PFloat('0'), PFloat('0'))
 
-    def isParameter(self):
-        return self._text.startswith('$')
+    @staticmethod
+    def yUnit():
+        return Vector(PFloat('0'), PFloat('1'), PFloat('0'))
 
-    def parameter(self):
-        return self._text[1:] if self.isParameter() else None
-
-    def number(self):
-        return self._default
+    @staticmethod
+    def zUnit():
+        return Vector(PFloat('0'), PFloat('0'), PFloat('1'))
 
     @staticmethod
     def fromElement(e):
-        if parameter := e.get('batchParameter'):
-            return BatchableNumber('$' + parameter, e.text)
+        return Vector(x=PFloat.fromElement(e.find('x', namespaces=nsmap)),
+                      y=PFloat.fromElement(e.find('y', namespaces=nsmap)),
+                      z=PFloat.fromElement(e.find('z', namespaces=nsmap)))
 
-        return BatchableNumber(e.text)
+    def toElement(self, tag):
+        return E(tag,
+                 self.x.toElement('x'),
+                 self.y.toElement('y'),
+                 self.z.toElement('z'))
 
-    def toXML(self, name):
-        attr = f' batchParameter="{self.parameter()}"' if self.isParameter() else ''
-        return f'<{name}{attr}>{self._default if self.isParameter() else self._text}</{name}>'
+    def toFloatList(self):
+        return [float(self.x), float(self.y), float(self.z)]
 
-    def toElement(self, tag: str):
-        if self.isParameter():
-            return E(tag, self._default, batchParameter=self.parameter())
-        else:
-            return E(tag, self._text)
+    def isXAligned(self):
+        return float(self.y) == 0 and float(self.z) == 0
+
+    def isYAligned(self):
+        return float(self.x) == 0 and float(self.z) == 0
+
+    def isZAligned(self):
+        return float(self.x) == 0 and float(self.y) == 0
+
+    def magnitude(self):
+        return math.sqrt(float(self.x) ** 2 + float(self.y) ** 2 + float(self.z) ** 2)
+
+    def __str__(self):
+        return f'({self.x}, {self.y}, {self.z})'
 
 
 @dataclass
@@ -80,6 +96,7 @@ class Function1ScalarRow:
         return f'<t>{self.t}</t><v>{self.v}</v>'
 
     def toElement(self, tag: str):
+        print(self)
         return E(tag,
                  E('t', self.t),
                  E('v', self.v))
@@ -110,10 +127,16 @@ class Function1VectorRow:
                  E('z', self.z))
 
 
+@dataclass(kw_only=True)
+class Function1Data:
+    type: Function1Type         = Function1Type.CONSTANT
+    constant: PFloat | Vector
+    table: list
+
+
 @dataclass
-class Function1Scalar:
-    type: Function1Type = Function1Type.CONSTANT
-    constant: BatchableNumber = field(default_factory=lambda: BatchableNumber('100'))
+class Function1Scalar(Function1Data):
+    constant: PFloat                = field(default_factory=lambda: PFloat('100'))
     table: list[Function1ScalarRow] = field(default_factory=list)
 
     @staticmethod
@@ -124,19 +147,19 @@ class Function1Scalar:
                 table.append(Function1ScalarRow.fromElement(row))
 
         return Function1Scalar(type=Function1Type(e.find('type', namespaces=nsmap).text),
-                               constant=BatchableNumber.fromElement(e.find('constant', namespaces=nsmap)),
+                               constant=PFloat.fromElement(e.find('constant', namespaces=nsmap)),
                                table=table)
-
-    def toXML(self):
-        rows = ''
-        for row in self.table:
-            rows += f'<row>{row.toXML()}</row>'
-
-        return f'''
-            <type>{self.type.value}</type>
-            <constant>{self.constant.text}</constant>
-            <table>{rows}</table>
-        '''
+    #
+    # def toXML(self):
+    #     rows = ''
+    #     for row in self.table:
+    #         rows += f'<row>{row.toXML()}</row>'
+    #
+    #     return f'''
+    #         <type>{self.type.value}</type>
+    #         <constant>{self.constant.text}</constant>
+    #         <table>{rows}</table>
+    #     '''
 
     def toElement(self, tag: str):
         tableElement = E('table')
@@ -148,9 +171,8 @@ class Function1Scalar:
 
 
 @dataclass
-class Function1Vector:
-    type: Function1Type = Function1Type.CONSTANT
-    constant: Vector = field(default_factory=Vector.xUnit)
+class Function1Vector(Function1Data):
+    constant: Vector                = field(default_factory=Vector.xUnit)
     table: list[Function1VectorRow] = field(default_factory=lambda: [])
 
     @staticmethod
