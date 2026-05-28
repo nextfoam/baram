@@ -96,7 +96,6 @@ class Function1ScalarRow:
         return f'<t>{self.t}</t><v>{self.v}</v>'
 
     def toElement(self, tag: str):
-        print(self)
         return E(tag,
                  E('t', self.t),
                  E('v', self.v))
