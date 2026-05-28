@@ -59,13 +59,13 @@ class GeometryManager(ActorManager):
 
         self.applyToDisplay()
 
-    def updateCustomSurfaces(self, volume, surfaces):
+    def updateCustomSurfacesByVolume(self, volume, surfaces):
         for gId, surface in surfaces.items():
             self.update(gId, self._surfaceToPolyData(surface, volume))
 
         self.applyToDisplay()
 
-    def updateIndependentSurface(self, gId, surface: Element):
+    def updateSurface(self, gId, surface: Element):
         self._updateActorName(gId, surface.value('name'))
         if surface.enum('shape') == Shape.TRI_SURFACE_MESH:
             self.update(gId, self._surfaceToPolyData(surface))
