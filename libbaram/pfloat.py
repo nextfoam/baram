@@ -27,6 +27,9 @@ class PFloat():
 
             try:
                 resolvedText = UserParameters().getValue(self._text[1:])
+                if resolvedText is None:
+                    raise LookupError
+
                 value = float(resolvedText)
             except LookupError:
                 raise ValueError(f"{name} - {QApplication.translate('PFloat', 'Invalid User Parameter')}")
