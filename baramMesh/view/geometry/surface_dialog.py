@@ -69,6 +69,7 @@ class SurfaceDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
+        self._ui.ok.setEnabled(False)
         try:
             db = app.db.checkout()
 
@@ -112,6 +113,8 @@ class SurfaceDialog(QDialog):
             super().accept()
         except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr("Input Error"), e.toMessage())
+        finally:
+            self._ui.ok.setEnabled(True)
 
     def _connectSignalsSlots(self):
         self._typeRadios.selectionChanged.connect(self._onTypeChanged)
