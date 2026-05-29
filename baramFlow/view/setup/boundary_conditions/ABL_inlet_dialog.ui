@@ -252,7 +252,7 @@
          <item row="3" column="0">
           <widget class="QLabel" name="label_10">
            <property name="text">
-            <string>Minimum z-coordinate (m)</string>
+            <string>Ground-normal displacement height (m)</string>
            </property>
           </widget>
          </item>
@@ -384,7 +384,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
