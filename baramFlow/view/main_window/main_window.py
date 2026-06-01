@@ -582,7 +582,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
             if previousPage.widget and previousPage.widget == self._contentView.currentPage():
-                if not await previousPage.widget.save() or not previousPage.widget.checkToQuit():
+                if not await previousPage.widget.save() or not await previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
 
@@ -653,11 +653,22 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._caseManager.load(LiveCase())
 
         if self._caseManager.isRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
+            menu = MenuItem.MENU_SOLUTION_RUN.value
             self._chartDock.raise_()
         else:
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
+            menu = MenuItem.MENU_SETUP_GENERAL.value
             self._renderingDock.raise_()
+
+        # Select the initial menu without emitting currentMenuChanged. Going
+        # through _changeForm here would schedule a second asyncSlot task that
+        # tries to save the previous page while _projectOpened is still running,
+        # re-entering the event loop and raising "Cannot enter into task ...".
+        wasBlocked = self._navigatorView.blockSignals(True)
+        try:
+            self._navigatorView.setCurrentMenu(menu)
+        finally:
+            self._navigatorView.blockSignals(wasBlocked)
+        self._loadForm(menu)
 
         progressDialog = ProgressDialog(self, self.tr('Case Loading'))
         progressDialog.open()
