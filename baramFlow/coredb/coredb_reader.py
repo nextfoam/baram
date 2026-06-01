@@ -61,10 +61,36 @@ class Region:
             self._rho = db.getDensity(material, self._t, p)  # Density
             mu = db.getViscosity(material, self._t)  # Viscosity
 
+            if self._rho == 0:
+                if self._rname:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Material density is zero in region "{0}". '
+                        'Check the material properties and initial values.').format(self._rname)
+                else:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Material density is zero. '
+                        'Check the material properties and initial values.')
+                raise RuntimeError(message)
+
             nu = mu / self._rho  # Kinetic Viscosity
             pr = float(db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
 
             self._nut = b * nu
+
+            if self._nut == 0:
+                if self._rname:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Turbulent viscosity is zero in region "{0}". '
+                        'Check the material properties and initial values.').format(self._rname)
+                else:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Turbulent viscosity is zero. '
+                        'Check the material properties and initial values.')
+                raise RuntimeError(message)
 
             self._alphat = self._rho * self._nut / pr
 
