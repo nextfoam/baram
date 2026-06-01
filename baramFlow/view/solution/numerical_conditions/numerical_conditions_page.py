@@ -3,7 +3,7 @@
 
 import qasync
 
-from PySide6.QtWidgets import QMessageBox
+from widgets.async_message_box import AsyncMessageBox
 
 import baramFlow.openfoam.solver
 
@@ -414,7 +414,7 @@ class NumericalConditionsPage(ContentPage):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+            await AsyncMessageBox().critical(self, self.tr('Input Error'), writer.firstError().toMessage())
             return False
 
         return True

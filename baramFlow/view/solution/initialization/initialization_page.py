@@ -97,9 +97,9 @@ class InitializationPage(ContentPage):
 
         return True
 
-    def checkToQuit(self):
+    async def checkToQuit(self):
         if coredb.CoreDB().configCount != self._dbConfigCount:
-            confirm = QMessageBox.question(
+            confirm = await AsyncMessageBox().question(
                 self, self.tr("Changed Not Applied"),
                 self.tr(
                     'Initialization configuration has changed but "Initialization" button was not clicked. Proceed?'),
