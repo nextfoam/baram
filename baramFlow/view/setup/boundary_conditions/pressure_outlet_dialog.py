@@ -8,7 +8,7 @@ from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.boundary.boundary_patch import PressureOutletPatch
 from baramFlow.base.boundary.pressure_port import PressureOutlet
-from baramFlow.base.material.material import Phase, DensitySpecification, SpecificHeatSpecification
+from baramFlow.base.material.constants import Phase, DensitySpecification, SpecificHeatSpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter

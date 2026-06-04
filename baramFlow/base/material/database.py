@@ -12,7 +12,8 @@ from PySide6.QtCore import QCoreApplication
 from libbaram.simple_db.simple_schema import TextType, FloatType, EnumType, SimpleArray
 from libbaram.simple_db.simple_schema import validateData
 
-from .material import DensitySpecification, MaterialType, Phase, SpecificHeatSpecification, TransportSpecification
+from .constants import SpecificHeatSpecification
+from .constants import DensitySpecification, MaterialType, Phase, TransportSpecification
 
 
 commonSchema = {
@@ -97,16 +98,16 @@ def loadDatabase(path):
             raise ValueError(
                 QCoreApplication.translate('MaterialBase', 'Material Name cannot include spaces - {}').format(name))
 
-        validateData(values, commonSchema, name)
+        data[name] = validateData(values, commonSchema, name)
 
         if liquid := values.get('liquid'):
-            validateData(liquid, liquidSchema, f'{name}/liquid')
+            data[name]['liquid'] = validateData(liquid, liquidSchema, f'{name}/liquid')
 
         if gas := values.get('gas'):
-            validateData(gas, gasSchema, f'{name}/gas')
+            data[name]['gas'] = validateData(gas, gasSchema, f'{name}/gas')
 
         if solid := values.get('solid'):
-            validateData(solid, solidSchema, f'{name}/solid')
+            data[name]['solid'] = validateData(solid, solidSchema, f'{name}/solid')
 
     return data
 
@@ -120,32 +121,6 @@ class Database:
     def __init__(self):
         self._path = None
         self._materials = None
-        self._mixture = {
-            'CoolPropName': 'Mixture',
-            'chemicalFormula': None,
-            'phase': None,
-            'molecularWeight': None,
-            'density': 0,
-            'viscosity': 1,
-            'thermalConductivity': 0,
-            'specificHeat': 0,
-            'emissivity': None,
-            'absorptionCoefficient': None,
-            'sutherlandTemperature': 0,
-            'sutherlandCoefficient': 0,
-            'criticalTemperature': 298.15,
-            'criticalPressure': 101325,
-            'criticalSpecificVolume': 1,
-            'tripleTemperature': 298.15,
-            'triplePressure': 101325,
-            'normalBoilingTemperature': 298.15,
-            'standardStateEnthalpy': 0,
-            'referenceTemperature': 298.15,
-            'acentricFactor': 0,
-            'saturationPressure': 101325,
-            'enthalpyOfVaporization': 0,
-            'dropletSurfaceTension': 0.00001,
-        }
 
         self._thermos: list[tuple[str, MaterialType, DensitySpecification, SpecificHeatSpecification, TransportSpecification]] = []
 
@@ -154,9 +129,6 @@ class Database:
 
     def getMaterial(self, name):
         return self._materials[name]
-
-    def getMixture(self):
-        return self._mixture
 
     def getMaterials(self):
         return self._materials
@@ -218,19 +190,19 @@ class Database:
             if liquid:
                 # validateData(liquid, liquidSchema)
                 liquid.update(m)
-                liquid['phase'] = 'liquid'
+                liquid['phase'] = Phase.LIQUID
                 materials[liquid['name']] = liquid
 
             if gas:
                 # validateData(gas, gasSchema)
                 gas.update(m)
-                gas['phase'] = 'gas'
+                gas['phase'] = Phase.GAS
                 materials[gas['name']] = gas
 
             if solid:
                 # validateData(solid, solidSchema)
                 solid.update(m)
-                solid['phase'] = 'solid'
+                solid['phase'] = Phase.SOLID
                 materials[solid['name']] = solid
 
         self._materials = materials

@@ -12,7 +12,7 @@ from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.base.material.material import MaterialManager, MaterialType, Materials, Phase
+from baramFlow.base.material.material import MaterialType, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager, Injection
 from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from baramFlow.base.model.model import DPMTurbulentDispersion, DPMHeatTransferSpeicification
@@ -22,6 +22,7 @@ from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB, TurbulenceModel
+from baramFlow.services.material.material_service import MaterialService, Materials
 from .DPM_dialog_ui import Ui_DPMdialog
 from .injection_list_dialog import InjectionListDialog
 from .droplet_compsition_list import DropletCompositionList
@@ -72,7 +73,7 @@ class DPMDialog(QDialog):
 
         self._particleType = None
         self._inertParticle = None
-        self._coreMaterials = MaterialManager.loadMaterials()
+        self._coreMaterials = MaterialService.loadMaterials()
         self._selectableParticles = []
         self._turbulentDispersion = None
 

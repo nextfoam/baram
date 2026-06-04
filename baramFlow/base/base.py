@@ -5,6 +5,7 @@ import math
 from dataclasses import dataclass, field
 from enum import Enum
 from uuid import UUID
+from xml.etree.ElementTree import Element
 
 import pandas as pd
 from PySide6.QtCore import QCoreApplication
@@ -148,17 +149,6 @@ class Function1Scalar(Function1Data):
         return Function1Scalar(type=Function1Type(e.find('type', namespaces=nsmap).text),
                                constant=PFloat.fromElement(e.find('constant', namespaces=nsmap)),
                                table=table)
-    #
-    # def toXML(self):
-    #     rows = ''
-    #     for row in self.table:
-    #         rows += f'<row>{row.toXML()}</row>'
-    #
-    #     return f'''
-    #         <type>{self.type.value}</type>
-    #         <constant>{self.constant.text}</constant>
-    #         <table>{rows}</table>
-    #     '''
 
     def toElement(self, tag: str):
         tableElement = E('table')
@@ -261,3 +251,26 @@ class TrackedData:
 
     def isNone(self):
         return self._data is None
+
+
+@dataclass
+class NumberList:
+    values: list[str] = field(default_factory=lambda: [])
+
+    def isEmpty(self):
+        return len(self.values) == 0
+
+    @staticmethod
+    def zeros(count: int = 1):
+        return NumberList(['0'] * count)
+
+    @staticmethod
+    def fromElement(e: Element):
+        if e.text is None:
+            return NumberList()
+
+        return NumberList(values=e.text.split())
+
+    def toElement(self, tag):
+        return E(tag, ' '.join(self.values))
+

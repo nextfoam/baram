@@ -216,7 +216,7 @@ class FloatType(PrimitiveType):
             if v > self._highLimit or (v == self._highLimit and not self._highLimitInclusive):
                 raise ValidationError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
 
-        return value
+        return str(value)
 
 
 class IntType(FloatType):

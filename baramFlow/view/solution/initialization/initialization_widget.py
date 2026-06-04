@@ -19,7 +19,7 @@ from baramFlow.base.base import DirectionSpecificationMethod, Vector
 from baramFlow.base.boundary.temperature import TemperatureProfile
 from baramFlow.base.boundary.turbulence import KEpsilonSpecification, KOmegaSpecification
 from baramFlow.base.boundary.velocity_inlet import VelocitySpecification, VelocityProfile
-from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT
 from baramFlow.base.region.region_data import RegionInitialization, RegionInitialValues
 from baramFlow.base.region.region_patch import RegionInitializationPatch
 from baramFlow.case_manager import CaseManager

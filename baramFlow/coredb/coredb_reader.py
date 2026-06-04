@@ -9,8 +9,8 @@ from thermo import PR
 from libbaram.math import calucateDirectionsByRotation
 
 from baramFlow.base.base import DirectionSpecificationMethod
-from baramFlow.base.material.material import (
-    UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, SpecificHeatSpecification, TransportSpecification)
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT, Phase
+from baramFlow.base.material.constants import DensitySpecification, SpecificHeatSpecification, TransportSpecification
 from baramFlow.libbaram.calculation import AverageCalculator
 
 from . import coredb

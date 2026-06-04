@@ -101,6 +101,8 @@ class Function1Widget(QWidget):
             data.constant = self._constantData(name=name, *args, **kwargs)
         elif data.type == Function1Type.TABLE:
             data.table = self._inputs[data.type].data()
+            if not data.table:
+                raise ValueError('Edit {0}.'.format(name))
 
         return data
 

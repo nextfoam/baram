@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import SpecificationMethod, TemporalProfileType
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
+from baramFlow.view.widgets.number_input_dialog import NumberInputDialog, PolynomialDialog
 from widgets.async_message_box import AsyncMessageBox
 from .variable_source_widget_ui import Ui_VariableSourceWidget
 
@@ -121,15 +121,16 @@ class VariableSourceWidget(QWidget):
                     db.getValue(self._xpath + '/piecewiseLinear/v')
                 ]
 
-            self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
-                                                    [self.tr("t"), self._title], self._piecewiseLinear)
+            self._dialog = NumberInputDialog(self, self.tr("Piecewise Linear"),
+                                             [self.tr("t"), self._title],
+                                             [d.split() if d else [] for d in self._piecewiseLinear])
             self._dialog.accepted.connect(self._piecewiseLinearAccepted)
             self._dialog.open()
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL:
             if self._polynomial is None:
                 self._polynomial = db.getValue(self._xpath + '/polynomial')
 
-            self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial)
+            self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial.split())
             self._dialog.accepted.connect(self._polynomialAccepted)
             self._dialog.open()
 

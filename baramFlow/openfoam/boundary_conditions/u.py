@@ -8,7 +8,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DataClass
 from baramFlow.base.base import SpatialVectorList
 from baramFlow.base.boundary.flow_rate_port import FlowRateSpecification
 from baramFlow.base.boundary.velocity_inlet import VelocitySpecification, VelocityProfile, CoordinateSystem
-from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
 from baramFlow.coredb.material_db import MaterialDB

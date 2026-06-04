@@ -90,7 +90,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="PFloatLineEdit" name="a0Low"/>
+          <widget class="FloatLineEdit" name="a0Low"/>
          </item>
          <item row="1" column="2">
           <widget class="QLabel" name="label_7">
@@ -100,7 +100,7 @@
           </widget>
          </item>
          <item row="1" column="3">
-          <widget class="PFloatLineEdit" name="a0High"/>
+          <widget class="FloatLineEdit" name="a0High"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_9">
@@ -110,7 +110,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="PFloatLineEdit" name="a1Low"/>
+          <widget class="FloatLineEdit" name="a1Low"/>
          </item>
          <item row="2" column="2">
           <widget class="QLabel" name="label_8">
@@ -120,7 +120,7 @@
           </widget>
          </item>
          <item row="2" column="3">
-          <widget class="PFloatLineEdit" name="a1High"/>
+          <widget class="FloatLineEdit" name="a1High"/>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_11">
@@ -130,7 +130,7 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="PFloatLineEdit" name="a2Low"/>
+          <widget class="FloatLineEdit" name="a2Low"/>
          </item>
          <item row="3" column="2">
           <widget class="QLabel" name="label_10">
@@ -140,7 +140,7 @@
           </widget>
          </item>
          <item row="3" column="3">
-          <widget class="PFloatLineEdit" name="a2High"/>
+          <widget class="FloatLineEdit" name="a2High"/>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_13">
@@ -150,7 +150,7 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="PFloatLineEdit" name="a3Low"/>
+          <widget class="FloatLineEdit" name="a3Low"/>
          </item>
          <item row="4" column="2">
           <widget class="QLabel" name="label_12">
@@ -160,7 +160,7 @@
           </widget>
          </item>
          <item row="4" column="3">
-          <widget class="PFloatLineEdit" name="a3High"/>
+          <widget class="FloatLineEdit" name="a3High"/>
          </item>
          <item row="5" column="0">
           <widget class="QLabel" name="label_15">
@@ -170,7 +170,7 @@
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="PFloatLineEdit" name="a4Low"/>
+          <widget class="FloatLineEdit" name="a4Low"/>
          </item>
          <item row="5" column="2">
           <widget class="QLabel" name="label_14">
@@ -180,7 +180,7 @@
           </widget>
          </item>
          <item row="5" column="3">
-          <widget class="PFloatLineEdit" name="a4High"/>
+          <widget class="FloatLineEdit" name="a4High"/>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_17">
@@ -190,7 +190,7 @@
           </widget>
          </item>
          <item row="6" column="1">
-          <widget class="PFloatLineEdit" name="a5Low"/>
+          <widget class="FloatLineEdit" name="a5Low"/>
          </item>
          <item row="6" column="2">
           <widget class="QLabel" name="label_16">
@@ -200,7 +200,7 @@
           </widget>
          </item>
          <item row="6" column="3">
-          <widget class="PFloatLineEdit" name="a5High"/>
+          <widget class="FloatLineEdit" name="a5High"/>
          </item>
          <item row="7" column="0">
           <widget class="QLabel" name="label_18">
@@ -210,7 +210,7 @@
           </widget>
          </item>
          <item row="7" column="1">
-          <widget class="PFloatLineEdit" name="a6Low"/>
+          <widget class="FloatLineEdit" name="a6Low"/>
          </item>
          <item row="7" column="2">
           <widget class="QLabel" name="label_19">
@@ -220,7 +220,7 @@
           </widget>
          </item>
          <item row="7" column="3">
-          <widget class="PFloatLineEdit" name="a6High"/>
+          <widget class="FloatLineEdit" name="a6High"/>
          </item>
         </layout>
        </widget>
@@ -271,6 +271,11 @@
    <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.pfloat_line_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>FloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.float_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>
