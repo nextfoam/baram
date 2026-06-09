@@ -54,11 +54,19 @@ class Project(QObject):
 
     def new(self):
         self._settings.acquireLock(0.01)
-        self._db.create(self._path)
+        try:
+            self._db.create(self._path)
+        except Exception:
+            self._settings.releaseLock()
+            raise
 
     def open(self, create=False):
         self._settings.acquireLock(0.01)
-        self._db.load(self._path)
+        try:
+            self._db.load(self._path)
+        except Exception:
+            self._settings.releaseLock()
+            raise
 
     def close(self):
         self._settings.releaseLock()

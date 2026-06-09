@@ -83,7 +83,8 @@ class MainWindow(QMainWindow):
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
-        self._startDialog = ProjectDialog()
+        self._startDialog = None
+        self._setupStartDialog()
         self._dialog = None
 
         self._readyToQuit = False
@@ -153,6 +154,23 @@ class MainWindow(QMainWindow):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
 
+    def _setupStartDialog(self):
+        self._startDialog = ProjectDialog()
+        self._startDialog.actionNewSelected.connect(self._actionNew)
+        self._startDialog.actionOpenSelected.connect(self._actionOpen)
+        self._startDialog.actionProjectSelected.connect(self._openProject)
+        self._startDialog.finished.connect(self._startDialogClosed)
+
+    def _returnToStartScreen(self):
+        # A project open/create failed after the previous project was already
+        # closed, leaving no open project. Hide the now-projectless main window
+        # and bring back the start dialog so the user isn't left with a UI that
+        # crashes on every action that touches app.db (which is now None).
+        self.hide()
+        self._setupStartDialog()
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
+
     def _setupShortcuts(self):
         self._ui.actionNew.setShortcut('Ctrl+N')
         self._ui.actionOpen.setShortcut('Ctrl+O')
@@ -180,11 +198,6 @@ class MainWindow(QMainWindow):
         self._ui.actionPrivacySettings.triggered.connect(self._openPrivacySettings)
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
-
-        self._startDialog.actionNewSelected.connect(self._actionNew)
-        self._startDialog.actionOpenSelected.connect(self._actionOpen)
-        self._startDialog.actionProjectSelected.connect(self._openProject)
-        self._startDialog.finished.connect(self._startDialogClosed)
 
         self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
         self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
@@ -269,32 +282,48 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _createProject(self):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
-        if app.createProject(self._dialog.projectPath()):
-            self._recentFilesMenu.addRecentest(app.project.path)
-            self._projectOpened()
+        try:
+            app.createProject(self._dialog.projectPath())
+        except (OSError, Timeout) as ex:
+            await AsyncMessageBox().information(self, self.tr('Project Creation Error'), str(ex))
+            self._recoverFromMissingProject()
+            return
+
+        self._recentFilesMenu.addRecentest(app.project.path)
+        self._projectOpened()
 
     @qasync.asyncSlot()
     async def _openProject(self, file):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
         path = Path(file)
         try:
             app.openProject(path.resolve())
             self._projectOpened()
+            return
         except FileNotFoundError:
-            await AsyncMessageBox().information(
-                self, self.tr('Project Open Error'),
-                self.tr('{0} is not a {1} project.').format(path.name, meshAppProperties.fullName))
+            message = self.tr('{0} is not a {1} project.').format(path.name, meshAppProperties.fullName)
         except Timeout:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr('{0} is already open in another program.').format(path.name))
+            message = self.tr('{0} is already open in another program.').format(path.name)
         except ValidationError as e:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr(f'configurations error : {e.path} - {e.name}'))
+            message = self.tr(f'configurations error : {e.path} - {e.name}')
+
+        await AsyncMessageBox().information(self, self.tr('Project Open Error'), message)
+        self._recoverFromMissingProject()
+
+    def _recoverFromMissingProject(self):
+        # The open/create failed after the previous project was already closed.
+        # If the main window is showing (an in-session switch), it now has no
+        # project and every db-backed action would crash, so go back to the
+        # start screen. At launch the start dialog is still up, so leave it.
+        if self._startDialog is None:
+            self._returnToStartScreen()
 
     @qasync.asyncSlot()
     async def _saveAs(self, path):
