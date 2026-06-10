@@ -3,7 +3,6 @@
 
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
-from xml.sax.saxutils import escape
 
 from libbaram.pfloat import PFloat
 
@@ -254,7 +253,7 @@ def _createMaterial(mid: str, name: str, type: MaterialType, base: dict):
         name=name,
         type=type,
         phase=base['phase'],
-        chemicalFormula=escape(base['chemicalFormula']) if base.get('chemicalFormula', None) else '',
+        chemicalFormula=base['chemicalFormula'] if base.get('chemicalFormula', None) else '',
         density=Density.default(base['density'], phase, type),
         specificHeat=SpecificHeat(constant=PFloat(base['specificHeat'])),
         transport=Transport.fromBase(base, phase),
