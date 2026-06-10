@@ -116,6 +116,9 @@ class MaterialService:
                 parent.append(specie.toElement())
                 mids.append(specie.mid)
 
+                for observer in MaterialDB._observers:
+                    observer.specieAdded(db, specie.mid, mixtureID)
+
             db.increaseConfigCount()
 
         return mids
