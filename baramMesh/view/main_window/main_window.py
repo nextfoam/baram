@@ -338,7 +338,20 @@ class MainWindow(QMainWindow):
             await self._closeProject()
             self._clear()
             self._projectClosed()
-            app.openProject(path)
+
+            try:
+                app.openProject(path)
+            except (FileNotFoundError, Timeout, ValidationError) as ex:
+                # The new project was already written to disk by saveAs above, but
+                # reopening it failed after the old project was closed and cleared,
+                # leaving the window project-less. Go back to the start screen
+                # instead of leaving a UI that crashes on every db-backed action
+                # (e.g. meshManager is now None).
+                progressDialog.close()
+                await AsyncMessageBox().information(self, self.tr('Project Open Error'), str(ex))
+                self._recoverFromMissingProject()
+                return
+
             self._projectOpened()
             progressDialog.close()
 

@@ -9,6 +9,9 @@ from baramMesh.db.configurations import Configurations
 from baramMesh.db.configurations_schema import schema
 
 
+LOCK_ACQUIRE_TIMEOUT = 1.0
+
+
 class Project(QObject):
     def __init__(self, path):
         super().__init__()
@@ -53,7 +56,7 @@ class Project(QObject):
         self._settings.saveAs(path)
 
     def new(self):
-        self._settings.acquireLock(0.01)
+        self._settings.acquireLock(LOCK_ACQUIRE_TIMEOUT)
         try:
             self._db.create(self._path)
         except Exception:
@@ -61,7 +64,7 @@ class Project(QObject):
             raise
 
     def open(self, create=False):
-        self._settings.acquireLock(0.01)
+        self._settings.acquireLock(LOCK_ACQUIRE_TIMEOUT)
         try:
             self._db.load(self._path)
         except Exception:
