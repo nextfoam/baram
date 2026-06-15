@@ -1,27 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import asyncio
+from copy import deepcopy
 
+import qasync
 from PySide6.QtWidgets import QWidget
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.cell_zone_db import SpecificationMethod, TemporalProfileType
+from baramFlow.base.base import NumberList, TemporalScalarList
+from baramFlow.base.cell_zone.cell_zone import SpecificationMethod, TemporalProfileType, VariableSourceTerm
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.view.widgets.number_input_dialog import NumberInputDialog, PolynomialDialog
-from widgets.async_message_box import AsyncMessageBox
+from baramFlow.view.widgets.number_input_dialog import PolynomialDialog
+from widgets.simple_sheet_dialog import SimpleSheetDialog
 from .variable_source_widget_ui import Ui_VariableSourceWidget
 
 
 class VariableSourceWidget(QWidget):
-    def __init__(self, title, xpath, units=None):
+    def __init__(self, title: str, data: VariableSourceTerm | None, units: dict[SpecificationMethod, str] = None):
         super().__init__()
         self._ui = Ui_VariableSourceWidget()
         self._ui.setupUi(self)
 
-        self._title = title
-        self._xpath = xpath
-        self._piecewiseLinear = None
-        self._polynomial = None
-        self._units = units
+        self._title: str = title
+        self._units: dict[SpecificationMethod, str] = units
+        self._data: VariableSourceTerm = data or VariableSourceTerm()
+
+        self._piecewiseLinear: TemporalScalarList = self._data.piecewiseLinear
+        self._polynomial: NumberList = self._data.polynomial
 
         self._ui.groupBox.setTitle(title)
         self._ui.specificationMethod.addItem(self.tr("Value per Unit Volume"),
@@ -39,62 +43,45 @@ class VariableSourceWidget(QWidget):
         self._ui.groupBox.setChecked(checked)
 
     def load(self):
-        db = coredb.CoreDB()
-        if db.exists(self._xpath):
-            self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
-            self._ui.specificationMethod.setCurrentIndex(
-                self._ui.specificationMethod.findData(SpecificationMethod(db.getValue(self._xpath + '/unit'))))
+        self._ui.groupBox.setChecked(not self._data.disabled)
+        self._ui.specificationMethod.setCurrentIndex(self._ui.specificationMethod.findData(self._data.unit))
 
-            if GeneralDB.isTimeTransient():
-                self._ui.temporalProfileType.setCurrentIndex(
-                    self._ui.temporalProfileType.findData(
-                        TemporalProfileType(db.getValue(self._xpath + '/specification'))))
-            else:
-                self._ui.temporalProfileType.setCurrentIndex(
-                    self._ui.temporalProfileType.findData(TemporalProfileType(TemporalProfileType.CONSTANT)))
-
-            self._ui.constantValue.setText(db.getValue(self._xpath + '/constant'))
+        if GeneralDB.isTimeTransient():
+            self._ui.temporalProfileType.setCurrentIndex(
+                self._ui.temporalProfileType.findData(self._data.specification))
+            self._ui.temporalProfileType.setEnabled(True)
         else:
-            self._ui.groupBox.setChecked(False)
-            self._ui.specificationMethod.setCurrentIndex(
-                self._ui.specificationMethod.findData(SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE))
+            self._ui.temporalProfileType.setCurrentIndex(
+                self._ui.temporalProfileType.findData(TemporalProfileType.CONSTANT))
+            self._ui.temporalProfileType.setEnabled(False)
 
-        self._ui.temporalProfileType.setEnabled(GeneralDB.isTimeTransient())
+        self._ui.constantValue.setPFloat(self._data.constant)
 
         self._onSpecificationMethodChanged()
         self._onTemporalProfileTypeChanged()
 
-    async def updateDB(self, newDB):
-        db = coredb.CoreDB()
-        if self._ui.groupBox.isChecked():
-            newDB.setAttribute(self._xpath, 'disabled', 'false')
-            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentData().value, None)
-            specification = self._ui.temporalProfileType.currentData()
-            newDB.setValue(self._xpath + '/specification', specification.value, None)
-            if specification == TemporalProfileType.CONSTANT:
-                newDB.setValue(self._xpath + '/constant', self._ui.constantValue.text(), self._title)
-            elif specification == TemporalProfileType.PIECEWISE_LINEAR:
-                if self._piecewiseLinear is not None:
-                    newDB.setValue(self._xpath + '/piecewiseLinear/t',
-                                 self._piecewiseLinear[0], self.tr(f'{self._title} Piecewise Linear'))
-                    newDB.setValue(self._xpath + '/piecewiseLinear/v',
-                                 self._piecewiseLinear[1], self.tr(f'{self._title} Piecewise Linear'))
-                elif not db.getValue(self._xpath + '/piecewiseLinear/t') == '':
-                    await AsyncMessageBox().information(self, self.tr("Input Error"),
-                                                        self.tr(f'Edit {self._title} Piecewise Linear Values.'))
-                    return False
-            elif specification == TemporalProfileType.POLYNOMIAL:
-                if self._polynomial is not None:
-                    newDB.setValue(self._xpath + '/polynomial',
-                                 self._polynomial, self.tr(f'{self._title} Polynomial'))
-                elif not db.getValue(self._xpath + '/polynomial'):
-                    await AsyncMessageBox().information(self, self.tr("Input Error"),
-                                                        self.tr(f'Edit {self._title} Polynomial Values.'))
-                    return False
-        else:
-            newDB.setAttribute(self._xpath, 'disabled', 'true')
+    def data(self):
+        data = deepcopy(self._data)
+        data.disabled = not self._ui.groupBox.isChecked()
+        if data.disabled:
+            return data
 
-        return True
+        data.unit = self._ui.specificationMethod.currentData()
+        data.specification = self._ui.temporalProfileType.currentData()
+        if data.specification == TemporalProfileType.CONSTANT:
+            data.constant = self._ui.constantValue.pFloat(self.tr('{} Value').format(self._title))
+        elif data.specification == TemporalProfileType.PIECEWISE_LINEAR:
+            if self._piecewiseLinear is None:
+                raise ValueError(self.tr('Edit {} Piecewise Linear Values.').format(self._title))
+
+            data.piecewiseLinear = self._piecewiseLinear
+        elif data.specification == TemporalProfileType.POLYNOMIAL:
+            if self._polynomial is None:
+                raise ValueError(self.tr('Edit {} Polynomial Values.').format(self._title))
+
+            data.polynomial = self._polynomial
+
+        return data
 
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
@@ -111,31 +98,23 @@ class VariableSourceWidget(QWidget):
         self._ui.edit.setEnabled(temporalProfileType != TemporalProfileType.CONSTANT)
         self._ui.constantValue.setEnabled(temporalProfileType == TemporalProfileType.CONSTANT)
 
-    def _edit(self):
-        db = coredb.CoreDB()
+    @qasync.asyncSlot()
+    async def _edit(self):
+        def updatePolynomial(data: list[str]):
+            self._polynomial = NumberList(values=data)
+
         temporalProfileType = self._ui.temporalProfileType.currentData()
         if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR:
-            if self._piecewiseLinear is None:
-                self._piecewiseLinear = [
-                    db.getValue(self._xpath + '/piecewiseLinear/t'),
-                    db.getValue(self._xpath + '/piecewiseLinear/v')
-                ]
-
-            self._dialog = NumberInputDialog(self, self.tr("Piecewise Linear"),
-                                             [self.tr("t"), self._title],
-                                             [d.split() if d else [] for d in self._piecewiseLinear])
-            self._dialog.accepted.connect(self._piecewiseLinearAccepted)
-            self._dialog.open()
+            dialog = SimpleSheetDialog(self, self.tr('Piecewise Linear'), [self.tr("t"), self._title],
+                                       self._piecewiseLinear.data())
+            try:
+                self._piecewiseLinear = TemporalScalarList(await dialog.show())
+            except asyncio.exceptions.CancelledError:
+                return
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL:
-            if self._polynomial is None:
-                self._polynomial = db.getValue(self._xpath + '/polynomial')
-
-            self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial.split())
-            self._dialog.accepted.connect(self._polynomialAccepted)
+            self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial.values)
+            self._dialog.dataAccepted.connect(updatePolynomial)
             self._dialog.open()
 
     def _piecewiseLinearAccepted(self):
         self._piecewiseLinear = self._dialog.getValues()
-
-    def _polynomialAccepted(self):
-        self._polynomial = self._dialog.getValues()

@@ -49,7 +49,7 @@ class RegionService:
     @staticmethod
     def reloadCellZone(czid: str):
         new = CellZoneData.fromElement(CoreDB().getElement(CellZoneDB.getXPath(czid)))
-        regionCache.cellZones[czid].cellZone = new
+        regionCache.cellZones[czid].configurations = new
 
     @staticmethod
     def matches(vtkMesh: dict):

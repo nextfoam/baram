@@ -99,8 +99,8 @@ class _RegionsCache:
             self._regions[r.rname].sortBoundaries()
 
             for name in r.cellZones:
-                self._addCellZone(CellZoneModel(cellZone=CellZoneData(name=name,
-                                                                      rname=r.rname),
+                self._addCellZone(CellZoneModel(configurations=CellZoneData(name=name,
+                                                                            rname=r.rname),
                                                 rname=r.rname))
 
     def updatePolyMeshData(self, polyMeshBoundaries: dict):
@@ -122,8 +122,8 @@ class _RegionsCache:
     def _addRegion(self, rname):
         self._regions[rname] = RegionModel(name=rname, material=self.defaultMaterial)
         self._regions[rname].initialization.initialValues.pressure = self.initialPressure
-        self._addCellZone(CellZoneModel(cellZone=CellZoneData(name=CELL_ZONE_NAME_FOR_REGION,
-                                                              rname=rname),
+        self._addCellZone(CellZoneModel(configurations=CellZoneData(name=CELL_ZONE_NAME_FOR_REGION,
+                                                                    rname=rname),
                                         rname=rname))
 
     def _addBoundary(self, model: BoundaryModel):

@@ -46,30 +46,30 @@ class BoundaryModel:
 
 @dataclass
 class CellZoneModel:
-    cellZone: CellZoneData
+    configurations: CellZoneData
     rname: str = ''
 
     @property
     def czid(self):
-        return self.cellZone.czid
+        return self.configurations.czid
 
     @property
     def name(self):
-        return self.cellZone.name
+        return self.configurations.name
 
     @property
     def scopedName(self):
-        return self.cellZone.name if self.rname == '' else f'{self.rname}:{self.cellZone.name}'
+        return self.configurations.name if self.rname == '' else f'{self.rname}:{self.configurations.name}'
 
     def setID(self, czid: str):
-        assert self.cellZone.czid is None
-        self.cellZone.czid = czid
+        assert self.configurations.czid is None
+        self.configurations.czid = czid
 
     def isRegion(self):
-        return self.cellZone.name == CELL_ZONE_NAME_FOR_REGION
+        return self.configurations.isRegion()
 
     def toElement(self):
-        return self.cellZone.toElement()
+        return self.configurations.toElement()
 
 
 @dataclass
@@ -226,7 +226,7 @@ class RegionModel:
 
         cellZones = []
         for c in e.findall('cellZones/cellZone', namespaces=nsmap):
-            cellZones.append(CellZoneModel(cellZone=CellZoneData.fromElement(c),
+            cellZones.append(CellZoneModel(configurations=CellZoneData.fromElement(c),
                                            rname=rname))
 
         return RegionModel(

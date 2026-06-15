@@ -26,17 +26,6 @@ class PorousZoneModel(Enum):
     POWER_LAW = 'powerLaw'
 
 
-class SpecificationMethod(Enum):
-    VALUE_PER_UNIT_VOLUME = 'valuePerUnitVolume'
-    VALUE_FOR_ENTIRE_CELL_ZONE = 'valueForEntireCellZone'
-
-
-class TemporalProfileType(Enum):
-    CONSTANT = 'constant'
-    PIECEWISE_LINEAR = 'piecewiseLinear'
-    POLYNOMIAL = 'polynomial'
-
-
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = '/regions/region/cellZones'
 

@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QDialog, QListWidgetItem, QWidget, QListWidget
 
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.cell_zone.cell_zone_manager import CellZoneManager
+from baramFlow.services.cell_zone.cell_zone_service import CellZoneService
 from baramFlow.base.region.region_data import CellZoneModel
 from baramFlow.coredb.cell_zone_db import copyCellZoneConditions
 
@@ -83,10 +83,10 @@ class CopyDialog(QDialog):
         self._ui.close.clicked.connect(self._close)
 
     def _load(self):
-        source = CellZoneManager.getCellZone(self._sourceId)
+        source = CellZoneService.getCellZone(self._sourceId)
         self._ui.source.setText(source.rname if self._isRegionMode else source.scopedName)
 
-        for cellZone in CellZoneManager.getCellZones():
+        for cellZone in CellZoneService.getCellZones():
             if cellZone.isRegion() == self._isRegionMode and cellZone.czid != self._sourceId:
                 self._items[cellZone.czid] = CellZoneListItem(self._ui.targets, cellZone)
     #
