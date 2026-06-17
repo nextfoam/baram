@@ -7,6 +7,8 @@ from PySide6.QtCore import QRegularExpression, Signal
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import QFileDialog, QWidget
 
+from libbaram.openfoam.openfoam_path import getOpenFOAMPathError, OPENFOAM_PATH_PART_PATTERN
+
 from .new_project_widget_ui import Ui_NewProjectWidget
 
 
@@ -18,18 +20,18 @@ class NewProjectWidget(QWidget):
 
         self._ui = Ui_NewProjectWidget()
         self._ui.setupUi(self)
+        self._ui.validationMessage.setVisible(True)
 
-        self._suffix = ''
+        self._suffix: str = ''
 
-        self._validatedPath = None
+        self._validatedPath: Path | None = None
+        self._locationError: str | None = None
 
         self._dialog = None
 
-        self._ui.projectName.setValidator(
-            QRegularExpressionValidator(QRegularExpression('[^\s\\\\/:*?"<>|][^\\\\/:*?"<>|]*')))
+        self._ui.projectName.setValidator(QRegularExpressionValidator(QRegularExpression(OPENFOAM_PATH_PART_PATTERN)))
 
-        location = str(path.resolve() if path and path.exists() else Path.home())
-        self._ui.projectLocation.setText(location)
+        self._setLocation(path if path and path.exists() else Path.home())
 
         self._ui.locationDescription.setText(self._ui.locationDescription.text() + os.sep)
 
@@ -68,7 +70,7 @@ class NewProjectWidget(QWidget):
     def _selectLocation(self):
         self._dialog = QFileDialog(self, self.tr('Select Location'), self._ui.projectLocation.text())
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.fileSelected.connect(self._locationSelected)
+        self._dialog.fileSelected.connect(self._setLocation)
         self._dialog.open()
 
     def _updateProjectPath(self):
@@ -77,17 +79,27 @@ class NewProjectWidget(QWidget):
         self._ui.folderName.setText(folderName)
 
         self._validatedPath = None
+        if self._locationError is not None:
+            return
 
-        if not self._ui.projectName.text():
-            self._ui.validationMessage.clear()
-        elif path.exists():
-            self._ui.validationMessage.setText(self.tr(f'{self._ui.projectLocation.text()} already exists.'))
+        if folderName:
+            if path.exists():
+                self._ui.validationMessage.setText(self.tr('{0} already exists.'.format(path)))
+            else:
+                self._ui.validationMessage.clear()
+                if folderName:
+                    self._validatedPath = path
         else:
             self._ui.validationMessage.clear()
-            self._validatedPath = path
 
         self.pathChanged.emit(self._validatedPath)
 
-    def _locationSelected(self, dir):
-        self._ui.projectLocation.setText(str(Path(dir).resolve()))
-        self._updateProjectPath()
+    def _setLocation(self, location):
+        path = Path(location).resolve()
+        self._ui.projectLocation.setText(str(path))
+
+        self._locationError = getOpenFOAMPathError(path)
+        if self._locationError is None:
+            self._updateProjectPath()
+        else:
+            self._ui.validationMessage.setText(self._locationError)

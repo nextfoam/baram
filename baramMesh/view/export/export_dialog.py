@@ -24,7 +24,6 @@ class ExportDialog(QDialog):
 
         layout = QVBoxLayout(self._ui.path)
         layout.addWidget(self._pathWidget)
-        self._pathWidget.hideValidationMessage()
 
         self.resize(500, self.size().height())
 
