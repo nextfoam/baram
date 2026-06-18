@@ -6,7 +6,7 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import FlowRateInletPatch
+from baramFlow.base.boundary.boundary_patch import FlowRateInletUpdate
 from baramFlow.base.boundary.flow_rate_port import FlowRateSpecification, BoundaryFlowRate
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -86,8 +86,8 @@ class FlowRateInletDialog(ResizableDialog):
             if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
 
-            data = FlowRateInletPatch(flowRate=flowRate,
-                                      turbulence=self._turbulenceWidget.data())
+            data = FlowRateInletUpdate(flowRate=flowRate,
+                                       turbulence=self._turbulenceWidget.data())
 
             BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
         except ValueError as e:

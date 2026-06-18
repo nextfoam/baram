@@ -7,14 +7,14 @@ import qasync
 from PySide6.QtCore import Qt
 import pandas as pd
 
-from baramFlow.base.base import TrackedData
-from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb.project import Project
+from baramFlow.base.base import TrackedData
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 
@@ -42,7 +42,7 @@ class ExhaustFanDialog(ResizableDialog):
         event.ignore()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
             event.ignore()
         else:
             super().keyPressEvent(event)

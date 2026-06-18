@@ -6,6 +6,7 @@ from enum import Enum, auto
 from uuid import uuid4, UUID
 
 from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.pfloat import PFloat
 
 from baramFlow.base.base import DirectionSpecificationMethod
 from baramFlow.base.constants import FieldType, VectorComponent
@@ -16,7 +17,6 @@ from baramFlow.coredb.libdb import xmlToBool, xmlToStr, E, ValueException, dbErr
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.solver_field import getSolverComponentName, getSolverFieldName
-
 
 FORCE_MONITORS_XPATH   = '/monitors/forces'
 POINT_MONITORS_XPATH   = '/monitors/points'
@@ -151,11 +151,11 @@ class MonitorBaseConfiguration:
 
 @dataclass
 class ForceDirection:
-    specificationMethod: DirectionSpecificationMethod = DirectionSpecificationMethod.DIRECT
-    dragDirection: Vector = field(default_factory= Vector.xUnit)
-    liftDirection: Vector = field(default_factory= Vector.yUnit)
-    angleOfAttack: str = '0'
-    angleOfSideslip: str = '0'
+    specificationMethod: DirectionSpecificationMethod   = DirectionSpecificationMethod.DIRECT
+    dragDirection: Vector                               = field(default_factory=Vector.xUnit)
+    liftDirection: Vector                               = field(default_factory=Vector.yUnit)
+    angleOfAttack: PFloat                               = field(default_factory=lambda: PFloat('0'))
+    angleOfSideslip: PFloat                             = field(default_factory=lambda: PFloat('0'))
 
     @staticmethod
     def fromElement(e):
@@ -163,15 +163,15 @@ class ForceDirection:
             specificationMethod=DirectionSpecificationMethod(e.find('specificationMethod', namespaces=nsmap).text),
             dragDirection=Vector.fromElement(e.find('dragDirection', namespaces=nsmap)),
             liftDirection=Vector.fromElement(e.find('liftDirection', namespaces=nsmap)),
-            angleOfAttack=e.find('angleOfAttack', namespaces=nsmap).text,
-            angleOfSideslip=e.find('angleOfSideslip', namespaces=nsmap).text)
+            angleOfAttack=PFloat.fromElement(e.find('angleOfAttack', namespaces=nsmap)),
+            angleOfSideslip=PFloat.fromElement(e.find('angleOfSideslip', namespaces=nsmap)))
 
     def toElement(self):
         return E('forceDirection',  E.specificationMethod(self.specificationMethod.value),
-                                    self.dragDirection.toElement('dragDirection'),
-                                    self.liftDirection.toElement('liftDirection'),
-                                    E.angleOfAttack(self.angleOfAttack),
-                                    E.angleOfSideslip(self.angleOfSideslip))
+                 self.dragDirection.toElement('dragDirection'),
+                 self.liftDirection.toElement('liftDirection'),
+                 self.angleOfAttack.toElement('angleOfAttack'),
+                 self.angleOfSideslip.toElement('angleOfSideslip'))
 
 
 @dataclass
@@ -409,8 +409,8 @@ class MonitorManager:
                                   data.forceDirection.liftDirection.toElement('liftDirection'))
 
                 if data.forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-                    db.setValue(xpath + '/forceDirection/angleOfSideslip', data.forceDirection.angleOfSideslip)
-                    db.setValue(xpath + '/forceDirection/angleOfAttack', data.forceDirection.angleOfAttack)
+                    db.setValue(xpath + '/forceDirection/angleOfSideslip', str(data.forceDirection.angleOfSideslip))
+                    db.setValue(xpath + '/forceDirection/angleOfAttack', str(data.forceDirection.angleOfAttack))
 
                 db.replaceElement(xpath + '/centerOfRotation', data.centerOfRotation.toElement('centerOfRotation'))
                 db.setValue(xpath + '/region', data.region)

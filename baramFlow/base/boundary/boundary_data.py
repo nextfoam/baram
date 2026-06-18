@@ -10,7 +10,6 @@ from resources import resource
 
 from baramFlow.base.base import UUID_ZERO
 from baramFlow.base.boundary.boundary import SpecieRatios, PatchInteraction, userDefinedScalarsFromElement
-from baramFlow.base.boundary.boundary import speciesFromElement
 from baramFlow.base.boundary.temperature import BoundaryTemperature
 from baramFlow.base.boundary.velocity_inlet import VelocityInlet
 from baramFlow.base.boundary.wall import Wall
@@ -118,6 +117,6 @@ class BoundaryData:
             # temperature=BoundaryTemperature.fromElement(e.find('temperature', namespaces=nsmap)),
             coupledBoundary=e.find('coupledBoundary', namespaces=nsmap).text,
             userDefinedScalars=userDefinedScalarsFromElement(e.find('userDefinedScalars', namespaces=nsmap)),
-            species=speciesFromElement(e.find('species', namespaces=nsmap)),
+            # species=speciesFromElement(e.find('species', namespaces=nsmap)),
             fanCurveName=UUID(e.find('fanCurveName', namespaces=nsmap).text),
             patchInteraction=PatchInteraction.fromElement(e.find('patchInteraction', namespaces=nsmap)))

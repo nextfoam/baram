@@ -22,11 +22,6 @@ from .force_dialog_ui import Ui_ForceDialog
 
 class ForceDialog(QDialog):
     def __init__(self, parent, uuid=None):
-        """Constructs force monitor setup dialog.
-
-        Args:
-            name: Force Monitor name. If None, create a new monitor.
-        """
         super().__init__(parent)
         self._ui = Ui_ForceDialog()
         self._ui.setupUi(self)
@@ -81,8 +76,8 @@ class ForceDialog(QDialog):
         self._ui.liftDirectionX.setPFloat(data.forceDirection.liftDirection.x)
         self._ui.liftDirectionY.setPFloat(data.forceDirection.liftDirection.y)
         self._ui.liftDirectionZ.setPFloat(data.forceDirection.liftDirection.z)
-        self._ui.AoA.setText(data.forceDirection.angleOfAttack)
-        self._ui.AoS.setText(data.forceDirection.angleOfSideslip)
+        self._ui.AoA.setText(str(data.forceDirection.angleOfAttack))
+        self._ui.AoS.setText(str(data.forceDirection.angleOfSideslip))
 
         self._ui.centerOfRotationX.setPFloat(data.centerOfRotation.x)
         self._ui.centerOfRotationY.setPFloat(data.centerOfRotation.y)
@@ -124,8 +119,8 @@ class ForceDialog(QDialog):
                                      self._ui.liftDirectionY.pFloat(self.tr('Lift Direction')),
                                      self._ui.liftDirectionZ.pFloat(self.tr('Lift Direction'))))
             if forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-                forceDirection.angleOfAttack = str(PFloat(self._ui.AoA.text(), self.tr('Angle of Attack')))
-                forceDirection.angleOfSideslip = str(PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip')))
+                forceDirection.angleOfAttack = PFloat(self._ui.AoA.text(), self.tr('Angle of Attack'))
+                forceDirection.angleOfSideslip = PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip'))
 
             data = ForceMonitorConfiguration(
                 monitorBase=base,

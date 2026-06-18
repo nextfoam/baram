@@ -54,7 +54,7 @@ class SpeciesWidget(QGroupBox):
         for mid, row in self._species.items():
             fieldName, editor = row
             value = PFloat(editor.text(), self.tr('Speicie '+ fieldName))
-            ratios.append(SpecieValue(mid, str(value)))
+            ratios.append(SpecieValue(mid, value))
             totalRatio += float(value)
 
         if totalRatio == 0:

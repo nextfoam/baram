@@ -7,6 +7,7 @@ from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.boundary_db import FlowDirectionSpecificationMethod
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import E
+from libbaram.pfloat import PFloat
 
 
 @dataclass
@@ -18,12 +19,12 @@ class ABLFlowDirection:
 @dataclass
 class PasquillStability:
     disabled: bool
-    stabilityClass: str = None
-    latitude: str = None
-    surfaceHeatFlux: str = None
-    referenceDensity: str = None
-    referenceSpecificHeat: str = None
-    referenceTemperature: str = None
+    stabilityClass: str             = None
+    latitude: PFloat                = None
+    surfaceHeatFlux: PFloat         = None
+    referenceDensity: PFloat        = None
+    referenceSpecificHeat: PFloat   = None
+    referenceTemperature: PFloat    = None
 
     def toElement(self):
         if self.disabled:
@@ -31,11 +32,11 @@ class PasquillStability:
 
         return E('pasquillStability',
                  E('stabilityClass',        self.stabilityClass),
-                 E('latitude',              self.latitude),
-                 E('surfaceHeatFlux',       self.surfaceHeatFlux),
-                 E('referenceDensity',      self.referenceDensity),
-                 E('referenceSpecificHeat', self.referenceSpecificHeat),
-                 E('referenceTemperature',  self.referenceTemperature),
+                 self.latitude.toElement('latitude'),
+                 self.surfaceHeatFlux.toElement('surfaceHeatFlux'),
+                 self.referenceDensity.toElement('referenceDensity'),
+                 self.referenceSpecificHeat.toElement('referenceSpecificHeat'),
+                 self.referenceTemperature.toElement('referenceTemperature'),
                  disabled=self.disabled)
 
 

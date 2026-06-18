@@ -4,7 +4,7 @@
 import qasync
 
 from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
-from baramFlow.base.boundary.boundary_patch import FreeStreamPatch
+from baramFlow.base.boundary.boundary_patch import FreeStreamUpdate
 from baramFlow.base.boundary.free_stream import FlowDirection, FreeStream
 from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb import coredb
@@ -67,8 +67,8 @@ class FreeStreamDialog(ResizableDialog):
                 flowDirection.liftDirection = Vector(x=PFloat(self._ui.liftDirectionX.text(), self.tr('Lift Direction')),
                                                      y=PFloat(self._ui.liftDirectionY.text(), self.tr('Lift Direction')),
                                                      z=PFloat(self._ui.liftDirectionZ.text(), self.tr('Lift Direction')))
-                flowDirection.angleOfAttack = str(PFloat(self._ui.AoA.text(), self.tr('Angle of Attack')))
-                flowDirection.angleOfSideslip = str(PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip')))
+                flowDirection.angleOfAttack = PFloat(self._ui.AoA.text(), self.tr('Angle of Attack'))
+                flowDirection.angleOfSideslip = PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip'))
 
             writer = CoreDBWriter()
 
@@ -84,7 +84,7 @@ class FreeStreamDialog(ResizableDialog):
             if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
 
-            data = FreeStreamPatch(
+            data = FreeStreamUpdate(
                 freeStream=FreeStream(
                     flowDirection=flowDirection,
                     speed=str(PFloat(self._ui.speed.text(), self.tr('Speed'))),

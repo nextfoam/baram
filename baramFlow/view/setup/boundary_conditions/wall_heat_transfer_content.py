@@ -44,7 +44,7 @@ class WallHeatTransferContent(QWidget):
 
         data = WallHeatTransfer(mode=self._ui.mode.currentData())
         if mode == WallHeatTransferMode.CONSTANT_TEMPERATURE:
-            data.temperature = str(PFloat(self._ui.temperature.text(), self.tr('Temperature')))
+            data.temperature = PFloat(self._ui.temperature.text(), self.tr('Temperature'))
         elif mode == WallHeatTransferMode.TEMPERATURE_DISTRIBUTION:
             if self._temperatureDistribution.isNone() and self._temperatureDistributionName.int == 0:
                 raise ValueError(self.tr('Edit Temperature Distribution.'))
@@ -52,14 +52,14 @@ class WallHeatTransferContent(QWidget):
             if self._temperatureDistribution.isModified():
                 data.temperatureDistribution = pd.DataFrame(self._temperatureDistribution.data())
         elif mode == WallHeatTransferMode.CONSTANT_HEAT_FLUX:
-            data.heatFlux = str(PFloat(self._ui.heatFlux.text(), self.tr('Temperature')))
+            data.heatFlux = PFloat(self._ui.heatFlux.text(), self.tr('Temperature'))
         elif mode == WallHeatTransferMode.CONVECTION:
-            data.heatTransferCoefficient = str(
-                PFloat(self._ui.heatTransferCoefficient.text(), self.tr('Heat Transfer Coefficient')))
-            data.freeStreamTemperature = str(
-                PFloat(self._ui.freeStreamTemperature.text(), self.tr('Free Stream Temperature')))
-            data.externalEmissivity = str(
-                PFloat(self._ui.externalEmissivity.text(), self.tr('External Emissivity'), low=0, high=1))
+            data.heatTransferCoefficient = PFloat(self._ui.heatTransferCoefficient.text(),
+                                                  self.tr('Heat Transfer Coefficient'))
+            data.freeStreamTemperature = PFloat(self._ui.freeStreamTemperature.text(),
+                                                self.tr('Free Stream Temperature'))
+            data.externalEmissivity = PFloat(self._ui.externalEmissivity.text(),
+                                             self.tr('External Emissivity'), low=0, high=1)
             data.wallLayers = self._ui.wallLayers.data()
 
         return data

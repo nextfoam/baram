@@ -6,7 +6,7 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import OpenChannelInletPatch
+from baramFlow.base.boundary.boundary_patch import OpenChannelInletUpdate
 from baramFlow.base.boundary.open_channel_port import OpenChannelInlet
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -56,7 +56,7 @@ class OpenChannelInletDialog(ResizableDialog):
             if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
 
-            data = OpenChannelInletPatch(
+            data = OpenChannelInletUpdate(
                 openChannelInlet=OpenChannelInlet(
                     volumeFlowRate=str(PFloat(self._ui.volumeFlowRate.text(), self.tr("Volume Flow Rate")))),
                 turbulence=self._turbulenceWidget.data())

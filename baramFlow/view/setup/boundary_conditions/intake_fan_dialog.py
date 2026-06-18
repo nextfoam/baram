@@ -10,7 +10,7 @@ from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import TrackedData
-from baramFlow.base.boundary.boundary_patch import IntakeFanPatch
+from baramFlow.base.boundary.boundary_patch import IntakeFanUpdate
 from baramFlow.base.file_data_manager import TableDataForFileDB
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -94,7 +94,7 @@ class IntakeFanDialog(ResizableDialog):
             if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
 
-            data = IntakeFanPatch(
+            data = IntakeFanUpdate(
                 turbulence=self._turbulenceWidget.data(),
                 fanCurve=TableDataForFileDB(data=self._fanCurve.data()) if self._fanCurve.isModified() else None)
 

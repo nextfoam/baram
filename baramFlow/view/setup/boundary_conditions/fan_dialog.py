@@ -11,7 +11,7 @@ from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import TrackedData
-from baramFlow.base.boundary.boundary_patch import FanPatch
+from baramFlow.base.boundary.boundary_patch import FanUpdate
 from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.base.boundary.fan import Fan
 from baramFlow.coredb import coredb
@@ -78,7 +78,7 @@ class FanDialog(CoupledBoundaryConditionDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Edit Fan Curve'))
             return
 
-        data = FanPatch(
+        data = FanUpdate(
             fan=Fan(reverseDirection=self._ui.reverseFanDirection.isChecked(),
                     fanCurve=TableDataForFileDB(data=self._fanCurve.data()) if self._fanCurve.isModified() else None),
             coupledBoundary=self._coupledBoundary)

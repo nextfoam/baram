@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pandas import DataFrame
 
+from libbaram.pfloat import PFloat
+
 from baramFlow.base.base import UUID_ZERO
 from baramFlow.base.boundary.boundary import TemperatureLayers
 from baramFlow.base.file_data_manager import FileDataManager
@@ -16,12 +18,12 @@ from baramFlow.coredb.libdb import E, nsmap
 @dataclass
 class WallHeatTransfer:
     mode: WallHeatTransferMode          = WallHeatTransferMode.ADIABATIC
-    temperature: str                    = '300'
-    heatFlux: str                       = '1000'
+    temperature: PFloat                 = field(default_factory=lambda: PFloat('300'))
+    heatFlux: PFloat                    = field(default_factory=lambda: PFloat('1000'))
     temperatureDistributionName: UUID   = UUID_ZERO
-    heatTransferCoefficient: str        = '100'
-    freeStreamTemperature: str          = '300'
-    externalEmissivity: str             = '0'
+    heatTransferCoefficient: PFloat     = field(default_factory=lambda: PFloat('100'))
+    freeStreamTemperature: PFloat       = field(default_factory=lambda: PFloat('300'))
+    externalEmissivity: PFloat          = field(default_factory=lambda: PFloat('0'))
     wallLayers: TemperatureLayers       = field(default_factory=TemperatureLayers)
 
     temperatureDistribution: DataFrame  = None
@@ -45,25 +47,26 @@ class WallHeatTransfer:
 
     def toElement(self):
         return E('heatTransfer',
-                    E('type', self.mode),
-                    E('temperature', self.temperature),
-                    E('heatFlux', self.heatFlux),
-                    E('temperatureDistributionName', self.temperatureDistributionName),
-                    E('heatTransferCoefficient', self.heatTransferCoefficient),
-                    E('freeStreamTemperature', self.freeStreamTemperature),
-                    E('externalEmissivity', self.externalEmissivity),
-                    self.wallLayers.toElement())
+                 E('type', self.mode),
+                 self.temperature.toElement('temperature'),
+                 self.heatFlux.toElement('heatFlux'),
+                 E('temperatureDistributionName', self.temperatureDistributionName),
+                 self.heatTransferCoefficient.toElement('heatTransferCoefficient'),
+                 self.freeStreamTemperature.toElement('freeStreamTemperature'),
+                 self.externalEmissivity.toElement('externalEmissivity'),
+                 self.wallLayers.toElement())
 
     @staticmethod
     def fromElement(e):
-        return WallHeatTransfer(mode=WallHeatTransferMode(e.find('type', namespaces=nsmap).text),
-                                temperature=e.find('temperature', namespaces=nsmap).text,
-                                heatFlux=e.find('heatFlux', namespaces=nsmap).text,
-                                temperatureDistributionName=UUID(e.find('temperatureDistributionName', namespaces=nsmap).text),
-                                heatTransferCoefficient=e.find('heatTransferCoefficient', namespaces=nsmap).text,
-                                freeStreamTemperature=e.find('freeStreamTemperature', namespaces=nsmap).text,
-                                externalEmissivity=e.find('externalEmissivity', namespaces=nsmap).text,
-                                wallLayers=TemperatureLayers.fromElement(e.find('wallLayers', namespaces=nsmap)))
+        return WallHeatTransfer(
+            mode=WallHeatTransferMode(e.find('type', namespaces=nsmap).text),
+            temperature=PFloat.fromElement(e.find('temperature', namespaces=nsmap)),
+            heatFlux=PFloat.fromElement(e.find('heatFlux', namespaces=nsmap)),
+            temperatureDistributionName=UUID(e.find('temperatureDistributionName', namespaces=nsmap).text),
+            heatTransferCoefficient=PFloat.fromElement(e.find('heatTransferCoefficient', namespaces=nsmap)),
+            freeStreamTemperature=PFloat.fromElement(e.find('freeStreamTemperature', namespaces=nsmap)),
+            externalEmissivity=PFloat.fromElement(e.find('externalEmissivity', namespaces=nsmap)),
+            wallLayers=TemperatureLayers.fromElement(e.find('wallLayers', namespaces=nsmap)))
 
 
 @dataclass

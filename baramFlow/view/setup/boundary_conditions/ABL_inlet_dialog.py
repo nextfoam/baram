@@ -9,7 +9,7 @@ from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.boundary.ABL_inlet import ABLFlowDirection, Vector, AtmosphericBoundaryLayer
 from baramFlow.base.boundary.ABL_inlet import PasquillStability
-from baramFlow.base.boundary.boundary_patch import ABLInletPatch
+from baramFlow.base.boundary.boundary_patch import ABLInletUpdate
 from baramFlow.coredb.libdb import xmlToBool
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, FlowDirectionSpecificationMethod
@@ -70,18 +70,16 @@ class ABLInletDialog(QDialog):
                 pasquillStability = PasquillStability(
                     disabled=False,
                     stabilityClass=self._ui.stabilityClass.currentData(),
-                    latitude=str(PFloat(self._ui.latitude.text(), self.tr("Latitude"))),
-                    surfaceHeatFlux=str(PFloat(self._ui.surfaceHeatFlux.text(), self.tr("Surface Heat Flux"))),
-                    referenceDensity=str(PFloat(self._ui.referenceDensity.text(), self.tr("Reference Density"))),
-                    referenceSpecificHeat=str(
-                        PFloat(self._ui.referenceSpecificHeat.text(), self.tr("Reference Specific Heat"))),
-                    referenceTemperature=str(
-                        PFloat(self._ui.referenceTemperature.text(), self.tr("Reference Temperature")))
-                )
+                    latitude=PFloat(self._ui.latitude.text(), self.tr("Latitude")),
+                    surfaceHeatFlux=PFloat(self._ui.surfaceHeatFlux.text(), self.tr("Surface Heat Flux")),
+                    referenceDensity=PFloat(self._ui.referenceDensity.text(), self.tr("Reference Density")),
+                    referenceSpecificHeat=PFloat(
+                        self._ui.referenceSpecificHeat.text(), self.tr("Reference Specific Heat")),
+                    referenceTemperature=PFloat(self._ui.referenceTemperature.text(), self.tr("Reference Temperature")))
             else:
                 pasquillStability = PasquillStability(disabled=True)
 
-            data = ABLInletPatch(
+            data = ABLInletUpdate(
                 abl= AtmosphericBoundaryLayer(
                     flowDirection=flowDirection,
                     groundNormalDirection=Vector(
