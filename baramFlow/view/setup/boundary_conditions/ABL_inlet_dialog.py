@@ -4,11 +4,12 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.boundary.ABL_inlet import ABLFlowDirection, Vector, AtmosphericBoundaryLayer
 from baramFlow.base.boundary.ABL_inlet import PasquillStability
-from baramFlow.base.boundary.boundary_patch import ABLInletPatch
+from baramFlow.base.boundary.boundary_patch import ABLInletUpdate
 from baramFlow.coredb.libdb import xmlToBool
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, FlowDirectionSpecificationMethod
@@ -77,7 +78,7 @@ class ABLInletDialog(QDialog):
             else:
                 pasquillStability = PasquillStability(disabled=True)
 
-            data = ABLInletPatch(
+            data = ABLInletUpdate(
                 abl= AtmosphericBoundaryLayer(
                     flowDirection=flowDirection,
                     groundNormalDirection=Vector(

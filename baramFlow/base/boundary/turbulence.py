@@ -52,7 +52,7 @@ class TransitionSST:
 
 
 @dataclass
-class BoundaryTurbulencePatch:
+class BoundaryTurbulenceUpdate:
     @property
     def model(self):
         raise NotImplementedError
@@ -62,7 +62,7 @@ class BoundaryTurbulencePatch:
 
 
 @dataclass
-class BoundaryKOmega(BoundaryTurbulencePatch):
+class BoundaryKOmega(BoundaryTurbulenceUpdate):
     kOmega: KOmega
 
     @property
@@ -74,7 +74,7 @@ class BoundaryKOmega(BoundaryTurbulencePatch):
 
 
 @dataclass
-class BoundaryTransitionSST(BoundaryTurbulencePatch):
+class BoundaryTransitionSST(BoundaryTurbulenceUpdate):
     kOmega: KOmega
     transitionSST: TransitionSST
 

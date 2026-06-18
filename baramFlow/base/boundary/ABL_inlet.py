@@ -33,11 +33,11 @@ class PasquillStability:
 
         return E('pasquillStability',
                  E('stabilityClass',        self.stabilityClass),
-                 E('latitude',              str(self.latitude)),
-                 E('surfaceHeatFlux',       str(self.surfaceHeatFlux)),
-                 E('referenceDensity',      str(self.referenceDensity)),
-                 E('referenceSpecificHeat', str(self.referenceSpecificHeat)),
-                 E('referenceTemperature',  str(self.referenceTemperature)),
+                 self.latitude.toElement('latitude'),
+                 self.surfaceHeatFlux.toElement('surfaceHeatFlux'),
+                 self.referenceDensity.toElement('referenceDensity'),
+                 self.referenceSpecificHeat.toElement('referenceSpecificHeat'),
+                 self.referenceTemperature.toElement('referenceTemperature'),
                  disabled=self.disabled)
 
 
