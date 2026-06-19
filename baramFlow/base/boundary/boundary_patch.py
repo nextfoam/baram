@@ -102,7 +102,7 @@ class PressureOutletUpdate:
 
 
 @dataclass(kw_only=True)
-class IntakeFanPatch:
+class IntakeFanUpdate:
     turbulence: BoundaryTurbulenceUpdate = None
     pressure: PFloat
     fanCurve: TableDataForFileDB        = None
