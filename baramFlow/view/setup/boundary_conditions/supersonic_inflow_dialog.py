@@ -6,7 +6,7 @@ from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import Vector
-from baramFlow.base.boundary.boundary_patch import SupersonicInflowPatch
+from baramFlow.base.boundary.boundary_patch import SupersonicInflowUpdate
 from baramFlow.base.boundary.supersonic_inflow import SupersonicInflow
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -45,13 +45,13 @@ class SupersonicInflowDialog(ResizableDialog):
             if not self._turbulenceWidget.appendToWriter(writer):
                 return
 
-            data = SupersonicInflowPatch(
+            data = SupersonicInflowUpdate(
                 supersonicInflow=SupersonicInflow(
                     velocity=Vector(x=PFloat(self._ui.xVelocity.text(), self.tr("X-Velocity")),
                                     y=PFloat(self._ui.yVelocity.text(), self.tr("Y-Velocity")),
                                     z=PFloat(self._ui.zVelocity.text(), self.tr("Z-Velocity"))),
-                    staticPressure=str(PFloat(self._ui.staticPressure.text(), self.tr("Static Pressure"))),
-                    staticTemperature=str(PFloat(self._ui.staticTemperature.text(), self.tr("Static Temperature")))),
+                    staticPressure=PFloat(self._ui.staticPressure.text(), self.tr("Static Pressure")),
+                    staticTemperature=PFloat(self._ui.staticTemperature.text(), self.tr("Static Temperature"))),
                 turbulence=self._turbulenceWidget.data())
 
             BoundaryService.updateBoundaryCondition(self._bcid, data, writer)

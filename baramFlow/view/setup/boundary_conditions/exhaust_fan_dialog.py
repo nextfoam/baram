@@ -7,13 +7,13 @@ import qasync
 from PySide6.QtCore import Qt
 import pandas as pd
 
-from baramFlow.base.base import TrackedData
 from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb.project import Project
+from baramFlow.base.base import TrackedData
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 

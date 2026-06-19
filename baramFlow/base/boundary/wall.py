@@ -47,25 +47,25 @@ class WallHeatTransfer:
 
     def toElement(self):
         return E('heatTransfer',
-                    E('type', self.mode),
-                    E('temperature', str(self.temperature)),
-                    E('heatFlux', str(self.heatFlux)),
-                    E('temperatureDistributionName', self.temperatureDistributionName),
-                    E('heatTransferCoefficient', str(self.heatTransferCoefficient)),
-                    E('freeStreamTemperature', str(self.freeStreamTemperature)),
-                    E('externalEmissivity', str(self.externalEmissivity)),
-                    self.wallLayers.toElement())
+                 E('type', self.mode),
+                 self.temperature.toElement('temperature'),
+                 self.heatFlux.toElement('heatFlux'),
+                 E('temperatureDistributionName', self.temperatureDistributionName),
+                 self.heatTransferCoefficient.toElement('heatTransferCoefficient'),
+                 self.freeStreamTemperature.toElement('freeStreamTemperature'),
+                 self.externalEmissivity.toElement('externalEmissivity'),
+                 self.wallLayers.toElement())
 
     @staticmethod
     def fromElement(e):
         return WallHeatTransfer(
             mode=WallHeatTransferMode(e.find('type', namespaces=nsmap).text),
-            temperature=PFloat(e.find('temperature', namespaces=nsmap).text),
-            heatFlux=PFloat(e.find('heatFlux', namespaces=nsmap).text),
+            temperature=PFloat.fromElement(e.find('temperature', namespaces=nsmap)),
+            heatFlux=PFloat.fromElement(e.find('heatFlux', namespaces=nsmap)),
             temperatureDistributionName=UUID(e.find('temperatureDistributionName', namespaces=nsmap).text),
-            heatTransferCoefficient=PFloat(e.find('heatTransferCoefficient', namespaces=nsmap).text),
-            freeStreamTemperature=PFloat(e.find('freeStreamTemperature', namespaces=nsmap).text),
-            externalEmissivity=PFloat(e.find('externalEmissivity', namespaces=nsmap).text),
+            heatTransferCoefficient=PFloat.fromElement(e.find('heatTransferCoefficient', namespaces=nsmap)),
+            freeStreamTemperature=PFloat.fromElement(e.find('freeStreamTemperature', namespaces=nsmap)),
+            externalEmissivity=PFloat.fromElement(e.find('externalEmissivity', namespaces=nsmap)),
             wallLayers=TemperatureLayers.fromElement(e.find('wallLayers', namespaces=nsmap)))
 
 

@@ -7,6 +7,7 @@ from enum import Enum
 from libbaram.pfloat import PFloat
 
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.coredb import _CoreDB
 from baramFlow.coredb.libdb import nsmap, E, xmlToBool
 
 
@@ -75,17 +76,17 @@ class PatchInteraction:
 @dataclass
 class UserDefinedScalarValue:
     scalarID: str
-    value: str
+    value: PFloat
 
     def toElement(self):
         return E('scalar',
-                    E('scalarID', self.scalarID),
-                    E('value', self.value))
+                 E('scalarID', self.scalarID),
+                 self.value.toElement('value'))
 
     @staticmethod
     def fromElement(element):
         return UserDefinedScalarValue(scalarID=element.find('scalarID', namespaces=nsmap).text,
-                                      value=element.find('value', namespaces=nsmap).text)
+                                      value=PFloat.fromElement(element.find('value', namespaces=nsmap)))
 
 
 def updateUserDefinedScalarsInDB(db, bcid, scalars: list[UserDefinedScalarValue]):
@@ -102,7 +103,7 @@ def updateUserDefinedScalarsInDB(db, bcid, scalars: list[UserDefinedScalarValue]
 def userDefinedScalarsFromElement(element):
     data = []
 
-    for row in element.findall('userDefinedScalars', namespaces=nsmap):
+    for row in element.findall('scalar', namespaces=nsmap):
         data.append(UserDefinedScalarValue.fromElement(row))
 
     return data
@@ -111,41 +112,46 @@ def userDefinedScalarsFromElement(element):
 @dataclass
 class SpecieValue:
     mid: str
-    value: str
+    value: PFloat
 
     def toElement(self):
         return E('specie',
-                    E('value', self.value),
-                 mid=self.mid)
-
-    @staticmethod
-    def fromElement(element):
-        return SpecieValue(mid=element.get('mid'),
-                           value=element.find('value', namespaces=nsmap).text)
-
-
-def updateSpeciesInDB(db, bcid, specieRatios):
-    if specieRatios is None:
-        return
-
-    element = db.getElement(f'{BoundaryDB.getXPath(bcid)}/species/mixture[mid="{specieRatios.mid}"]')
-    for s in specieRatios.ratios:
-        element.find(f'specie[mid="{s.mid}"]/value', namespaces=nsmap).text = s.value
-
-
-def speciesFromElement(element):
-    data = []
-
-    for row in element.findall('species', namespaces=nsmap):
-        data.append(SpecieValue.fromElement(row))
-
-    return data
+                 E('mid', self.mid),
+                 self.value.toElement('value'))
+    #
+    # @staticmethod
+    # def fromElement(element):
+    #     return SpecieValue(mid=element.get('mid'),
+    #                        value=PFloat(element.find('value', namespaces=nsmap).text))
 
 
 @dataclass
 class SpecieRatios:
     mid: str
     ratios: list[SpecieValue]
+
+    def applyToDBByPath(self, db: _CoreDB, parentPath: str):
+        element = E('mixture',
+                    E('mid', self.mid))
+
+        for s in self.ratios:
+            element.append(s.toElement())
+
+        db.replaceElement(f'{parentPath}/mixture[mid="{self.mid}"]', element)
+
+
+def updateSpeciesInDB(db: _CoreDB, bcid: str, specieRatios: SpecieRatios):
+    if specieRatios is not None:
+        specieRatios.applyToDBByPath(db, f'{BoundaryDB.getXPath(bcid)}/species')
+#
+#
+# def speciesFromElement(element):
+#     data = []
+#
+#     for row in element.findall('species/', namespaces=nsmap):
+#         data.append(SpecieValue.fromElement(row))
+#
+#     return data
 
 
 @dataclass

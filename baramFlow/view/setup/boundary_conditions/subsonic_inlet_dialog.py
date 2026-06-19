@@ -7,7 +7,7 @@ from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import Vector
-from baramFlow.base.boundary.boundary_patch import SubsonicInletPatch
+from baramFlow.base.boundary.boundary_patch import SubsonicInletUpdate
 from baramFlow.base.boundary.subsonic_inle import SubsonicInlet
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -46,13 +46,13 @@ class SubsonicInletDialog(ResizableDialog):
             if not self._turbulenceWidget.appendToWriter(writer):
                 return
 
-            data = SubsonicInletPatch(
+            data = SubsonicInletUpdate(
                 subsonicInlet=SubsonicInlet(
                     flowDirection=Vector(x=PFloat(self._ui.xComponent.text(), self.tr('X-Component')),
                                          y=PFloat(self._ui.yComponent.text(), self.tr('Y-Component')),
                                          z=PFloat(self._ui.zComponent.text(), self.tr('Z-Component'))),
-                    totalPressure=str(PFloat(self._ui.totalPressure.text(), self.tr("Pressure"))),
-                    totalTemperature=str(PFloat(self._ui.totalTemperature.text(), self.tr("Pressure")))),
+                    totalPressure=PFloat(self._ui.totalPressure.text(), self.tr("Pressure")),
+                    totalTemperature=PFloat(self._ui.totalTemperature.text(), self.tr("Pressure"))),
                 turbulence=self._turbulenceWidget.data())
 
             BoundaryService.updateBoundaryCondition(self._bcid, data, writer)

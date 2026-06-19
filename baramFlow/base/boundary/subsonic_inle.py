@@ -3,6 +3,8 @@
 
 from dataclasses import dataclass
 
+from libbaram.pfloat import PFloat
+
 from baramFlow.base.base import Vector
 from baramFlow.coredb.libdb import E
 
@@ -10,11 +12,11 @@ from baramFlow.coredb.libdb import E
 @dataclass
 class SubsonicInlet:
     flowDirection: Vector
-    totalPressure: str
-    totalTemperature: str
+    totalPressure: PFloat
+    totalTemperature: PFloat
 
     def toElement(self):
         return E('subsonicInlet',
                  self.flowDirection.toElement('flowDirection'),
-                 E('totalPressure',     self.totalPressure),
-                 E('totalTemperature',  self.totalTemperature))
+                 self.totalPressure.toElement('totalPressure'),
+                 self.totalTemperature.toElement('totalTemperature'))

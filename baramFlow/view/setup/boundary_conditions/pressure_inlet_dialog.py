@@ -6,7 +6,7 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import PressureInletPatch
+from baramFlow.base.boundary.boundary_patch import PressureInletUpdate
 from baramFlow.base.boundary.pressure_port import PressureInlet
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -74,7 +74,7 @@ class PressureInletDialog(ResizableDialog):
             if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
 
-            data = PressureInletPatch(
+            data = PressureInletUpdate(
                 pressureInlet=PressureInlet(
                     pressure=str(PFloat(self._ui.totalPressure.text(), self.tr("Total Pressure")))),
                 turbulence=self._turbulenceWidget.data())

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from libbaram.pfloat import PFloat
 
 from baramFlow.base.boundary.ABL_inlet import AtmosphericBoundaryLayer
-from baramFlow.base.boundary.boundary import UserDefinedScalarValue, SpecieValue, updateUserDefinedScalarsInDB
+from baramFlow.base.boundary.boundary import UserDefinedScalarValue, updateUserDefinedScalarsInDB, SpecieRatios
 from baramFlow.base.boundary.boundary import updateSpeciesInDB
 from baramFlow.base.boundary.fan import Fan
 from baramFlow.base.boundary.free_stream import FarFieldRiemann
@@ -17,7 +17,7 @@ from baramFlow.base.boundary.pressure_port import PressureOutlet, PressureInlet
 from baramFlow.base.boundary.subsonic_inle import SubsonicInlet
 from baramFlow.base.boundary.supersonic_inflow import SupersonicInflow
 from baramFlow.base.boundary.temperature import BoundaryTemperature
-from baramFlow.base.boundary.turbulence import BoundaryTurbulencePatch
+from baramFlow.base.boundary.turbulence import BoundaryTurbulenceUpdate
 from baramFlow.base.boundary.velocity_inlet import VelocityInlet
 from baramFlow.base.file_data_manager import TableDataForFileDB
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -26,14 +26,14 @@ from baramFlow.coredb.libdb import nsmap
 
 
 @dataclass
-class VelocityInletPatch:
+class VelocityInletUpdate:
     velocityInet: VelocityInlet = None
 
-    turbulence: BoundaryTurbulencePatch  = None
+    turbulence: BoundaryTurbulenceUpdate  = None
     temperature: BoundaryTemperature = None
 
     userDefinedScalars: list[UserDefinedScalarValue] = None
-    species: list[SpecieValue] = None
+    species: SpecieRatios = None
 
     def applyToDB(self, db, bcid):
         self.velocityInet.applyToDB(db, bcid)
@@ -50,10 +50,10 @@ class VelocityInletPatch:
 
 
 @dataclass
-class FlowRateInletPatch:
+class FlowRateInletUpdate:
     flowRate: BoundaryFlowRate
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.flowRate.applyToDBByPath(db, BoundaryDB.getXPath(bcid) + '/flowRateInlet')
@@ -63,7 +63,7 @@ class FlowRateInletPatch:
 
 
 @dataclass
-class FlowRateOutletPatch:
+class FlowRateOutletUpdate:
     flowRate: BoundaryFlowRate
 
     def applyToDB(self, db: _CoreDB, bcid: str):
@@ -71,10 +71,10 @@ class FlowRateOutletPatch:
 
 
 @dataclass
-class PressureInletPatch:
+class PressureInletUpdate:
     pressureInlet: PressureInlet
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.pressureInlet.applyToDB(db, bcid)
@@ -84,10 +84,10 @@ class PressureInletPatch:
 
 
 @dataclass
-class PressureOutletPatch:
+class PressureOutletUpdate:
     pressureOutlet: PressureOutlet
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         element = db.getElement(BoundaryDB.getXPath(bcid))
@@ -102,8 +102,8 @@ class PressureOutletPatch:
 
 
 @dataclass(kw_only=True)
-class IntakeFanPatch:
-    turbulence: BoundaryTurbulencePatch = None
+class IntakeFanUpdate:
+    turbulence: BoundaryTurbulenceUpdate = None
     pressure: PFloat
     fanCurve: TableDataForFileDB        = None
 
@@ -119,10 +119,10 @@ class IntakeFanPatch:
 
 
 @dataclass
-class OpenChannelInletPatch:
+class OpenChannelInletUpdate:
     openChannelInlet: OpenChannelInlet
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.openChannelInlet.applyToDB(db, bcid)
@@ -132,10 +132,10 @@ class OpenChannelInletPatch:
 
 
 @dataclass
-class OpenChannelOutletPatch:
+class OpenChannelOutletUpdate:
     openChannelOutlet: OpenChannelOutlet
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.openChannelOutlet.applyToDB(db, bcid)
@@ -145,10 +145,10 @@ class OpenChannelOutletPatch:
 
 
 @dataclass
-class FreeStreamPatch:
+class FreeStreamUpdate:
     freeStream: FreeStream
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.freeStream.applyToDB(db, bcid)
@@ -158,10 +158,10 @@ class FreeStreamPatch:
 
 
 @dataclass
-class FarFieldRiemannPatch:
+class FarFieldRiemannUpdate:
     farFieldRiemann: FarFieldRiemann
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         self.farFieldRiemann.applyToDB(db, bcid)
@@ -171,10 +171,10 @@ class FarFieldRiemannPatch:
 
 
 @dataclass
-class SubsonicInletPatch:
+class SubsonicInletUpdate:
     subsonicInlet: SubsonicInlet
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         element = db.getElement(BoundaryDB.getXPath(bcid))
@@ -189,10 +189,10 @@ class SubsonicInletPatch:
 
 
 @dataclass
-class SupersonicInflowPatch:
+class SupersonicInflowUpdate:
     supersonicInflow: SupersonicInflow
 
-    turbulence: BoundaryTurbulencePatch = None
+    turbulence: BoundaryTurbulenceUpdate = None
 
     def applyToDB(self, db: _CoreDB, bcid: str):
         element = db.getElement(BoundaryDB.getXPath(bcid))
@@ -219,7 +219,7 @@ class SupersonicInflowPatch:
 
 
 @dataclass
-class FanPatch:
+class FanUpdate:
     fan: Fan    = None
     coupledBoundary: str = None
 
@@ -231,11 +231,11 @@ class FanPatch:
 
 
 @dataclass
-class ABLInletPatch:
+class ABLInletUpdate:
     abl: AtmosphericBoundaryLayer = None
 
     userDefinedScalars: list[UserDefinedScalarValue] = None
-    species: list[SpecieValue] = None
+    species: SpecieRatios = None
 
     def applyToDB(self, db, bcid):
         self.abl.applyToDB(db)

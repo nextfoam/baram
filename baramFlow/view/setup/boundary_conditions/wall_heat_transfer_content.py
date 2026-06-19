@@ -9,6 +9,7 @@ import qasync
 from PySide6.QtWidgets import QWidget
 
 from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.pfloat import PFloat
 from widgets.simple_sheet_dialog import SimpleSheetDialog
 
 from baramFlow.base.base import TrackedData
@@ -52,6 +53,7 @@ class WallHeatTransferContent(QWidget):
                 data.temperatureDistribution = pd.DataFrame(self._temperatureDistribution.data())
         elif mode == WallHeatTransferMode.CONSTANT_HEAT_FLUX:
             data.heatFlux = self._ui.heatFlux.pFloat(self.tr('Temperature'))
+            data.heatFlux = PFloat(self._ui.heatFlux.text(), self.tr('Temperature'))
         elif mode == WallHeatTransferMode.CONVECTION:
             data.heatTransferCoefficient = self._ui.heatTransferCoefficient.pFloat(self.tr('Heat Transfer Coefficient'))
             data.freeStreamTemperature = self._ui.freeStreamTemperature.pFloat(self.tr('Free Stream Temperature'))

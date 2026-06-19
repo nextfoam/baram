@@ -39,7 +39,7 @@ class UserDefinedScalarsWidget(QGroupBox):
             fieldName, editor = self._scalars[scalarID]
             data.append(UserDefinedScalarValue(
                 scalarID=str(scalarID),
-                value=str(PFloat(editor.text(), self.tr('User Defined Scalars' + fieldName)))))
+                value=PFloat(editor.text(), self.tr('User Defined Scalars' + fieldName))))
 
         return data
 
