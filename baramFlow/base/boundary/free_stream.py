@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from libbaram.pfloat import PFloat
 
@@ -18,8 +18,8 @@ class FlowDirection:
     flowDirection: Vector   = None
     dragDirection: Vector   = None
     liftDirection: Vector   = None
-    angleOfAttack: PFloat   = None
-    angleOfSideslip: PFloat = None
+    angleOfAttack: PFloat   = field(default_factory=lambda: PFloat('0'))
+    angleOfSideslip: PFloat = field(default_factory=lambda: PFloat('0'))
 
     def applyToDBByPath(self, db: _CoreDB, parentPath: str):
         element = db.getElement(parentPath + '/flowDirection')

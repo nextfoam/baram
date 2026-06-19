@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from libbaram.pfloat import PFloat
 
@@ -23,7 +23,7 @@ class PressureOutlet:
     totalPressure: PFloat
     nonReflective: bool
     calculatedBackflow: bool
-    backflowTotalTemperature: PFloat = None
+    backflowTotalTemperature: PFloat = field(default_factory=lambda: PFloat('300'))
 
     def toElement(self):
         return E('pressureOutlet',
