@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.boundary_db import FlowDirectionSpecificationMethod
@@ -20,11 +20,11 @@ class ABLFlowDirection:
 class PasquillStability:
     disabled: bool
     stabilityClass: str             = None
-    latitude: PFloat                = None
-    surfaceHeatFlux: PFloat         = None
-    referenceDensity: PFloat        = None
-    referenceSpecificHeat: PFloat   = None
-    referenceTemperature: PFloat    = None
+    latitude: PFloat                = field(default_factory=lambda: PFloat('37'))
+    surfaceHeatFlux: PFloat         = field(default_factory=lambda: PFloat('0'))
+    referenceDensity: PFloat        = field(default_factory=lambda: PFloat('1.225'))
+    referenceSpecificHeat: PFloat   = field(default_factory=lambda: PFloat('1006.0'))
+    referenceTemperature: PFloat    = field(default_factory=lambda: PFloat('298.15'))
 
     def toElement(self):
         if self.disabled:
