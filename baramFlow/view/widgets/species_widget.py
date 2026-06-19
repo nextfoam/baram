@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
+from PySide6.QtWidgets import QGroupBox, QFormLayout
 
-from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
+from widgets.pfloat_line_edit import PFloatLineEdit
 
 from baramFlow.base.boundary.boundary import SpecieValue, SpecieRatios
 from baramFlow.base.material.material import MaterialType
@@ -14,15 +14,15 @@ from baramFlow.coredb.material_db import MaterialDB
 
 
 class SpeciesWidget(QGroupBox):
-    def __init__(self, mid, optional=False):
+    def __init__(self, mid: str, optional=False):
         super().__init__()
 
-        self._mid = mid
+        self._mid: str = mid
 
-        self._on = False
-        self._layout = None
-        self._species = {}
-        self._optional = optional
+        self._on: bool = False
+        self._layout: QFormLayout
+        self._species: dict[str, tuple[str, PFloatLineEdit]] = {}
+        self._optional: bool = optional
 
         self.setTitle(MaterialDB.getName(self._mid))
         self.setCheckable(self._optional)
@@ -32,7 +32,7 @@ class SpeciesWidget(QGroupBox):
             self._on = True
             self._layout = QFormLayout(self)
             for mid, name in MaterialDB.getSpecies(mid).items():
-                editor = QLineEdit()
+                editor = PFloatLineEdit()
                 self._layout.addRow(name, editor)
                 self._species[mid] = (name, editor)
 
@@ -53,7 +53,7 @@ class SpeciesWidget(QGroupBox):
         ratios = []
         for mid, row in self._species.items():
             fieldName, editor = row
-            value = PFloat(editor.text(), self.tr('Speicie '+ fieldName))
+            value = editor.pFloat(self.tr('Speicie '+ fieldName))
             ratios.append(SpecieValue(mid, value))
             totalRatio += float(value)
 
@@ -62,8 +62,7 @@ class SpeciesWidget(QGroupBox):
                 self.tr(
                     'The sum of the composition ratios of the mixture "{}" is 0.').format(MaterialDB.getName(self._mid)))
 
-        return SpecieRatios(mid=self._mid,
-                            ratios=ratios)
+        return SpecieRatios(mid=self._mid, ratios=ratios)
 
     def on(self):
         return self._on
@@ -97,9 +96,9 @@ class SpeciesWidget(QGroupBox):
             for mid, row in self._species.items():
                 try:
                     fieldName, editor = row
-                    writer.append(f'{xpath}/specie[mid="{mid}"]/value',
-                                  editor.text(), fieldName)
-                    totalRatio += float(editor.text())
+                    value = editor.pFloat(self.tr('Speicie '+ fieldName))
+                    writer.append(f'{xpath}/specie[mid="{mid}"]/value', str(value), fieldName)
+                    totalRatio += float(value)
                 except ValueError:
                     await AsyncMessageBox().information(
                         self, self.tr('Input Error'), self.tr('{} must be a float').format(row[0]))
