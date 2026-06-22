@@ -62,21 +62,21 @@ class InjectionListDialog(QDialog):
             self._ui.delete_.setEnabled(False)
 
     def _openEditDialog(self, item):
-        def update():
-            item.setInjection(self._dialog.injection())
+        def update(data: Injection):
+            item.setInjection(data)
             self._ui.ok.setEnabled(True)
 
         self._dialog = InjectionDialog(self, item.injection(), self._usedNames())
-        self._dialog.accepted.connect(update)
+        self._dialog.dataAccepted.connect(update)
         self._dialog.open()
 
     def _openAddDialog(self):
-        def add():
-            self._add(self._dialog.injection())
+        def add(data: Injection):
+            self._add(data)
             self._ui.ok.setEnabled(True)
 
         self._dialog = InjectionDialog(self, Injection.new(), self._usedNames())
-        self._dialog.accepted.connect(add)
+        self._dialog.dataAccepted.connect(add)
         self._dialog.open()
 
     def _editClicked(self):

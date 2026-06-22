@@ -20,7 +20,6 @@ class CellZoneWidget(QWidget):
             ZoneType.NONE: self.tr('None'),
             ZoneType.MRF: self.tr('Multiple Reference Frame'),
             ZoneType.POROUS: self.tr('Porous Zone'),
-            ZoneType.SLIDING_MESH: self.tr('Sliding Mesh'),
             ZoneType.ACTUATOR_DISK: self.tr('Actuator Disk'),
         }
 
@@ -31,7 +30,7 @@ class CellZoneWidget(QWidget):
 
     def czid(self):
         return self._czid
-    
+
     def czname(self):
         return self._ui.name.text()
 

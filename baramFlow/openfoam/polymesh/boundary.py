@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import TYPE_MAP
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode, GeometricalType
+from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode, GeometricalType, TYPE_MAP
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.openfoam.file_system import FileSystem
 from .polymesh_loader import PolyMeshLoader
@@ -14,10 +14,10 @@ class Boundary(DictionaryFile):
     def __init__(self, rname: str, processorNo=None):
         super().__init__(FileSystem.caseRoot(), self.polyMeshLocation(rname), 'boundary')
         self._rname = rname
-        self._boundaryDict = None
+        self._boundaryDict: ParsedBoundaryDict = None
         self._processorNo = processorNo
 
-        self._db = None
+        self._db: CoreDBReader = None
 
     def build(self):
         if self._boundaryDict is not None:
@@ -49,6 +49,8 @@ class Boundary(DictionaryFile):
                             self._generateCyclicAmiTranslational(bcname, xpath, couple)
                         elif spec == InterfaceMode.REGION_INTERFACE.value:
                             self._generateMappedWall(bcname, xpath, couple)
+                    elif bctype == BoundaryType.CYCLIC_ACMI:
+                        self._generateCyclicACMI(bcname, xpath, couple)
                     else:
                         self._generateCyclic(bcname, xpath, couple)
                 else:
@@ -116,6 +118,21 @@ class Boundary(DictionaryFile):
         self._boundaryDict.content[bcname]['transform'] = 'translational'
         self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
         self._boundaryDict.content[bcname]['separationVector'] = self._db.getVector(xpath + '/interface/translationVector')
+
+    def _generateCyclicACMI(self, bcname, xpath, cpid):
+        self._removeEntry(bcname, 'sampleMode')
+        self._removeEntry(bcname, 'sampleRegion')
+        self._removeEntry(bcname, 'samplePatch')
+        self._removeEntry(bcname, 'rotationAxis')
+        self._removeEntry(bcname, 'rotationCentre')
+        self._removeEntry(bcname, 'separationVector')
+
+        fallback = self._db.getValue(xpath + '/fallbackBoundary')
+
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.CYCLIC_ACMI.value
+        self._boundaryDict.content[bcname]['transform'] = 'unknown'
+        self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
+        self._boundaryDict.content[bcname]['nonOverlapPatch'] = BoundaryDB.getBoundaryName(fallback)
 
     def _generateCyclic(self, bcname, xpath, cpid):
         self._removeEntry(bcname, 'sampleMode')

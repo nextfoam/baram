@@ -6,6 +6,7 @@ from uuid import UUID
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
 
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.coredb_reader import Region
@@ -18,32 +19,33 @@ from libbaram.natural_name_uuid import uuidToNnstr
 
 
 TYPE_MAP = {
-    BoundaryType.VELOCITY_INLET.value: 'calculated',
-    BoundaryType.FLOW_RATE_INLET.value: 'calculated',
-    BoundaryType.FLOW_RATE_OUTLET.value: 'calculated',
-    BoundaryType.PRESSURE_INLET.value: 'calculated',
-    BoundaryType.INTAKE_FAN.value: 'calculated',
-    BoundaryType.EXHAUST_FAN.value: 'calculated',
-    BoundaryType.ABL_INLET.value: 'calculated',
-    BoundaryType.OPEN_CHANNEL_INLET.value: 'calculated',
-    BoundaryType.FREE_STREAM.value: 'calculated',
-    BoundaryType.FAR_FIELD_RIEMANN.value: 'calculated',
-    BoundaryType.SUBSONIC_INLET.value: 'calculated',
-    BoundaryType.SUPERSONIC_INFLOW.value: 'calculated',
-    BoundaryType.PRESSURE_OUTLET.value: 'calculated',
-    BoundaryType.OPEN_CHANNEL_OUTLET.value: 'calculated',
-    BoundaryType.OUTFLOW.value: 'calculated',
-    BoundaryType.SUBSONIC_OUTFLOW.value: 'calculated',
-    BoundaryType.SUPERSONIC_OUTFLOW.value: 'calculated',
-    BoundaryType.WALL.value: 'calculated',
-    BoundaryType.THERMO_COUPLED_WALL.value: 'calculated',
-    BoundaryType.POROUS_JUMP.value: 'cyclic',
-    BoundaryType.FAN.value: 'cyclic',
-    BoundaryType.SYMMETRY.value: 'symmetry',
-    BoundaryType.INTERFACE.value: 'cyclicAMI',
-    BoundaryType.EMPTY.value: 'empty',
-    BoundaryType.CYCLIC.value: 'cyclic',
-    BoundaryType.WEDGE.value: 'wedge',
+    BoundaryType.VELOCITY_INLET:        'calculated',
+    BoundaryType.FLOW_RATE_INLET:       'calculated',
+    BoundaryType.FLOW_RATE_OUTLET:      'calculated',
+    BoundaryType.PRESSURE_INLET:        'calculated',
+    BoundaryType.INTAKE_FAN:            'calculated',
+    BoundaryType.EXHAUST_FAN:           'calculated',
+    BoundaryType.ABL_INLET:             'calculated',
+    BoundaryType.OPEN_CHANNEL_INLET:    'calculated',
+    BoundaryType.FREE_STREAM:           'calculated',
+    BoundaryType.FAR_FIELD_RIEMANN:     'calculated',
+    BoundaryType.SUBSONIC_INLET:        'calculated',
+    BoundaryType.SUPERSONIC_INFLOW:     'calculated',
+    BoundaryType.PRESSURE_OUTLET:       'calculated',
+    BoundaryType.OPEN_CHANNEL_OUTLET:   'calculated',
+    BoundaryType.OUTFLOW:               'calculated',
+    BoundaryType.SUBSONIC_OUTFLOW:      'calculated',
+    BoundaryType.SUPERSONIC_OUTFLOW:    'calculated',
+    BoundaryType.WALL:                  'calculated',
+    BoundaryType.THERMO_COUPLED_WALL:   'calculated',
+    BoundaryType.POROUS_JUMP:           'cyclic',
+    BoundaryType.FAN:                   'cyclic',
+    BoundaryType.SYMMETRY:              'symmetry',
+    BoundaryType.INTERFACE:             'cyclicAMI',
+    BoundaryType.EMPTY:                 'empty',
+    BoundaryType.CYCLIC:                'cyclic',
+    BoundaryType.CYCLIC_ACMI:           'cyclicACMI',
+    BoundaryType.WEDGE:                 'wedge',
 }
 
 
@@ -98,9 +100,13 @@ class P(BoundaryCondition):
     def _constructBoundaryField(self, forceCalculatedType):
         field = {}
 
-        for bcid, name, type_ in self._region.boundaries:
+        for boundaryModel in BoundaryService.getBoundariesIn(self._region.rname):
+            bcid = boundaryModel.boundary.bcid
+            name = boundaryModel.boundary.name
+            type_ = BoundaryDB.getBoundaryType(bcid)
+
             t = TYPE_MAP[type_]
-            if type_ == BoundaryType.INTERFACE.value:
+            if type_ == BoundaryType.INTERFACE:
                 spec = self._db.getValue(BoundaryDB.getXPath(bcid) + '/interface/mode')
                 if spec == InterfaceMode.REGION_INTERFACE.value:
                     t = 'calculated'
@@ -111,40 +117,42 @@ class P(BoundaryCondition):
                     'cyclic':     (lambda: self._constructCyclic()),
                     'symmetry':   (lambda: self._constructSymmetry()),
                     'cyclicAMI':  (lambda: self._constructCyclicAMI()),
+                    'cyclicACMI': (lambda: self._constructCyclicACMI()),
                     'empty':      (lambda: self._constructEmpty()),
                     'wedge':      (lambda: self._constructWedge())
-                }.get(t)()
+                }.get(t, lambda: None)()
             else:
                 xpath = BoundaryDB.getXPath(bcid)
 
                 field[name] = {
-                    BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
-                    BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
-                    BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
-                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
-                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
-                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.IN)),
-                    BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.OUT)),
-                    BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
-                    BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
-                    BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
-                    BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
-                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(self._operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
-                    BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann', self._operatingPressure + float(self._db.getValue(xpath + '/farFieldRiemann/staticPressure')))),
-                    BoundaryType.SUBSONIC_INLET.value:      (lambda: self._constructSubsonicInlet(xpath + '/subsonicInlet')),
-                    BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self._operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
-                    BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
-                    BoundaryType.WALL.value:                (lambda: self._constructWall()),
-                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
-                    BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
-                    BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath, bcid)),
-                    BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
-                    BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
-                    BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
-                }.get(type_)()
+                    BoundaryType.VELOCITY_INLET:        (lambda: self._constructZeroGradient()),
+                    BoundaryType.FLOW_RATE_INLET:       (lambda: self._constructZeroGradient()),
+                    BoundaryType.FLOW_RATE_OUTLET:      (lambda: self._constructZeroGradient()),
+                    BoundaryType.PRESSURE_INLET:        (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
+                    BoundaryType.PRESSURE_OUTLET:       (lambda: self._constructPressureOutletP(xpath)),
+                    BoundaryType.INTAKE_FAN:            (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.IN)),
+                    BoundaryType.EXHAUST_FAN:           (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.OUT)),
+                    BoundaryType.ABL_INLET:             (lambda: self._constructZeroGradient()),
+                    BoundaryType.OPEN_CHANNEL_INLET:    (lambda: self._constructZeroGradient()),
+                    BoundaryType.OPEN_CHANNEL_OUTLET:   (lambda: self._constructZeroGradient()),
+                    BoundaryType.OUTFLOW:               (lambda: self._constructZeroGradient()),
+                    BoundaryType.FREE_STREAM:           (lambda: self._constructFreestreamPressure(self._operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
+                    BoundaryType.FAR_FIELD_RIEMANN:     (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann', self._operatingPressure + float(self._db.getValue(xpath + '/farFieldRiemann/staticPressure')))),
+                    BoundaryType.SUBSONIC_INLET:        (lambda: self._constructSubsonicInlet(xpath + '/subsonicInlet')),
+                    BoundaryType.SUBSONIC_OUTFLOW:      (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
+                    BoundaryType.SUPERSONIC_INFLOW:     (lambda: self._constructFixedValue(self._operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
+                    BoundaryType.SUPERSONIC_OUTFLOW:    (lambda: self._constructZeroGradient()),
+                    BoundaryType.WALL:                  (lambda: self._constructWall()),
+                    BoundaryType.THERMO_COUPLED_WALL:   (lambda: self._constructFluxPressure()),
+                    BoundaryType.SYMMETRY:              (lambda: self._constructSymmetry()),
+                    BoundaryType.INTERFACE:             (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
+                    BoundaryType.POROUS_JUMP:           (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
+                    BoundaryType.FAN:                   (lambda: self._constructFan(xpath, bcid)),
+                    BoundaryType.EMPTY:                 (lambda: self._constructEmpty()),
+                    BoundaryType.CYCLIC:                (lambda: self._constructCyclic()),
+                    BoundaryType.CYCLIC_ACMI:           (lambda: self._constructCyclicACMI()),
+                    BoundaryType.WEDGE:                 (lambda: self._constructWedge())
+                }.get(type_, lambda: None)()
 
         return field
 
@@ -235,6 +243,9 @@ class P(BoundaryCondition):
         fanCurve = None
         if fanCurveName.int != 0:
             df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
+            if self._db.getBool(xpath + '/fan/reverseDirection'):
+                df.iloc[:, 1:] = -df.iloc[:, 1:]
+
             if df is not None:
                 fanCurve = df.values.tolist()
                 if len(fanCurve[0]) > 2:  # if it includes vector value

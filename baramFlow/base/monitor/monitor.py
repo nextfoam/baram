@@ -6,11 +6,11 @@ from enum import Enum, auto
 from uuid import uuid4, UUID
 
 from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.pfloat import PFloat
 
-from baramFlow.base.base import DirectionSpecificationMethod
+from baramFlow.base.base import DirectionSpecificationMethod, Vector
 from baramFlow.base.constants import FieldType, VectorComponent
 from baramFlow.base.field import getFieldInstance, Field, PRESSURE
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.coredb import CoreDB, nsmap
 from baramFlow.coredb.libdb import xmlToBool, xmlToStr, E, ValueException, dbErrorToMessage
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
@@ -128,8 +128,8 @@ class MonitorBaseConfiguration:
 
         return name
 
-    @classmethod
-    def fromElement(cls, e, monitorType):
+    @staticmethod
+    def fromElement(e, monitorType):
         return MonitorBaseConfiguration(
             type=monitorType,
             uuid=UUID(e.find('uuid', namespaces=nsmap).text),
@@ -151,27 +151,27 @@ class MonitorBaseConfiguration:
 
 @dataclass
 class ForceDirection:
-    specificationMethod: DirectionSpecificationMethod = DirectionSpecificationMethod.DIRECT
-    dragDirection: Vector = field(default_factory= Vector.xUnit)
-    liftDirection: Vector = field(default_factory= Vector.yUnit)
-    angleOfAttack: str = '0'
-    angleOfSideslip: str = '0'
+    specificationMethod: DirectionSpecificationMethod   = DirectionSpecificationMethod.DIRECT
+    dragDirection: Vector                               = field(default_factory= Vector.xUnit)
+    liftDirection: Vector                               = field(default_factory= Vector.yUnit)
+    angleOfAttack: PFloat                               = field(default_factory=lambda: PFloat('0'))
+    angleOfSideslip: PFloat                             = field(default_factory=lambda: PFloat('0'))
 
-    @classmethod
-    def fromElement(cls, e):
+    @staticmethod
+    def fromElement(e):
         return ForceDirection(
             specificationMethod=DirectionSpecificationMethod(e.find('specificationMethod', namespaces=nsmap).text),
             dragDirection=Vector.fromElement(e.find('dragDirection', namespaces=nsmap)),
             liftDirection=Vector.fromElement(e.find('liftDirection', namespaces=nsmap)),
-            angleOfAttack=e.find('angleOfAttack', namespaces=nsmap).text,
-            angleOfSideslip=e.find('angleOfSideslip', namespaces=nsmap).text)
+            angleOfAttack=PFloat.fromElement(e.find('angleOfAttack', namespaces=nsmap)),
+            angleOfSideslip=PFloat.fromElement(e.find('angleOfSideslip', namespaces=nsmap)))
 
     def toElement(self):
         return E('forceDirection',  E.specificationMethod(self.specificationMethod.value),
-                                    self.dragDirection.toElement('dragDirection'),
-                                    self.liftDirection.toElement('liftDirection'),
-                                    E.angleOfAttack(self.angleOfAttack),
-                                    E.angleOfSideslip(self.angleOfSideslip))
+                 self.dragDirection.toElement('dragDirection'),
+                 self.liftDirection.toElement('liftDirection'),
+                 self.angleOfAttack.toElement('angleOfAttack'),
+                 self.angleOfSideslip.toElement('angleOfSideslip'))
 
 
 @dataclass
@@ -192,8 +192,8 @@ class ForceMonitorConfiguration:
             region='',
             boundaries=[])
 
-    @classmethod
-    def fromElement(cls, e):
+    @staticmethod
+    def fromElement(e):
         return ForceMonitorConfiguration(
             monitorBase=MonitorBaseConfiguration.fromElement(e, MonitorType.FORCE),
             forceDirection=ForceDirection.fromElement(e.find('forceDirection', namespaces=nsmap)),
@@ -230,8 +230,8 @@ class PointMonitorConfiguration:
             field=MonitorField(PRESSURE, VectorComponent.MAGNITUDE),
             coordinate=Vector.zero())
 
-    @classmethod
-    def fromElement(cls, e):
+    @staticmethod
+    def fromElement(e):
         snapOntoBoundary = xmlToBool(e.find('snapOntoBoundary', namespaces=nsmap).text)
         return PointMonitorConfiguration(
             monitorBase=MonitorBaseConfiguration.fromElement(e, MonitorType.POINT),
@@ -271,8 +271,8 @@ class SurfaceMonitorConfiguration:
             field=MonitorField(PRESSURE, VectorComponent.MAGNITUDE),
             surface='0')
 
-    @classmethod
-    def fromElement(cls, e):
+    @staticmethod
+    def fromElement(e):
         return SurfaceMonitorConfiguration(monitorBase=MonitorBaseConfiguration.fromElement(e, MonitorType.SURFACE),
                                            reportType=SurfaceReportType(e.find('reportType', namespaces=nsmap).text),
                                            field=getMonitorField(e),
@@ -306,8 +306,8 @@ class VolumeMonitorConfiguration:
             field=MonitorField(PRESSURE, VectorComponent.MAGNITUDE),
             volume='0')
 
-    @classmethod
-    def fromElement(cls, e):
+    @staticmethod
+    def fromElement(e):
         return VolumeMonitorConfiguration(monitorBase=MonitorBaseConfiguration.fromElement(e, MonitorType.VOLUME),
                                           reportType=VolumeReportType(e.find('reportType', namespaces=nsmap).text),
                                           field=getMonitorField(e),
@@ -409,8 +409,8 @@ class MonitorManager:
                                   data.forceDirection.liftDirection.toElement('liftDirection'))
 
                 if data.forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-                    db.setValue(xpath + '/forceDirection/angleOfSideslip', data.forceDirection.angleOfSideslip)
-                    db.setValue(xpath + '/forceDirection/angleOfAttack', data.forceDirection.angleOfAttack)
+                    db.setValue(xpath + '/forceDirection/angleOfSideslip', str(data.forceDirection.angleOfSideslip))
+                    db.setValue(xpath + '/forceDirection/angleOfAttack', str(data.forceDirection.angleOfAttack))
 
                 db.replaceElement(xpath + '/centerOfRotation', data.centerOfRotation.toElement('centerOfRotation'))
                 db.setValue(xpath + '/region', data.region)

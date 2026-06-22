@@ -5,6 +5,7 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
+from baramFlow.services.region.region_service import RegionService
 from libbaram.exception import CanceledException
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -77,22 +78,28 @@ class InitializationPage(ContentPage):
                 return False
 
         writer = CoreDBWriter()
+        data = []
 
-        for i in range(self._ui.tabWidget.count()):
-            widget: InitializationWidget = self._ui.tabWidget.widget(i)
-            if not await widget.appendToWriter(writer):
-                return False
+        try:
+            for i in range(self._ui.tabWidget.count()):
+                widget: InitializationWidget = self._ui.tabWidget.widget(i)
+                if not await widget.appendToWriter(writer):
+                    return False
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+                patch = widget.data()
+                if patch is not None:
+                    data.append(widget.data())
+
+            RegionService.updateInitialization(data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return False
 
         return True
 
-    def checkToQuit(self):
+    async def checkToQuit(self):
         if coredb.CoreDB().configCount != self._dbConfigCount:
-            confirm = QMessageBox.question(
+            confirm = await AsyncMessageBox().question(
                 self, self.tr("Changed Not Applied"),
                 self.tr(
                     'Initialization configuration has changed but "Initialization" button was not clicked. Proceed?'),

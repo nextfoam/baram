@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+import copy
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QDialog
 
-from baramFlow.base.base import Function1Scalar, Function1Vector, Function1VectorRow, Function1ScalarRow
-from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
-from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
-from baramFlow.view.widgets.vector_widget import VectorWidget
+from libbaram.pfloat import PFloat
+from widgets.pfloat_line_edit import PFloatLineEdit
 from widgets.python_combo_box import PythonComboBox
 
+from baramFlow.base.base import Function1VectorRow, Function1ScalarRow, Function1Data, Vector
 from baramFlow.base.constants import Function1Type
+from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
+from baramFlow.view.widgets.vector_widget import VectorWidget
 
 
 class EditButtonWidget(QWidget):
@@ -42,17 +43,16 @@ class EditButtonWidget(QWidget):
 class Function1Widget(QWidget):
     tableEditButtonClicked = Signal()
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
 
         self._layout = QHBoxLayout(self)
         self._type = PythonComboBox(self)
 
-        self._inputs = {}
+        self._inputs: dict[Function1Type, PFloatLineEdit | VectorWidget | EditButtonWidget] = {}
+        self._data: Function1Data
 
-        self._constant: Optional[BatchableFloatEdit|VectorWidget] = None
-
-        self._dialog = None
+        self._dialog: QDialog
 
         self._typeTexts = {
             Function1Type.CONSTANT: 'Constant',
@@ -64,13 +64,12 @@ class Function1Widget(QWidget):
 
         self._connectSignalsSlots()
 
-    def setup(self, types):
+    def setup(self, types: list[Function1Type]):
         for t in types:
             self._type.addItem(self._typeTexts[t], t)
 
             if t == Function1Type.CONSTANT:
-                self._constant = self._createConstantWidget()
-                self._inputs[t] = self._constant
+                self._inputs[t] = self._createConstantWidget()
             elif t == Function1Type.TABLE:
                 self._inputs[t] = EditButtonWidget()
                 self._inputs[t].clicked.connect(self._openTableEditDialog)
@@ -80,7 +79,9 @@ class Function1Widget(QWidget):
 
         self._typeChanged()
 
-    def setData(self, data: Function1Scalar|Function1Vector):
+    def setData(self, data: Function1Data):
+        self._data = data
+
         if data.type in self._inputs:
             self._type.setCurrentIndex(self._type.findData(data.type))
         else:
@@ -92,13 +93,18 @@ class Function1Widget(QWidget):
         if Function1Type.TABLE in self._inputs:
             self._inputs[Function1Type.TABLE].setData([] if data.table is None else data.table)
 
-    def updateData(self, data: Function1Scalar|Function1Vector):
+    def data(self, name: str, *args, **kwargs):
+        data = copy.deepcopy(self._data)
         data.type = self._type.currentData()
 
         if data.type == Function1Type.CONSTANT:
-            data.constant = self._constantData()
-        else:
+            data.constant = self._constantData(name=name, *args, **kwargs)
+        elif data.type == Function1Type.TABLE:
             data.table = self._inputs[data.type].data()
+            if not data.table:
+                raise ValueError('Edit {0}.'.format(name))
+
+        return data
 
     def _connectSignalsSlots(self):
         self._type.currentIndexChanged.connect(self._typeChanged)
@@ -110,7 +116,7 @@ class Function1Widget(QWidget):
     def _setConstantData(self, value):
         raise NotImplementedError
 
-    def _constantData(self):
+    def _constantData(self, name: str, *args, **kwargs):
         raise NotImplementedError
 
     def _createConstantWidget(self):
@@ -121,19 +127,14 @@ class Function1Widget(QWidget):
 
 
 class Function1ScalarWidget(Function1Widget):
-    def validate(self, name: str, low: Optional[float] = None,
-                 high: Optional[float] = None, lowInclusive=True, highInclusive=True):
-        if self._type.currentData() == Function1Type.CONSTANT:
-            self._constant.validate(name=name, low=low, high=high, lowInclusive=lowInclusive, highInclusive=highInclusive)
+    def _setConstantData(self, value: PFloat):
+        self._inputs[Function1Type.CONSTANT].setPFloat(value)
 
-    def _setConstantData(self, value):
-        self._constant.setBatchableNumber(value)
-
-    def _constantData(self):
-        return self._constant.batchableNumber()
+    def _constantData(self, name: str, *args, **kwargs):
+        return self._inputs[Function1Type.CONSTANT].pFloat(name=name, *args, **kwargs)
 
     def _createConstantWidget(self):
-        return BatchableFloatEdit()
+        return PFloatLineEdit(self)
 
     def _openTableEditDialog(self):
         self._dialog = PiecewiseLinearDialog(
@@ -143,19 +144,16 @@ class Function1ScalarWidget(Function1Widget):
         self._dialog.open()
 
     def _updateTable(self):
-        self._inputs[Function1Type.TABLE].setData([Function1ScalarRow(*row) for row in self._dialog.getData()])
+        self._inputs[Function1Type.TABLE].setData(
+            [Function1ScalarRow(*[str(v) for v in row]) for row in self._dialog.getData()])
 
 
 class Function1VectorWidget(Function1Widget):
-    def validate(self, name: str):
-        if self._type.currentData() == Function1Type.CONSTANT:
-            self._constant.validate(name)
+    def _setConstantData(self, value: Vector):
+        self._inputs[Function1Type.CONSTANT].setVector(value)
 
-    def _setConstantData(self, value):
-        self._constant.setVector(value)
-
-    def _constantData(self):
-        return self._constant.vector()
+    def _constantData(self, name: str):
+        return self._inputs[Function1Type.CONSTANT].vector(name)
 
     def _createConstantWidget(self):
         return VectorWidget(self)

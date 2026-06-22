@@ -6,7 +6,7 @@ from typing import Optional
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.base.material.material import DensitySpecification, TransportSpecification
+from baramFlow.base.material.constants import DensitySpecification, TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import RegionDB, CavitationModel

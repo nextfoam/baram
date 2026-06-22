@@ -3,15 +3,19 @@
 
 import qasync
 
+from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.material.material import Phase, DensitySpecification, SpecificHeatSpecification
+from baramFlow.base.boundary.boundary_patch import PressureOutletUpdate
+from baramFlow.base.boundary.pressure_port import PressureOutlet
+from baramFlow.base.material.constants import Phase, DensitySpecification, SpecificHeatSpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .pressure_outlet_dialog_ui import Ui_PressureOutletDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -25,6 +29,7 @@ class PressureOutletDialog(ResizableDialog):
         self._ui = Ui_PressureOutletDialog()
         self._ui.setupUi(self)
 
+        self._bcid = bcid
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._turbulenceWidget = None
@@ -71,40 +76,42 @@ class PressureOutletDialog(ResizableDialog):
             return
         # ToDo: Add validation for other parameters
 
-        xpath = self._xpath + self.RELATIVE_XPATH
+        writer = None
+        turbulence = None
 
-        writer = CoreDBWriter()
-        writer.append(xpath + '/totalPressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
+        try:
+            if self._ui.calculateBackflow.isChecked():
+                writer = CoreDBWriter()
 
-        writer.append(xpath + '/nonReflective',
-                      'true' if self._ui.nonReflectingBoundary.isChecked() else 'false', None)
+                if not self._turbulenceWidget.appendToWriter(writer):
+                    return
 
-        if self._ui.calculateBackflow.isChecked():
-            writer.append(xpath + '/calculatedBackflow', "true", None)
+                if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
+                    return
 
-            if not self._turbulenceWidget.appendToWriter(writer):
-                return
+                if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+                    return
 
-            if ModelsDB.isEnergyModelOn():
-                writer.append(xpath + '/backflowTotalTemperature',
-                              self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
+                if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
+                    return
 
-            if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
-                return
+                turbulence = self._turbulenceWidget.data()
 
-            if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
-                return
+            data = PressureOutletUpdate(
+                pressureOutlet=PressureOutlet(
+                    totalPressure=PFloat(self._ui.totalPressure.text(), self.tr("Total Pressure")),
+                    nonReflective=self._ui.nonReflectingBoundary.isChecked(),
+                    calculatedBackflow=self._ui.calculateBackflow.isChecked(),
+                    backflowTotalTemperature=PFloat(self._ui.backflowTotalTemperature.text(),
+                                                    self.tr("Backflow Total Temperature"))),
+                turbulence=turbulence)
 
-            if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
-                return
-        else:
-            writer.append(xpath + '/calculatedBackflow', "false", None)
+            BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            self.accept()
+        self.accept()
 
     def _load(self):
         db = coredb.CoreDB()

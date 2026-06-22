@@ -42,7 +42,7 @@ class StepPage(QObject):
     def open(self):
         return
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.updateWorkingStatus()
 
     async def hide(self):
@@ -93,10 +93,12 @@ class StepPage(QObject):
             self.stepReset.emit()
 
     def _showResultMesh(self):
-        app.window.meshManager.show(self.OUTPUT_TIME)
+        if self.OUTPUT_TIME >= 0:
+            app.window.meshManager.show(self.OUTPUT_TIME)
 
     def _showPreviousMesh(self):
-        app.window.meshManager.show(self.OUTPUT_TIME - 1)
+        if self.OUTPUT_TIME > 0:
+            app.window.meshManager.show(self.OUTPUT_TIME - 1)
 
     def updateMesh(self):
         if self.isNextStepAvailable():

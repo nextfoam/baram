@@ -8,6 +8,7 @@ from baramFlow.mesh.mesh_model import DisplayMode
 from baramFlow.openfoam.file_system import FileSystem
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
+from widgets.themed_icon import load_themed_icon
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
@@ -27,6 +28,15 @@ class RenderingView(QWidget):
 
         self._ui = Ui_RenderingView()
         self._ui.setupUi(self)
+
+        self._ui.axis.setIcon(load_themed_icon(':/graphicsIcons/originAxes'))
+        self._ui.cubeAxis.setIcon(load_themed_icon(':/graphicsIcons/ruler.svg'))
+        self._ui.ruler.setIcon(load_themed_icon(':/graphicsIcons/distance.svg'))
+        self._ui.perspective.setIcon(load_themed_icon(':/graphicsIcons/2d-label-icon.svg'))
+        self._ui.fit.setIcon(load_themed_icon(':/icons/expand.svg'))
+        self._ui.alignAxis.setIcon(load_themed_icon(':/graphicsIcons/alignAxis.svg'))
+        self._ui.rotate.setIcon(load_themed_icon(':/icons/reload.svg'))
+        self._ui.rotationCenter.setIcon(load_themed_icon(':/graphicsIcons/rotationCenter'))
 
         self._view = self._ui.view
 

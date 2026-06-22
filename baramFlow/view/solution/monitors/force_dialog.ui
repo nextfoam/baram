@@ -71,7 +71,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="FloatEdit" name="writeInterval">
+          <widget class="QLineEdit" name="writeInterval">
            <property name="text">
             <string/>
            </property>
@@ -147,7 +147,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="FloatEdit" name="dragDirectionX"/>
+                <widget class="PFloatLineEdit" name="dragDirectionX"/>
                </item>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_10">
@@ -160,10 +160,10 @@
                 </widget>
                </item>
                <item row="1" column="3">
-                <widget class="FloatEdit" name="dragDirectionZ"/>
+                <widget class="PFloatLineEdit" name="dragDirectionZ"/>
                </item>
                <item row="1" column="2">
-                <widget class="FloatEdit" name="dragDirectionY"/>
+                <widget class="PFloatLineEdit" name="dragDirectionY"/>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_11">
@@ -180,13 +180,13 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="FloatEdit" name="liftDirectionX"/>
+                <widget class="PFloatLineEdit" name="liftDirectionX"/>
                </item>
                <item row="2" column="2">
-                <widget class="FloatEdit" name="liftDirectionY"/>
+                <widget class="PFloatLineEdit" name="liftDirectionY"/>
                </item>
                <item row="2" column="3">
-                <widget class="FloatEdit" name="liftDirectionZ"/>
+                <widget class="PFloatLineEdit" name="liftDirectionZ"/>
                </item>
               </layout>
              </widget>
@@ -211,7 +211,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="BatchableFloatEdit" name="AoA"/>
+             <widget class="PFloatLineEdit" name="AoA"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_23">
@@ -221,7 +221,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="BatchableFloatEdit" name="AoS"/>
+             <widget class="PFloatLineEdit" name="AoS"/>
             </item>
            </layout>
           </widget>
@@ -255,7 +255,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="centerOfRotationX"/>
+             <widget class="PFloatLineEdit" name="centerOfRotationX"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_15">
@@ -265,7 +265,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="FloatEdit" name="centerOfRotationY"/>
+             <widget class="PFloatLineEdit" name="centerOfRotationY"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_16">
@@ -275,7 +275,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="FloatEdit" name="centerOfRotationZ"/>
+             <widget class="PFloatLineEdit" name="centerOfRotationZ"/>
             </item>
            </layout>
           </widget>
@@ -378,24 +378,19 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.typed_edit</header>
   </customwidget>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
-  </customwidget>
-  <customwidget>
-   <class>BatchableFloatEdit</class>
-   <extends>QLineEdit</extends>
-   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
-  </customwidget>
-  <customwidget>
-   <class>PythonComboBox</class>
-   <extends>QComboBox</extends>
-   <header location="global">widgets.python_combo_box</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <tabstops>

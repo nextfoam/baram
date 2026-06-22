@@ -7,7 +7,7 @@ import qasync
 
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QSignalBlocker
 
 from libbaram.run import OpenFOAMError
 
@@ -68,26 +68,22 @@ class GeometryPage(StepPage):
     def isNextStepAvailable(self):
         return app.db.elementCount('geometry') > 0
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         if not self._loaded:
             self.load()
 
         app.window.meshManager.unload()
 
+    async def hide(self):
+        return True
+
     def load(self):
         self._geometryManager = app.window.geometryManager
         self._list.load()
 
-        self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
+        self._geometryManager.selectedActorsChanged.connect(self._applyDisplaySelections)
 
         self._loaded = True
-
-    async def hide(self):
-        self._geometryManager.disableSyncingToDisplay()
-        self._list.clearSelection()
-        self._geometryManager.enableSyncingToDisplay()
-
-        return True
 
     def retranslate(self):
         self._list.retranslate()
@@ -101,6 +97,9 @@ class GeometryPage(StepPage):
         self._menu.removeActionTriggered.connect(self._removeGeometry)
 
     def _executeContextMenu(self, pos):
+        if not self._list.selectedItems():
+            return
+
         if self._locked:
             self._menu.disableEditActions()
         else:
@@ -109,7 +108,8 @@ class GeometryPage(StepPage):
         self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
 
     def _selectedItemsChanged(self):
-        self._geometryManager.selectActors(self._list.selectedIDs())
+        with QSignalBlocker(self._geometryManager):
+            self._geometryManager.selectActors(self._list.selectedIDs())
 
     @qasync.asyncSlot()
     async def _importClicked(self):
@@ -136,13 +136,13 @@ class GeometryPage(StepPage):
             gId = self._dialog.gId()
             volume = app.db.getElement('geometry',  gId)
             self._list.update(gId, volume)
-            self._geometryManager.updateCustomSurfaces(volume, self._list.childSurfaces(gId))
+            self._geometryManager.updateCustomSurfacesByVolume(volume, self._list.childSurfaces(gId))
 
         def updateSurfaces():
             gIds = self._dialog.gIds()
             for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
                 self._list.update(gId, surface)
-                self._geometryManager.updateIndependentSurface(gId, surface)
+                self._geometryManager.updateSurface(gId, surface)
 
         items = self._list.selectedItems()
 
@@ -305,16 +305,11 @@ class GeometryPage(StepPage):
         self._list.add(gId, geometry)
         self._updateNextStepAvailable()
 
-    def _setSelectedGeometries(self, gIds):
-        if not self._locked:
+    def _applyDisplaySelections(self, gIds: list[str]):
+        with QSignalBlocker(self._list):
             self._list.setSelectedItems(gIds)
 
-        self._geometryManager.clearSyncingFromDisplay()
-
     def _enableStep(self):
-        if self._geometryManager is not None:
-            self._geometryManager.startSyncingFromDisplay()
-
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._ui.geometryButtons.setEnabled(True)
 

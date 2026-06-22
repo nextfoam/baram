@@ -45,19 +45,6 @@
             <c1>0</c1>
         </powerLaw>
     </porous>
-    <slidingMesh>
-        <rotatingSpeed>1000</rotatingSpeed>
-        <rotationAxisOrigin>
-            <x>0</x>
-            <y>0</y>
-            <z>0</z>
-        </rotationAxisOrigin>
-        <rotationAxisDirection>
-            <x>0</x>
-            <y>0</y>
-            <z>1</z>
-        </rotationAxisDirection>
-    </slidingMesh>
     <actuatorDisk>
         <diskDirection>
             <x>0</x>

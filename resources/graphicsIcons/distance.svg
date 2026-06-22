@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   xmlns="http://www.w3.org/2000/svg">
+  <path
+     style="fill:none;stroke:#000000;stroke-width:28;stroke-linecap:round;stroke-linejoin:round"
+     d="M 30,237 H 482 V 377 H 30 Z" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 76,237 V 279" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 121,237 V 321" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 166,237 V 279" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 211,237 V 321" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 256,237 V 279" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 301,237 V 321" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 346,237 V 279" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 391,237 V 321" />
+  <path style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:round" d="M 436,237 V 279" />
+</svg>

@@ -90,7 +90,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="constantDensity"/>
+             <widget class="PFloatLineEdit" name="constantDensity"/>
             </item>
             <item row="0" column="1">
              <widget class="QWidget" name="widget_90" native="true">
@@ -147,7 +147,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="boussinesqRho0"/>
+             <widget class="PFloatLineEdit" name="boussinesqRho0"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_13">
@@ -157,7 +157,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="boussinesqT0"/>
+             <widget class="PFloatLineEdit" name="boussinesqT0"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_14">
@@ -167,7 +167,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="boussinesqBeta"/>
+             <widget class="PFloatLineEdit" name="boussinesqBeta"/>
             </item>
            </layout>
           </widget>
@@ -195,7 +195,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="perfectFluidRho0"/>
+             <widget class="PFloatLineEdit" name="perfectFluidRho0"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_19">
@@ -205,7 +205,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="perfectFluidT"/>
+             <widget class="PFloatLineEdit" name="perfectFluidT"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_20">
@@ -215,7 +215,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="perfectFluidBeta"/>
+             <widget class="PFloatLineEdit" name="perfectFluidBeta"/>
             </item>
            </layout>
           </widget>
@@ -237,7 +237,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="constantSpecificHeat"/>
+          <widget class="PFloatLineEdit" name="constantSpecificHeat"/>
          </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_3">
@@ -375,7 +375,7 @@
                 </spacer>
                </item>
                <item row="1" column="3">
-                <widget class="QLineEdit" name="viscosityConstant"/>
+                <widget class="PFloatLineEdit" name="viscosityConstant"/>
                </item>
               </layout>
              </widget>
@@ -454,7 +454,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="sutherlandCoefficient"/>
+                <widget class="PFloatLineEdit" name="sutherlandCoefficient"/>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_6">
@@ -464,7 +464,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="sutherlandTemperature"/>
+                <widget class="PFloatLineEdit" name="sutherlandTemperature"/>
                </item>
               </layout>
              </widget>
@@ -510,7 +510,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="thermalConductivityConstant"/>
+                <widget class="PFloatLineEdit" name="thermalConductivityConstant"/>
                </item>
               </layout>
              </widget>
@@ -584,7 +584,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-304</y>
         <width>272</width>
         <height>442</height>
        </rect>
@@ -598,7 +598,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="molecularWeight"/>
+        <widget class="PFloatLineEdit" name="molecularWeight"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_8">
@@ -608,7 +608,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="criticalTemperature"/>
+        <widget class="PFloatLineEdit" name="criticalTemperature"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_9">
@@ -618,7 +618,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="criticalPressure"/>
+        <widget class="PFloatLineEdit" name="criticalPressure"/>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_10">
@@ -628,7 +628,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="criticalSpecificVolume"/>
+        <widget class="PFloatLineEdit" name="criticalSpecificVolume"/>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_11">
@@ -638,7 +638,7 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="acentricFactor"/>
+        <widget class="PFloatLineEdit" name="acentricFactor"/>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="label_23">
@@ -648,7 +648,7 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QLineEdit" name="tripleTemperature"/>
+        <widget class="PFloatLineEdit" name="tripleTemperature"/>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="label_24">
@@ -658,7 +658,7 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QLineEdit" name="triplePressure"/>
+        <widget class="PFloatLineEdit" name="triplePressure"/>
        </item>
        <item row="7" column="0">
         <widget class="QLabel" name="saturationPressureLabel">
@@ -682,7 +682,7 @@
         </widget>
        </item>
        <item row="9" column="1">
-        <widget class="QLineEdit" name="emissivity"/>
+        <widget class="PFloatLineEdit" name="emissivity"/>
        </item>
        <item row="10" column="0">
         <widget class="QLabel" name="absorptionCoefficientLabel">
@@ -692,7 +692,7 @@
         </widget>
        </item>
        <item row="10" column="1">
-        <widget class="QLineEdit" name="absorptionCoefficient"/>
+        <widget class="PFloatLineEdit" name="absorptionCoefficient"/>
        </item>
        <item row="11" column="0">
         <widget class="QLabel" name="label_27">
@@ -709,7 +709,7 @@
         </widget>
        </item>
        <item row="12" column="1">
-        <widget class="QLineEdit" name="boilingTemperature"/>
+        <widget class="PFloatLineEdit" name="boilingTemperature"/>
        </item>
        <item row="13" column="0">
         <widget class="QLabel" name="label_28">
@@ -719,7 +719,7 @@
         </widget>
        </item>
        <item row="13" column="1">
-        <widget class="QLineEdit" name="virialCoeff"/>
+        <widget class="PFloatLineEdit" name="virialCoeff"/>
        </item>
        <item row="14" column="0">
         <widget class="QLabel" name="label_29">
@@ -729,7 +729,7 @@
         </widget>
        </item>
        <item row="14" column="1">
-        <widget class="QLineEdit" name="standardStateEnthalpy"/>
+        <widget class="PFloatLineEdit" name="standardStateEnthalpy"/>
        </item>
        <item row="15" column="0">
         <widget class="QLabel" name="label_30">
@@ -739,7 +739,7 @@
         </widget>
        </item>
        <item row="15" column="1">
-        <widget class="QLineEdit" name="referenceTemperature"/>
+        <widget class="PFloatLineEdit" name="referenceTemperature"/>
        </item>
        <item row="7" column="1">
         <widget class="Function1ScalarWidget" name="saturationPressure" native="true"/>
@@ -797,15 +797,20 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.pfloat_line_edit</header>
+  </customwidget>
+  <customwidget>
    <class>Function1ScalarWidget</class>
    <extends>QWidget</extends>
    <header>baramFlow.view.setup.models.DPM.function1_widget</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PythonComboBox</class>
-   <extends>QComboBox</extends>
-   <header>widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -813,11 +818,38 @@
   <tabstop>densitySpec</tabstop>
   <tabstop>densityEdit</tabstop>
   <tabstop>constantDensity</tabstop>
+  <tabstop>boussinesqRho0</tabstop>
+  <tabstop>boussinesqT0</tabstop>
+  <tabstop>boussinesqBeta</tabstop>
+  <tabstop>perfectFluidRho0</tabstop>
+  <tabstop>perfectFluidT</tabstop>
+  <tabstop>perfectFluidBeta</tabstop>
   <tabstop>specificHeatSpec</tabstop>
   <tabstop>specificHeatEdit</tabstop>
   <tabstop>constantSpecificHeat</tabstop>
+  <tabstop>transportSpec</tabstop>
+  <tabstop>viscosityConstant</tabstop>
+  <tabstop>viscosityEdit</tabstop>
+  <tabstop>sutherlandCoefficient</tabstop>
+  <tabstop>sutherlandTemperature</tabstop>
+  <tabstop>thermalConductivityConstant</tabstop>
+  <tabstop>thermalConductivityEdit</tabstop>
+  <tabstop>molecularWeight</tabstop>
+  <tabstop>criticalTemperature</tabstop>
+  <tabstop>criticalPressure</tabstop>
+  <tabstop>criticalSpecificVolume</tabstop>
+  <tabstop>acentricFactor</tabstop>
+  <tabstop>tripleTemperature</tabstop>
+  <tabstop>triplePressure</tabstop>
+  <tabstop>emissivity</tabstop>
+  <tabstop>absorptionCoefficient</tabstop>
+  <tabstop>boilingTemperature</tabstop>
+  <tabstop>virialCoeff</tabstop>
+  <tabstop>standardStateEnthalpy</tabstop>
+  <tabstop>referenceTemperature</tabstop>
   <tabstop>ok</tabstop>
   <tabstop>cancel</tabstop>
+  <tabstop>otherPropertiesContainer</tabstop>
  </tabstops>
  <resources/>
  <connections>

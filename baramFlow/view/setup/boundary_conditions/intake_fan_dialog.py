@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from uuid import UUID, uuid4
+from uuid import UUID
 import qasync
 
 from PySide6.QtCore import Qt
@@ -10,11 +10,14 @@ from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import TrackedData
+from baramFlow.base.boundary.boundary_patch import IntakeFanUpdate
+from baramFlow.base.file_data_manager import TableDataForFileDB
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -31,6 +34,7 @@ class IntakeFanDialog(ResizableDialog):
         self._fanCurveName: UUID
         self._fanCurve = TrackedData()
 
+        self._bcid = bcid
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
@@ -50,7 +54,7 @@ class IntakeFanDialog(ResizableDialog):
         event.ignore()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
             event.ignore()
         else:
             super().keyPressEvent(event)
@@ -71,33 +75,35 @@ class IntakeFanDialog(ResizableDialog):
 
         # ToDo: Add validation for other parameters
 
-        writer = CoreDBWriter()
-        writer.append(self._xpath + '/pressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
+        try:
+            writer = CoreDBWriter()
 
-        if self._fanCurve.isModified():
-            self._fanCurveName = uuid4()
-            writer.append(self._xpath + '/fanCurveName', str(self._fanCurveName), self.tr("Fan Curve Name"))
+            if not self._turbulenceWidget.appendToWriter(writer):
+                return
 
-        if not self._turbulenceWidget.appendToWriter(writer):
+            if not self._temperatureWidget.appendToWriter(writer):
+                return
+
+            if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
+                return
+
+            if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+                return
+
+            if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
+                return
+
+            data = IntakeFanUpdate(
+                turbulence=self._turbulenceWidget.data(),
+                pressure=self._ui.totalPressure.pFloat(self.tr("Total Pressure")),
+                fanCurve=TableDataForFileDB(data=self._fanCurve.data()) if self._fanCurve.isModified() else None)
+
+            BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        if not self._temperatureWidget.appendToWriter(writer):
-            return
-
-        if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
-            return
-
-        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
-            return
-
-        if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
-            return
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            self.accept()
+        self.accept()
 
     @qasync.asyncSlot()
     async def _reject(self):

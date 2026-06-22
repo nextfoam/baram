@@ -7,7 +7,8 @@ from baramFlow.base.model.model import DPMParticleType
 from baramFlow.openfoam.dictionary_helper import DictionaryHelper
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT, MaterialType, DensitySpecification, Phase, SpecificHeatSpecification, TransportSpecification
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT, MaterialType, Phase
+from baramFlow.base.material.constants import DensitySpecification, SpecificHeatSpecification, TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB

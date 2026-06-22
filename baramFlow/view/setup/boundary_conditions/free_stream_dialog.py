@@ -3,12 +3,16 @@
 
 import qasync
 
-from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
+from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
+from baramFlow.base.boundary.boundary_patch import FreeStreamUpdate
+from baramFlow.base.boundary.free_stream import FlowDirection, FreeStream
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
+from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 from .free_stream_dialog_ui import Ui_FreeStreamDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -22,6 +26,7 @@ class FreeStreamDialog(ResizableDialog):
         self._ui = Ui_FreeStreamDialog()
         self._ui.setupUi(self)
 
+        self._bcid = bcid
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._turbulenceWidget = None
@@ -47,55 +52,50 @@ class FreeStreamDialog(ResizableDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
-        path = self._xpath + self.RELATIVE_XPATH
+        try:
+            specificationMethod = self._ui.specificationMethod.currentData()
+            flowDirection = FlowDirection(specificationMethod=specificationMethod)
+            if specificationMethod == DirectionSpecificationMethod.DIRECT:
+                flowDirection.flowDirection = Vector(x=PFloat(self._ui.flowDirectionX.text(), self.tr('Flow Direction')),
+                                                     y=PFloat(self._ui.flowDirectionY.text(), self.tr('Flow Direction')),
+                                                     z=PFloat(self._ui.flowDirectionZ.text(), self.tr('Flow Direction')))
+            else:
+                flowDirection.dragDirection = Vector(x=PFloat(self._ui.dragDirectionX.text(), self.tr('Drag Direction')),
+                                                     y=PFloat(self._ui.dragDirectionY.text(), self.tr('Drag Direction')),
+                                                     z=PFloat(self._ui.dragDirectionZ.text(), self.tr('Drag Direction')))
+                flowDirection.liftDirection = Vector(x=PFloat(self._ui.liftDirectionX.text(), self.tr('Lift Direction')),
+                                                     y=PFloat(self._ui.liftDirectionY.text(), self.tr('Lift Direction')),
+                                                     z=PFloat(self._ui.liftDirectionZ.text(), self.tr('Lift Direction')))
+                flowDirection.angleOfAttack = PFloat(self._ui.AoA.text(), self.tr('Angle of Attack'))
+                flowDirection.angleOfSideslip = PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip'))
 
-        writer = CoreDBWriter()
+            writer = CoreDBWriter()
 
-        specificationMethod = self._ui.specificationMethod.currentData()
-        writer.append(path + '/flowDirection/specificationMethod', specificationMethod.value, None)
-        if specificationMethod == DirectionSpecificationMethod.DIRECT:
-            writer.append(path + '/flowDirection/flowDirection/x', self._ui.flowDirectionX.text(),
-                          self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/flowDirection/y', self._ui.flowDirectionY.text(),
-                          self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/flowDirection/z', self._ui.flowDirectionZ.text(),
-                          self.tr('Flow Direction'))
-        else:
-            writer.append(path + '/flowDirection/dragDirection/x', self._ui.dragDirectionX.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/dragDirection/y', self._ui.dragDirectionY.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/dragDirection/z', self._ui.dragDirectionZ.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/liftDirection/x', self._ui.liftDirectionX.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/liftDirection/y', self._ui.liftDirectionY.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/liftDirection/z', self._ui.liftDirectionZ.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
-            writer.append(path + '/flowDirection/angleOfSideslip', self._ui.AoS.text(), self.tr('Angle of Sideslip'))
+            if not self._turbulenceWidget.appendToWriter(writer):
+                return
 
-        writer.append(path + '/speed', self._ui.speed.text(), self.tr('Speed'))
-        writer.append(path + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
+            if not self._temperatureWidget.appendToWriter(writer):
+                return
 
-        if not self._turbulenceWidget.appendToWriter(writer):
+            if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+                return
+
+            if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
+                return
+
+            data = FreeStreamUpdate(
+                freeStream=FreeStream(
+                    flowDirection=flowDirection,
+                    speed=str(PFloat(self._ui.speed.text(), self.tr('Speed'))),
+                    pressure=str(PFloat(self._ui.pressure.text(), self.tr('Pressure')))),
+                turbulence=self._turbulenceWidget.data())
+
+            BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        if not self._temperatureWidget.appendToWriter(writer):
-            return
-
-        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
-            return
-
-        if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
-            return
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            self.accept()
+        self.accept()
 
     def _load(self):
         db = coredb.CoreDB()

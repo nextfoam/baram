@@ -4,6 +4,7 @@
 import qasync
 from PySide6.QtWidgets import QDialog, QWidget, QVBoxLayout
 
+from app_properties import meshAppProperties
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_widget import NewProjectWidget
 from widgets.selector_dialog import SelectorDialog, SelectorItem
@@ -21,7 +22,10 @@ class Export2DPlaneDialog(QDialog):
         self._ui = Ui_Export2DPlaneDialog()
         self._ui.setupUi(self)
 
-        self._pathWidget = NewProjectWidget(self._ui.path, suffix=app.properties.exportSuffix)
+        self._pathWidget = NewProjectWidget(self._ui.path, suffix=meshAppProperties.exportSuffix)
+
+        self.setWindowTitle(self.tr('Export as 2D Plane {0} Project').format(meshAppProperties.flowAppName))
+        self._ui.run.setText(self.tr('Run {0} on Exported Project').format(meshAppProperties.flowAppName))
 
         self._regionWidgets = []
 

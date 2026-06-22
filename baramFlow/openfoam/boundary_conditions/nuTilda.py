@@ -58,8 +58,9 @@ class NuTilda(BoundaryCondition):
                 BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                 BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                 BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.CYCLIC_ACMI.value:         (lambda: self._constructCyclicACMI()),
                 BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
-            }.get(type_)()
+            }.get(type_, lambda: None)()
 
         return field
 

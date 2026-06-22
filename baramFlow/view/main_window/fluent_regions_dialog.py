@@ -167,7 +167,7 @@ class FluentRegionsDialog(QDialog):
         self._columns[1].removeButton().hide()
 
     def _connectSignalsSlots(self):
-        self._ui.addRegion.clicked.connect(self._addColumn)
+        self._ui.addRegion.clicked.connect(lambda: self._addColumn())
         self._ui.ok.clicked.connect(self._accept)
 
     def _addColumn(self, phase='fluid'):

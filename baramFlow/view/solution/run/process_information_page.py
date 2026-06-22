@@ -17,7 +17,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from PySide6.QtWidgets import QFileDialog
 
-from baramFlow.openfoam.file_system import FileSystem
+from app_properties import flowAppProperties
 from libbaram.openfoam.constants import Directory
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
@@ -30,6 +30,7 @@ from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import SolverNotFound
 from baramFlow.openfoam.system.control_dict import ControlDict
 from baramFlow.openfoam.system.fv_options import FvOptions
@@ -258,7 +259,8 @@ class ProcessInformationPage(ContentPage):
         if platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin():
             # Symbolic link requires administrator permission on Windows platform
             await AsyncMessageBox().warning(
-                self, self.tr('Permission Error'), self.tr('Run BARAM as administrator to enter batch mode'))
+                self, self.tr('Permission Error'),
+                self.tr('Run {0} as administrator to enter batch mode').format(flowAppProperties.fullName))
             return
 
         self._setRunningMode(RunningMode.BATCH_RUNNING_MODE)

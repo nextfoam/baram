@@ -37,11 +37,11 @@ class SurfaceRefinementDialog(QDialog):
         self._yCellSize = None
         self._zCellSize = None
 
-        self._ui.minimumLevel.setValidator(QIntValidator(0, 10))
-        self._ui.maximumLevel.setValidator(QIntValidator(1, 10))
-        self._ui.featureEdgeRefinementLevel.setValidator(QIntValidator(0, 10))
+        self._ui.minimumLevel.setValidator(QIntValidator(0, 100))
+        self._ui.maximumLevel.setValidator(QIntValidator(1, 100))
+        self._ui.featureEdgeRefinementLevel.setValidator(QIntValidator(0, 100))
         self._ui.curvatureNumberOfCells.setValidator(QIntValidator())
-        self._ui.curvatureMaximumCellLevel.setValidator(QIntValidator(1, 10))
+        self._ui.curvatureMaximumCellLevel.setValidator(QIntValidator(1, 100))
         self._ui.curvatureMinimumRadius.setValidator(QDoubleValidator())
 
         self._xCellSize, self._yCellSize, self._zCellSize = app.window.geometryManager.getCellSize()

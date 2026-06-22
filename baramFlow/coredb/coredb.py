@@ -14,6 +14,7 @@ from xmlschema.names import XSD_DOUBLE, XSD_MIN_INCLUSIVE, XSD_MAX_INCLUSIVE, XS
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
+from baramFlow.base.event_bus import EventBus
 import resource_rc
 
 from resources import resource
@@ -93,6 +94,8 @@ class _CoreDB(object):
         self._xmlParser = etree.XMLParser(schema=self._xmlSchema)
 
         self._xmlTree = None
+
+        EventBus().onConfigChanged.connect(self.increaseConfigCount, self)
 
     def __enter__(self):
         logger.debug('enter')
@@ -539,7 +542,7 @@ class _CoreDB(object):
 
         return index
 
-    def getCellZones(self, rname: str) -> list[(int, str)]:
+    def getCellZones(self, rname: str) -> list[tuple[int, str]]:
         elements = self._xmlTree.findall(f'/regions/region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
@@ -785,5 +788,9 @@ class _CoreDB(object):
         return self._xmlTree.findall(xpath, namespaces=nsmap)
 
     def increaseConfigCount(self):
-        self._xmlSchema.assertValid(self._xmlTree)
+        try:
+            self._xmlSchema.assertValid(self._xmlTree)
+        except Exception as e:
+            raise ValueError(str(e))
+
         self._configCount += 1

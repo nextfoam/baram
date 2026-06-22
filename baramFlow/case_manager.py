@@ -7,6 +7,7 @@ from PySide6.QtCore import Signal, QTimer, QObject
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
+from baramFlow.services.user_parameters import UserParameters
 from libbaram.utils import rmtree
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import launchSolver, runParallelUtility, STDOUT_FILE_NAME, STDERR_FILE_NAME
@@ -70,6 +71,7 @@ class Case(QObject):
 
     def load(self):
         CoreDBReader().setParameters(self._parameters)
+        UserParameters().setParameters(self._parameters)
         FileSystem.setCaseRoot(self._path)
 
     def close(self):

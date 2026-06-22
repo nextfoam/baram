@@ -6,9 +6,9 @@ from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from baramFlow.base.material.database import materialsBase
 from baramFlow.base.material.material import Phase, MaterialType
-from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.services.material.material_service import MaterialService
 from widgets.async_message_box import AsyncMessageBox
 from .material_add_dialog_ui import Ui_MaterialAddDialog
 from .material_database_dialog import MaterialDatabaseDialog
@@ -58,7 +58,7 @@ class MaterialAddDialog(QDialog):
         self._ui.addMaterials.clicked.connect(self._addMaterials)
 
     def _load(self):
-        phase = None if self._mixture is None else MaterialDB.getPhase(self._mixture).value
+        phase = None if self._mixture is None else MaterialDB.getPhase(self._mixture)
 
         self._ui.list.clear()
         for name, values in materialsBase.getMaterials().items():
@@ -103,8 +103,7 @@ class MaterialAddDialog(QDialog):
 
             species.append(item.name())
 
-        with coredb.CoreDB() as db:
-            self._added = [MaterialDB.addMixture(db, 'mixture', species)]
+        self._added = [MaterialService.addMixture(species)]
 
         self._type = MaterialType.MIXTURE
 
@@ -117,12 +116,9 @@ class MaterialAddDialog(QDialog):
 
         self._added = []
 
-        with coredb.CoreDB() as db:
-            if self._type == MaterialType.NONMIXTURE:
-                for item in materials:
-                    self._added.append(MaterialDB.addNonMixture(db, item.name()))
-            elif self._type == MaterialType.SPECIE:
-                for item in materials:
-                    self._added.append(MaterialDB.addSpecie(db, item.name(), self._mixture))
+        if self._type == MaterialType.NONMIXTURE:
+            self._added = MaterialService.addNonMixtures([item.name() for item in materials])
+        elif self._type == MaterialType.SPECIE:
+            self._added = MaterialService.addSpecies([item.name() for item in materials], self._mixture)
 
         self.accept()

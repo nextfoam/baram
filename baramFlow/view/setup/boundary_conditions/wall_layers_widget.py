@@ -7,13 +7,13 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout
 
-from baramFlow.base.boundary.boundary import TemperatureLayers, TemperatureLayer
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
+from widgets.pfloat_line_edit import PFloatLineEdit
 
+from baramFlow.base.boundary.boundary import TemperatureLayers, TemperatureLayer
 from baramFlow.coredb import coredb
 from baramFlow.view.setup.boundary_conditions.wall_layers_widget_ui import Ui_WallLayersWidget
-from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 
 
 class Column(IntEnum):
@@ -42,15 +42,16 @@ class WallLayerItem(QObject):
 
         self._widgets = [
             QLabel(str(no)),
-            BatchableFloatEdit(thickness),
-            BatchableFloatEdit(thermalConductivity),
+            PFloatLineEdit(thickness),
+            PFloatLineEdit(thermalConductivity),
             removeButton]
 
     def thickness(self):
-        return self.widget(Column.THICKNESS).text().strip()
+        return self.widget(Column.THICKNESS).pFloat(self.tr('Thickness of Wall Layer {}').format(self.no()))
 
     def thermalConductivity(self):
-        return self.widget(Column.THERMAL_CONDUCTIVITY).text().strip()
+        return self.widget(Column.THERMAL_CONDUCTIVITY).pFloat(
+            self.tr('Thermal Conductivity of Wall Layer {}').format(self.no()))
 
     def widget(self, column):
         return self._widgets[column]
@@ -69,10 +70,6 @@ class WallLayerItem(QObject):
     def decreaseNO(self):
         if not self._hidden:
             self._widgets[Column.NO].setText(str(self.no() - 1))
-
-    def validate(self):
-        self.widget(Column.THICKNESS).validate(self.tr('Wall Layer Thickness'))
-        self.widget(Column.THERMAL_CONDUCTIVITY).validate(self.tr('Wall Layer Thermal Conductivity'))
 
 
 class WallLayersWidget(QWidget):
@@ -134,13 +131,8 @@ class WallLayersWidget(QWidget):
         db.setValue(xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
         db.setValue(xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
 
-    def validate(self):
-        for row in self._rows:
-            if not row.isHidden():
-                row.validate()
-
     def _connectSignalsSlots(self):
-        self._ui.addWallLayer.clicked.connect(self.addRow)
+        self._ui.addWallLayer.clicked.connect(lambda: self.addRow('0.001', '10'))
 
     def _removeRow(self, index):
         self._rows[index].hide()
@@ -175,7 +167,3 @@ class WallLayersBox(QGroupBox):
             await self._layers.updateDB(db, xpath)
         else:
             db.setAttribute(xpath, 'disabled', 'true')
-
-    def validate(self):
-        if self.isChecked():
-            self._layers.validate()

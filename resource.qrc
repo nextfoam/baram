@@ -10,7 +10,7 @@
     <file alias="export2D.png">resources/images/exoirt2D.png</file>
   </qresource>
   <qresource prefix="graphicsIcons">
-    <file alias="distance.png">resources/graphicsIcons/distance.png</file>
+    <file alias="distance.svg">resources/graphicsIcons/distance.svg</file>
     <file alias="axesOff.png">resources/graphicsIcons/axesOff.png</file>
     <file alias="axesOn.png">resources/graphicsIcons/axesOn.png</file>
     <file alias="cubeAxesOff.png">resources/graphicsIcons/cubeAxesOff.png</file>
@@ -34,7 +34,7 @@
     <file alias="plusZ.png">resources/graphicsIcons/plusZ.png</file>
     <file alias="2d-label-icon.svg">resources/graphicsIcons/2d-label-icon.svg</file>
     <file alias="alignAxis.svg">resources/graphicsIcons/alignAxis.svg</file>
-    <file alias="ruler.ico">resources/graphicsIcons/ruler.ico</file>
+    <file alias="ruler.svg">resources/graphicsIcons/ruler.svg</file>
     <file alias="planeHandle.svg">resources/graphicsIcons/planeHandle.svg</file>
     <file alias="volume.svg">resources/graphicsIcons/volume.svg</file>
   </qresource>

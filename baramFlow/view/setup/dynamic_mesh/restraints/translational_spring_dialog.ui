@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TranslationalSpringDialog</class>
+ <widget class="QDialog" name="TranslationalSpringDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>250</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Translational Spring</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Restraint Parameters</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="attachmentPointLabel">
+        <property name="text">
+         <string>Attachment Point (m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="VectorWidget" name="attachmentPoint"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="anchorPointLabel">
+        <property name="text">
+         <string>Anchor Point (m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="VectorWidget" name="anchorPoint"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="restLengthLabel">
+        <property name="text">
+         <string>Rest Length (m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="PFloatLineEdit" name="restLength"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="springConstantLabel">
+        <property name="text">
+         <string>Spring Constant (N/m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="PFloatLineEdit" name="springConstant"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="dampingConstantLabel">
+        <property name="text">
+         <string>Damping Constant (Ns/m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="PFloatLineEdit" name="dampingConstant"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VectorWidget</class>
+   <extends>QWidget</extends>
+   <header>baramFlow.view.widgets.vector_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.pfloat_line_edit</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

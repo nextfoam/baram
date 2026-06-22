@@ -8,8 +8,9 @@ from io import StringIO
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import VTK_POLY_DATA
-from vtkmodules.vtkFiltersCore import vtkFeatureEdges
+from vtkmodules.vtkFiltersCore import vtkFeatureEdges, vtkPolyDataNormals
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
+from vtkmodules.vtkFiltersParallel import vtkIntegrateAttributes
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 
@@ -145,6 +146,22 @@ class ActorInfo:
     def visibility(self, visibility):
         self._visibility = visibility
 
+    def getZoneAverageDirection(self):
+        if self._dataSet.GetDataObjectType() == VTK_POLY_DATA:
+            normals = vtkPolyDataNormals()
+            normals.SetInputData(self._dataSet)
+            normals.ComputeCellNormalsOn()
+            normals.ComputePointNormalsOff()
+            normals.Update()
+
+            integrate = vtkIntegrateAttributes()
+            integrate.SetInputData(normals.GetOutput())
+            integrate.SetDivideAllCellDataByVolume(True)
+            integrate.Update()
+
+            result = integrate.GetOutput()
+
+            return  result.GetCellData().GetArray("Normals").GetTuple3(0)
 
 class RenderingModel(QObject):
     def __init__(self):
@@ -206,6 +223,8 @@ class MeshModel(RenderingModel):
     def actorInfo(self, id_):
         if id_ in self._actorInfos:
             return self._actorInfos[id_]
+
+        return None
 
     def currentId(self):
         return self._currentId

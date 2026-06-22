@@ -6,7 +6,7 @@ from enum import IntEnum, auto
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 
-from baramMesh.rendering.actor_info import ActorType
+from baramMesh.rendering.actor_info import ActorInfo, ActorType
 
 
 class Column(IntEnum):
@@ -29,9 +29,8 @@ class DisplayItem(QTreeWidgetItem):
         ActorType.MESH: QCoreApplication.translate('DisplayControl', 'Mesh')
     }
 
-    def __init__(self, actorInfo):
+    def __init__(self, actorInfo: ActorInfo):
         super().__init__()
-        self._actorInfo = None
         self._colorWidget = QLabel()
 
         self._actorInfo = actorInfo

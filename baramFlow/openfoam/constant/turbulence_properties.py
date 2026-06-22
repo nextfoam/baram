@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.base.material.material import TransportSpecification
+from baramFlow.base.material.constants import TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.numerical_db import NumericalDB
@@ -48,6 +48,8 @@ class TurbulenceProperties(DictionaryFile):
             subModel = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
+        elif self._model == TurbulenceModel.TRANSITION_SST:
+            self._constructRASproperties('kOmegaSSTLM')
         elif self._model == TurbulenceModel.DES:
             self._constructDESProperties()
         elif self._model == TurbulenceModel.LES:

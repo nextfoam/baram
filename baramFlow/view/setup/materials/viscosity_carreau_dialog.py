@@ -2,65 +2,50 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QWidget
 
 from widgets.async_message_box import AsyncMessageBox
-from widgets.validation.validation import FormValidator
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.material_schema import CarreauViscosity
+from baramFlow.base.material.transport import CarreauViscosity
 from .viscosity_carreau_dialog_ui import Ui_ViscosityCarreauDialog
 
 
 class ViscosityCarreauDialog(QDialog):
-    def __init__(self, parent, xpath, data):
+    dataAccepted = Signal(CarreauViscosity)
+
+    def __init__(self, parent: QWidget, data: CarreauViscosity | None):
         super().__init__(parent)
         self._ui = Ui_ViscosityCarreauDialog()
         self._ui.setupUi(self)
 
+        self._data: CarreauViscosity = data or CarreauViscosity()
+
         self._connectSignalsSlots()
-
-        self._xpath = xpath + '/transport/carreau'
-        self._load(data)
-
-    def getValues(self):
-        return CarreauViscosity(
-            zeroShearViscosity=self._ui.zeroShearViscosity.text(),
-            infiniteShearViscosity=self._ui.infiniteShearViscosity.text(),
-            relaxationTime=self._ui.relaxationTime.text(),
-            powerLawIndex=self._ui.powerLawIndex.text(),
-            linearityDeviation=self._ui.linearityDeviation.text()
-        )
+        self._load()
 
     def _connectSignalsSlots(self):
         self._ui.ok.clicked.connect(self._accept)
 
     @qasync.asyncSlot()
     async def _accept(self):
-        validator = FormValidator()
-        validator.addRequiredValidation(self._ui.zeroShearViscosity, self.tr('Zero Shear Viscosity'))
-        validator.addRequiredValidation(self._ui.infiniteShearViscosity, self.tr('Infinite Shear Viscosity'))
-        validator.addRequiredValidation(self._ui.relaxationTime, self.tr('Relaxation Time'))
-        validator.addRequiredValidation(self._ui.powerLawIndex, self.tr('Power Law Index'))
-        validator.addRequiredValidation(self._ui.linearityDeviation, self.tr('Linearity Deviation'))
+        try:
+            self.dataAccepted.emit(
+                CarreauViscosity(
+                    zeroShearViscosity=self._ui.zeroShearViscosity.pFloat(self.tr('Zero Shear Viscosity')),
+                    infiniteShearViscosity=self._ui.infiniteShearViscosity.pFloat(self.tr('Infinite Shear Viscosity')),
+                    relaxationTime=self._ui.relaxationTime.pFloat(self.tr('Relaxation Time')),
+                    powerLawIndex=self._ui.powerLawIndex.pFloat(self.tr('Power Law Index')),
+                    linearityDeviation=self._ui.linearityDeviation.pFloat(self.tr('Linearity Deviation'))))
 
-        valid, msg = validator.validate()
-        if valid:
             self.accept()
-        else:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return
 
-    def _load(self, data):
-        if data is None:
-            db = coredb.CoreDB()
-            self._ui.zeroShearViscosity.setText(db.getValue(self._xpath + '/zeroShearViscosity'))
-            self._ui.infiniteShearViscosity.setText(db.getValue(self._xpath + '/infiniteShearViscosity'))
-            self._ui.relaxationTime.setText(db.getValue(self._xpath + '/relaxationTime'))
-            self._ui.powerLawIndex.setText(db.getValue(self._xpath + '/powerLawIndex'))
-            self._ui.linearityDeviation.setText(db.getValue(self._xpath + '/linearityDeviation'))
-        else:
-            self._ui.zeroShearViscosity.setText(data.zeroShearViscosity)
-            self._ui.infiniteShearViscosity.setText(data.infiniteShearViscosity)
-            self._ui.relaxationTime.setText(data.relaxationTime)
-            self._ui.powerLawIndex.setText(data.powerLawIndex)
-            self._ui.linearityDeviation.setText(data.linearityDeviation)
+    def _load(self):
+        self._ui.zeroShearViscosity.setPFloat(self._data.zeroShearViscosity)
+        self._ui.infiniteShearViscosity.setPFloat(self._data.infiniteShearViscosity)
+        self._ui.relaxationTime.setPFloat(self._data.relaxationTime)
+        self._ui.powerLawIndex.setPFloat(self._data.powerLawIndex)
+        self._ui.linearityDeviation.setPFloat(self._data.linearityDeviation)

@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from dataclasses import field as dataClassField
+
 from enum import Enum
 
-from baramFlow.base.base import Vector, SimpleSheetData
+from baramFlow.base.base import SimpleSheetData
 from baramFlow.base.base import SpatialVectorList, TemporalScalarList, TemporalVectorList
-from baramFlow.base.boundary.boundary import BoundaryBase
-from baramFlow.base.boundary.temperature import BoundaryTemperature
+from baramFlow.base.base import Vector
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.libdb import E
 
 
 class VelocitySpecification(Enum):
@@ -28,25 +30,64 @@ class CoordinateSystem(Enum):
 
 
 @dataclass
+class CartesianTemporalDistribution:
+    piecewiseLinear: TemporalVectorList = dataClassField(default_factory=TemporalVectorList.default)
+
+    def toElement(self):
+        return E('temporalDistribution',
+                    E('specification', 'piecewiseLinear'),
+                    self.piecewiseLinear.toElement('piecewiseLinear'))
+
+
+@dataclass
 class VelocityComponentCartesian:
-    profile: VelocityProfile
-    constant: Vector = None
-    spatialDistribution: SpatialVectorList = None
-    temporalDistribution: TemporalVectorList = None
+    profile: VelocityProfile                                = VelocityProfile.CONSTANT
+    constant: Vector                                        = dataClassField(default_factory=Vector.xUnit)
+    spatialDistribution: SpatialVectorList                  = dataClassField(default_factory=SpatialVectorList.default)
+    temporalDistribution: CartesianTemporalDistribution     = dataClassField(default_factory=CartesianTemporalDistribution)
+
+    def toElement(self):
+        return E('component',
+                    E('profile', self.profile),
+                    self.constant.toElement('constant'),
+                    self.spatialDistribution.toElement('spatialDistribution'),
+                    self.temporalDistribution.toElement())
+
+
+@dataclass
+class MagnitudeTemporalDistribution:
+    piecewiseLinear: TemporalScalarList = dataClassField(default_factory=TemporalScalarList.default)
+
+    def toElement(self):
+        return E('temporalDistribution',
+                 E('specification', 'piecewiseLinear'),
+                 self.piecewiseLinear.toElement('piecewiseLinear'))
 
 
 @dataclass
 class VelocityMagnitude:
-    profile: VelocityProfile
-    constant: str = None
-    temporalDistribution: TemporalScalarList = None
+    profile: VelocityProfile                            = VelocityProfile.CONSTANT
+    constant: str                                       = '1'
+    temporalDistribution: MagnitudeTemporalDistribution = dataClassField(default_factory=MagnitudeTemporalDistribution)
+
+    def toElement(self):
+        return E('magnitudeNormal',
+                    E('profile', self.profile),
+                    E('constant', self.constant),
+                    self.temporalDistribution.toElement())
 
 
 @dataclass
 class LocalCylindricalConstant:
-    axialVelocity: str
-    radialVelocity: str
-    angularSpeed: str
+    axialVelocity: str  = '0'
+    radialVelocity: str = '0'
+    angularSpeed: str   = '0'
+
+    def toElement(self):
+        return E('constant',
+                    E('axialVelocity', self.axialVelocity),
+                    E('radialVelocity', self.radialVelocity),
+                    E('angularSpeed', self.angularSpeed))
 
 
 class LocalCylindricalTemporalDistribution(SimpleSheetData):
@@ -55,22 +96,30 @@ class LocalCylindricalTemporalDistribution(SimpleSheetData):
 
 @dataclass
 class VelocityLocalCylindrical:
-    profile: VelocityProfile
-    axisOrigin: Vector
-    axisDirection: Vector
-    constant: LocalCylindricalConstant = None
-    temporalDistribution: LocalCylindricalTemporalDistribution = None
+    profile: VelocityProfile                                    = VelocityProfile.CONSTANT
+    constant: LocalCylindricalConstant                          = dataClassField(default_factory=LocalCylindricalConstant)
+    temporalDistribution: LocalCylindricalTemporalDistribution  = dataClassField(default_factory=LocalCylindricalTemporalDistribution.default)
+    axisOrigin: Vector                                          = dataClassField(default_factory=Vector.zero)
+    axisDirection: Vector                                       = dataClassField(default_factory=Vector.zUnit)
+
+    def toElement(self):
+        return E('localCylindrical',
+                    E('profile', self.profile),
+                    self.constant.toElement(),
+                    self.temporalDistribution.toElement('temporalDistribution'),
+                    self.axisOrigin.toElement('axisOrigin'),
+                    self.axisDirection.toElement('axisDirection'))
 
 
 @dataclass
 class InletVelocity:
-    specificationMethod: VelocitySpecification
-    coordinateSystem: CoordinateSystem
-    component: VelocityComponentCartesian = None
-    magnitude: VelocityMagnitude = None
-    localCylindrical: VelocityLocalCylindrical = None
+    specificationMethod: VelocitySpecification  = VelocitySpecification.MAGNITUDE
+    coordinateSystem: CoordinateSystem          = CoordinateSystem.CARTESIAN
+    component: VelocityComponentCartesian       = dataClassField(default_factory=VelocityComponentCartesian)
+    magnitude: VelocityMagnitude                = dataClassField(default_factory=VelocityMagnitude)
+    localCylindrical: VelocityLocalCylindrical  = dataClassField(default_factory=VelocityLocalCylindrical)
 
-    def updateIn(self, db, bcid):
+    def applyToDB(self, db, bcid):
         xpath = BoundaryDB.getXPath(bcid) + '/velocityInlet/velocity'
 
         db.setValue(xpath + '/specification', self.specificationMethod.value)
@@ -81,9 +130,9 @@ class InletVelocity:
             if self.magnitude.profile == VelocityProfile.CONSTANT:
                 db.setValue(xpath + '/magnitudeNormal/constant', self.magnitude.constant)
             elif self.magnitude.profile == VelocityProfile.TEMPORAL_DISTRIBUTION:
-                if self.magnitude.temporalDistribution is not None:
+                if self.magnitude.temporalDistribution.piecewiseLinear is not None:
                     db.replaceElement(xpath + '/magnitudeNormal/temporalDistribution/piecewiseLinear',
-                                      self.magnitude.temporalDistribution.toElement('piecewiseLinear'))
+                                      self.magnitude.temporalDistribution.piecewiseLinear.toElement('piecewiseLinear'))
         elif self.coordinateSystem == CoordinateSystem.CARTESIAN:
             db.setValue(xpath + '/component/profile', self.component.profile.value)
             if self.component.profile == VelocityProfile.CONSTANT:
@@ -93,9 +142,9 @@ class InletVelocity:
                     db.replaceElement(xpath + '/component/spatialDistribution',
                                       self.component.spatialDistribution.toElement('spatialDistribution'))
             elif self.component.profile == VelocityProfile.TEMPORAL_DISTRIBUTION:
-                if self.component.temporalDistribution is not None:
+                if self.component.temporalDistribution.piecewiseLinear is not None:
                     db.replaceElement(xpath + '/component/temporalDistribution/piecewiseLinear',
-                                      self.component.temporalDistribution.toElement('piecewiseLinear'))
+                                      self.component.temporalDistribution.piecewiseLinear.toElement('piecewiseLinear'))
         else:
             db.setValue(xpath + '/localCylindrical/profile', self.localCylindrical.profile.value)
             if self.localCylindrical.profile == VelocityProfile.CONSTANT:
@@ -115,14 +164,21 @@ class InletVelocity:
             db.replaceElement(xpath + '/localCylindrical/axisDirection',
                               self.localCylindrical.axisDirection.toElement('axisDirection'))
 
+    def toElement(self):
+        return E('velocity',
+                    E('specification', self.specificationMethod),
+                    E('coordinateSystem', self.coordinateSystem),
+                    self.component.toElement(),
+                    self.magnitude.toElement(),
+                    self.localCylindrical.toElement())
+
 
 @dataclass
-class VelocityInletCondition(BoundaryBase):
-    velocity: InletVelocity = None
-    temperature: BoundaryTemperature = None
+class VelocityInlet:
+    velocity: InletVelocity = dataClassField(default_factory=InletVelocity)
 
-    def _updateTypeConditionIn(self, db):
-        self.velocity.updateIn(db, self.bcid)
+    def applyToDB(self, db, bcid):
+        self.velocity.applyToDB(db, bcid)
 
-        if self.temperature is not None:
-            self.temperature.updateIn(db, self.bcid)
+    def toElement(self):
+        return self.velocity.toElement()

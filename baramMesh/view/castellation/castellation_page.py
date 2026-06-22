@@ -47,7 +47,7 @@ class CastellationPage(StepPage):
 
         self._connectSignalsSlots()
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.load()
         self.updateWorkingStatus()
 
@@ -214,8 +214,9 @@ class CastellationPage(StepPage):
 
     def _removeSurfaceRefinement(self, groupId):
         self._db.removeElement('castellation/refinementSurfaces', groupId)
-        self._db.updateElements('geometry', 'castellationGroup', None,
-                                       lambda i, e: e['castellationGroup'] == groupId)
+        self._db.updateElements(
+            'geometry', 'castellationGroup', None,
+            lambda i, e: e['castellationGroup'] == groupId and e['gType'] == GeometryType.SURFACE.value)
 
         self._ui.surfaceRefinement.removeItem(groupId)
 
@@ -236,8 +237,9 @@ class CastellationPage(StepPage):
 
     def _removeVolumeRefinement(self, groupId):
         self._db.removeElement('castellation/refinementVolumes', groupId)
-        self._db.updateElements('geometry', 'castellationGroup', None,
-                                       lambda i, e: e['castellationGroup'] == groupId)
+        self._db.updateElements(
+            'geometry', 'castellationGroup', None,
+            lambda i, e: e['castellationGroup'] == groupId and e['gType'] == GeometryType.VOLUME.value)
 
         self._ui.volumeRefinement.removeItem(groupId)
 

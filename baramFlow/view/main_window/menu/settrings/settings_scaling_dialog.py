@@ -3,6 +3,9 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from analytics import Analytics
+from analytics.events import UI_SCALING_CHANGED
+
 from baramFlow.coredb.app_settings import AppSettings
 from .settings_scaling_dialog_ui import Ui_SettingScalingDialog
 
@@ -22,6 +25,7 @@ class SettingScalingDialog(QDialog):
 
         preScaling = AppSettings.getUiScaling()
         if preScaling != scaling:
+            Analytics().capture(UI_SCALING_CHANGED, {'from': preScaling, 'to': scaling})
             QMessageBox.information(self, self.tr("Change UI language"), self.tr('Requires UI restart'))
             AppSettings.updateUiScaling(scaling)
 

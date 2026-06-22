@@ -91,14 +91,14 @@ def handleEnum(builder, value: Enum) -> str:
     return value.value
 
 
-def toStr(builder, value) -> str:
+def handleUUID(builder, value) -> str:
     return str(value)
 
 
 E = ElementMaker(namespace=ns, typemap={
     bool: handle_bool,
     Enum: handleEnum,
-    UUID: toStr
+    UUID: handleUUID
 })
 
 

@@ -4,7 +4,8 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
-from baramFlow.base.material.material import Phase, MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
+from baramFlow.base.material.constants import Phase, MaterialType
+from baramFlow.base.material.constants import SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB

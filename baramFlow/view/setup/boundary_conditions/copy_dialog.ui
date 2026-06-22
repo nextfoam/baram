@@ -16,20 +16,8 @@
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QWidget" name="widget_3" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout">
          <property name="leftMargin">
@@ -44,56 +32,51 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Source Boundary</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="sourceFilter"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="source">
-           <property name="sortingEnabled">
-            <bool>true</bool>
+            <string>Source</string>
            </property>
           </widget>
          </item>
         </layout>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="source">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Select Targets</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QWidget" name="widget_2" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Target Boundaries</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="targetFilter"/>
-         </item>
-         <item>
-          <widget class="QListWidget" name="targets">
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
-           </property>
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Filter</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="targetFilter"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QListWidget" name="targets">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -106,13 +89,13 @@
        <number>0</number>
       </property>
       <item>
-       <spacer name="horizontalSpacer_2">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
+         <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>208</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>

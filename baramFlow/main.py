@@ -21,11 +21,14 @@ from vtkmodules.vtkParallelCore import vtkDummyController, vtkMultiProcessContro
 # noinspection PyUnresolvedReferences
 import resource_rc
 
-from libbaram.mpi import checkMPI, MPIStatus
+from app_properties import flowAppProperties
+from libbaram.mpi import checkMPI, MPIStatus, MPI_PREFIX
 from libbaram.process import getAvailablePhysicalCores
 
+from analytics import Analytics
+from analytics.events import EVENT_LOOP_ERROR
+
 from baramFlow.app import app
-from baramFlow.app_properties import AppProperties
 from baramFlow.app_plug_in import AppPlugIn
 from baramFlow.base.graphic.color_scheme import initializeBaramPresetColorSchemes
 from baramFlow.view.main_window.start_window import Baram
@@ -45,13 +48,19 @@ def handle_exception(eType, eValue, eTraceback):
         return
 
     logger.critical("Uncaught exception", exc_info=(eType, eValue, eTraceback))
+    Analytics().captureException(eValue)
 
 
 sys.excepthook = handle_exception
 
 
 def loop_exception(loop, context):
-    print("exception handling: ", context["exception"])
+    exception = context.get('exception')
+    print("exception handling: ", exception if exception is not None else context.get('message', ''))
+    if exception is not None:
+        Analytics().captureException(exception, {'source': 'event_loop'})
+    else:
+        Analytics().capture(EVENT_LOOP_ERROR, {'message': context.get('message', '')})
     loop.stop()
 
 
@@ -63,18 +72,21 @@ def main():
             message = QApplication.translate('main', 'MPI package NOT available in the system.')
         elif mpiStatus == MPIStatus.LOW_VERSION:
             message = QApplication.translate('main', 'MPI package version low. Recent version required.')
+        elif mpiStatus == MPIStatus.INVALID_PREFIX:
+            message = QApplication.translate(
+                'main', f'Incorrect "$BARAM_MPI_PREFIX" environment variable.<br/>'
+                        f'"{MPI_PREFIX}/mpirun" does NOT exist.')
 
         QMessageBox.information(None, QApplication.translate('main', 'Check MPI'), message)
         return
 
-    app.setupApplication(AppProperties(
-        name='BaramFlow',
-        fullName=QApplication.translate('Main', 'BaramFlow'),
-        iconResource='baramFlow.ico',
-        logoResource='baramFlow.ico',
-        projectSuffix='.bf'
-    ))
+    app.setupApplication(flowAppProperties)
     app.setPlug(AppPlugIn())
+
+    Analytics().configure(
+        app_name=flowAppProperties.name,
+        app_version=flowAppProperties.version,
+        config_dir=AppSettings.settingsPath())
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
@@ -111,6 +123,10 @@ def main():
     initializeBaramPresetColorSchemes()
 
     app.setLanguage(AppSettings.getLanguage())
+
+    if Analytics().ensureConsent():
+        Analytics().init()
+
     background_tasks = set()
 
     baram = Baram()
@@ -122,6 +138,7 @@ def main():
         loop.run_forever()
 
     loop.close()
+    Analytics().shutdown(final=True)
 
 
 if __name__ == '__main__':

@@ -15,6 +15,9 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins, Qt
 from PySide6QtAds import CDockManager, DockWidgetArea
 
+from analytics import Analytics
+from app_properties import meshAppProperties
+
 from libbaram.simple_db.simple_schema import ValidationError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
@@ -32,6 +35,7 @@ from baramMesh.view.widgets.language_dialog import LanugageDialog
 from baramMesh.view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
 from baramMesh.view.menu.help.about_dialog import AboutDialog
 from baramMesh.view.geometry.geometry_manager import GeometryManager
+from widgets.themed_icon import load_themed_icon
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
 from .rendering_tool import RenderingTool
@@ -49,6 +53,15 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
+
+        self._ui.axis.setIcon(load_themed_icon(':/graphicsIcons/originAxes'))
+        self._ui.cubeAxis.setIcon(load_themed_icon(':/graphicsIcons/ruler.svg'))
+        self._ui.ruler.setIcon(load_themed_icon(':/graphicsIcons/distance.svg'))
+        self._ui.perspective.setIcon(load_themed_icon(':/graphicsIcons/2d-label-icon.svg'))
+        self._ui.fit.setIcon(load_themed_icon(':/icons/expand.svg'))
+        self._ui.alignAxis.setIcon(load_themed_icon(':/graphicsIcons/alignAxis.svg'))
+        self._ui.rotate.setIcon(load_themed_icon(':/icons/reload.svg'))
+        self._ui.rotationCenter.setIcon(load_themed_icon(':/graphicsIcons/rotationCenter'))
 
         self._ui.renderingSplitter.setStretchFactor(0, 0)
         self._ui.renderingSplitter.setStretchFactor(1, 1)
@@ -70,15 +83,16 @@ class MainWindow(QMainWindow):
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
-        self._startDialog = ProjectDialog()
+        self._startDialog = None
+        self._setupStartDialog()
         self._dialog = None
 
         self._readyToQuit = False
 
-        self.setWindowIcon(app.properties.icon())
+        self.setWindowIcon(meshAppProperties.icon())
 
-        self._contentLayout = QVBoxLayout(self._ui.content)
-        self._contentLayout.setContentsMargins(0, 0, 0, 0)
+        # OEM variants with analytics disabled don't need this entry.
+        self._ui.actionPrivacySettings.setVisible(Analytics().configured)
 
         self._setupShortcuts()
 
@@ -140,6 +154,23 @@ class MainWindow(QMainWindow):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
 
+    def _setupStartDialog(self):
+        self._startDialog = ProjectDialog()
+        self._startDialog.actionNewSelected.connect(self._actionNew)
+        self._startDialog.actionOpenSelected.connect(self._actionOpen)
+        self._startDialog.actionProjectSelected.connect(self._openProject)
+        self._startDialog.finished.connect(self._startDialogClosed)
+
+    def _returnToStartScreen(self):
+        # A project open/create failed after the previous project was already
+        # closed, leaving no open project. Hide the now-projectless main window
+        # and bring back the start dialog so the user isn't left with a UI that
+        # crashes on every action that touches app.db (which is now None).
+        self.hide()
+        self._setupStartDialog()
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
+
     def _setupShortcuts(self):
         self._ui.actionNew.setShortcut('Ctrl+N')
         self._ui.actionOpen.setShortcut('Ctrl+O')
@@ -164,13 +195,9 @@ class MainWindow(QMainWindow):
         self._ui.actionLanguage.triggered.connect(self._actionLanguage)
         self._ui.actionAbout.triggered.connect(self._actionAbout)
         self._ui.actionTutorials.triggered.connect(self._openTutorials)
+        self._ui.actionPrivacySettings.triggered.connect(self._openPrivacySettings)
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
-
-        self._startDialog.actionNewSelected.connect(self._actionNew)
-        self._startDialog.actionOpenSelected.connect(self._actionOpen)
-        self._startDialog.actionProjectSelected.connect(self._openProject)
-        self._startDialog.finished.connect(self._startDialogClosed)
 
         self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
         self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
@@ -196,7 +223,7 @@ class MainWindow(QMainWindow):
 
     def _actionNew(self):
         self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
-                                        app.properties.projectSuffix)
+                                        meshAppProperties.projectSuffix)
         self._dialog.accepted.connect(self._createProject)
         self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         # QDialog.open() makes the dialog window modal.
@@ -219,7 +246,7 @@ class MainWindow(QMainWindow):
 
     def _actionSaveAs(self):
         self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
-                                        Path(app.settings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+                                        Path(app.settings.getRecentLocation()).resolve(), meshAppProperties.projectSuffix)
         self._dialog.pathSelected.connect(self._saveAs)
         self._dialog.open()
 
@@ -250,33 +277,53 @@ class MainWindow(QMainWindow):
     def _openTutorials(self):
         webbrowser.open('https://baramcfd.org/en/tutorials-en/tutorial-barammesh-en/tutorial-barammesh-en/')
 
+    def _openPrivacySettings(self):
+        Analytics().editConsent(parent=self)
+
     @qasync.asyncSlot()
     async def _createProject(self):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
-        if app.createProject(self._dialog.projectPath()):
-            self._recentFilesMenu.addRecentest(app.project.path)
-            self._projectOpened()
+        try:
+            app.createProject(self._dialog.projectPath())
+        except (OSError, Timeout) as ex:
+            await AsyncMessageBox().information(self, self.tr('Project Creation Error'), str(ex))
+            self._recoverFromMissingProject()
+            return
+
+        self._recentFilesMenu.addRecentest(app.project.path)
+        self._projectOpened()
 
     @qasync.asyncSlot()
     async def _openProject(self, file):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
         path = Path(file)
         try:
             app.openProject(path.resolve())
             self._projectOpened()
+            return
         except FileNotFoundError:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr(f'{path.name} is not a baram project.'))
+            message = self.tr('{0} is not a {1} project.').format(path.name, meshAppProperties.fullName)
         except Timeout:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr(f'{path.name} is already open in another program.'))
+            message = self.tr('{0} is already open in another program.').format(path.name)
         except ValidationError as e:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr(f'configurations error : {e.path} - {e.name}'))
+            message = self.tr(f'configurations error : {e.path} - {e.name}')
+
+        await AsyncMessageBox().information(self, self.tr('Project Open Error'), message)
+        self._recoverFromMissingProject()
+
+    def _recoverFromMissingProject(self):
+        # The open/create failed after the previous project was already closed.
+        # If the main window is showing (an in-session switch), it now has no
+        # project and every db-backed action would crash, so go back to the
+        # start screen. At launch the start dialog is still up, so leave it.
+        if self._startDialog is None:
+            self._returnToStartScreen()
 
     @qasync.asyncSlot()
     async def _saveAs(self, path):
@@ -291,7 +338,20 @@ class MainWindow(QMainWindow):
             await self._closeProject()
             self._clear()
             self._projectClosed()
-            app.openProject(path)
+
+            try:
+                app.openProject(path)
+            except (FileNotFoundError, Timeout, ValidationError) as ex:
+                # The new project was already written to disk by saveAs above, but
+                # reopening it failed after the old project was closed and cleared,
+                # leaving the window project-less. Go back to the start screen
+                # instead of leaving a UI that crashes on every db-backed action
+                # (e.g. meshManager is now None).
+                progressDialog.close()
+                await AsyncMessageBox().information(self, self.tr('Project Open Error'), str(ex))
+                self._recoverFromMissingProject()
+                return
+
             self._projectOpened()
             progressDialog.close()
 
@@ -377,7 +437,7 @@ class MainWindow(QMainWindow):
             self.show()
             self._startDialog = None
 
-        self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
+        self.setWindowTitle(f'{meshAppProperties.fullName} - {app.project.path}')
 
         self._geometryManager = GeometryManager()
         self._meshManager = MeshManager()
@@ -391,7 +451,7 @@ class MainWindow(QMainWindow):
         self._handler.close()
 
     def _clear(self):
-        self.setWindowTitle(f'{app.properties.fullName}')
+        self.setWindowTitle(f'{meshAppProperties.fullName}')
         self._renderingTool.clear()
         self._displayControl.clear()
         self._consoleView.clear()

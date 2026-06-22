@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
 
-from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
+from libbaram.pfloat import PFloat
+from widgets.async_message_box import AsyncMessageBox
+
+from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
+from baramFlow.base.boundary.boundary_patch import FarFieldRiemannUpdate
+from baramFlow.base.boundary.free_stream import FarFieldRiemann, FlowDirection
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .farfield_riemann_dialog_ui import Ui_FarfieldRiemannDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -20,11 +26,11 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._ui = Ui_FarfieldRiemannDialog()
         self._ui.setupUi(self)
 
+        self._bcid = bcid
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
-
         self._connectSignalsSlots()
 
         self._ui.specificationMethod.addItem(DirectionSpecificationMethodTexts[DirectionSpecificationMethod.DIRECT],
@@ -34,51 +40,48 @@ class FarfieldRiemannDialog(ResizableDialog):
 
         self._load()
 
-    def accept(self):
-        path = self._xpath + self.RELATIVE_XPATH
+    @qasync.asyncSlot()
+    async def _accept(self):
+        try:
+            specificationMethod = self._ui.specificationMethod.currentData()
+            flowDirection = FlowDirection(specificationMethod=specificationMethod)
+            if specificationMethod == DirectionSpecificationMethod.DIRECT:
+                flowDirection.flowDirection = Vector(x=PFloat(self._ui.flowDirectionX.text(), self.tr('Flow Direction')),
+                                                     y=PFloat(self._ui.flowDirectionY.text(), self.tr('Flow Direction')),
+                                                     z=PFloat(self._ui.flowDirectionZ.text(), self.tr('Flow Direction')))
+            else:
+                flowDirection.dragDirection = Vector(x=PFloat(self._ui.dragDirectionX.text(), self.tr('Drag Direction')),
+                                                     y=PFloat(self._ui.dragDirectionY.text(), self.tr('Drag Direction')),
+                                                     z=PFloat(self._ui.dragDirectionZ.text(), self.tr('Drag Direction')))
+                flowDirection.liftDirection = Vector(x=PFloat(self._ui.liftDirectionX.text(), self.tr('Lift Direction')),
+                                                     y=PFloat(self._ui.liftDirectionY.text(), self.tr('Lift Direction')),
+                                                     z=PFloat(self._ui.liftDirectionZ.text(), self.tr('Lift Direction')))
+                flowDirection.angleOfAttack = PFloat(self._ui.AoA.text(), self.tr('Angle of Attack'))
+                flowDirection.angleOfSideslip = PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip'))
 
-        writer = CoreDBWriter()
 
-        specificationMethod = self._ui.specificationMethod.currentData()
-        writer.append(path + '/flowDirection/specificationMethod', specificationMethod.value, None)
-        if specificationMethod == DirectionSpecificationMethod.DIRECT:
-            writer.append(path + '/flowDirection/flowDirection/x', self._ui.flowDirectionX.text(),
-                          self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/flowDirection/y', self._ui.flowDirectionY.text(),
-                          self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/flowDirection/z', self._ui.flowDirectionZ.text(),
-                          self.tr('Flow Direction'))
-        else:
-            writer.append(path + '/flowDirection/dragDirection/x', self._ui.dragDirectionX.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/dragDirection/y', self._ui.dragDirectionY.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/dragDirection/z', self._ui.dragDirectionZ.text(),
-                          self.tr('Drag Direction'))
-            writer.append(path + '/flowDirection/liftDirection/x', self._ui.liftDirectionX.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/liftDirection/y', self._ui.liftDirectionY.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/liftDirection/z', self._ui.liftDirectionZ.text(),
-                          self.tr('Lift Direction'))
-            writer.append(path + '/flowDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
-            writer.append(path + '/flowDirection/angleOfSideslip', self._ui.AoS.text(), self.tr('Angle of Sideslip'))
+            writer = CoreDBWriter()
+            if not self._turbulenceWidget.appendToWriter(writer):
+                return
 
-        writer.append(path + '/machNumber', self._ui.machNumber.text(), self.tr('Mach Number'))
-        writer.append(path + '/staticPressure', self._ui.staticPressure.text(), self.tr('Static Pressure'))
-        writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr('Static Temperature'))
+            data = FarFieldRiemannUpdate(
+                farFieldRiemann=FarFieldRiemann(
+                    flowDirection=flowDirection,
+                    machNumber=str(PFloat(self._ui.machNumber.text(), self.tr('Mach Number'))),
+                    staticPressure=str(PFloat(self._ui.staticPressure.text(), self.tr('Static Pressure'))),
+                    staticTemperature=str(PFloat(self._ui.staticTemperature.text(), self.tr('Static Temperature')))),
+                turbulence=self._turbulenceWidget.data())
 
-        if not self._turbulenceWidget.appendToWriter(writer):
+            BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
-        else:
-            super().accept()
+        self.accept()
 
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)
+        self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
         db = coredb.CoreDB()

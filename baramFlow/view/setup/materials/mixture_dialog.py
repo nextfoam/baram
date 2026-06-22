@@ -10,7 +10,8 @@ from PySide6.QtWidgets import QDialog, QFormLayout
 from baramFlow.view.setup.materials.thermos_dialog import ThermosDialog
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.material.material import MaterialType, Phase, SpecificHeatSpecification, DensitySpecification, TransportSpecification
+from baramFlow.base.material.constants import MaterialType, Phase
+from baramFlow.base.material.constants import SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.case_manager import CaseManager
 from baramFlow.base.material.database import materialsBase
 from baramFlow.coredb import coredb

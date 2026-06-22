@@ -4,6 +4,7 @@
 # A simple script to demonstrate the vtkCutter function
 
 import math
+import platform
 from typing import Optional
 
 # noinspection PyUnresolvedReferences
@@ -30,15 +31,20 @@ from resources import resource
 
 colors = vtkNamedColors()
 
-RENDER_RETRY_INTERVAL = 200
+RENDER_DELAY_TIME = 200
+REPAINT_SUPPRESS_TIME = 100
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
     def __init__(self, parent=None, **kw):
-        self._timer = QTimer()
-        self._timer.setInterval(RENDER_RETRY_INTERVAL)
-        self._timer.setSingleShot(True)
-        self._timer.timeout.connect(self._timeout)
+        self._delayTimer = QTimer()
+        self._delayTimer.setInterval(RENDER_DELAY_TIME)
+        self._delayTimer.setSingleShot(True)
+        self._delayTimer.timeout.connect(self._timeout)
+
+        self._suppressTimer = QTimer()
+        self._suppressTimer.setInterval(REPAINT_SUPPRESS_TIME)
+        self._suppressTimer.setSingleShot(True)
 
         super().__init__(parent=parent, **kw)
 
@@ -49,10 +55,15 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
 
     def paintEvent(self, ev):
         if isRenderingHold():
-            self._timer.start()
+            self._delayTimer.start()
             return
 
-        super().paintEvent(ev)
+        if platform.system() == 'Darwin':
+            if not self._suppressTimer.isActive():
+                self._suppressTimer.start()
+                super().paintEvent(ev)
+        else:
+            super().paintEvent(ev)
 
     def _timeout(self):
         self.Render()  # Render() just calls QWidget.update(), which just schedules repaint

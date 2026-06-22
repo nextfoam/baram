@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, InterfaceMode
+from baramFlow.base.boundary.turbulence import KEpsilonSpecification
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, NearWallTreatment, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -58,8 +59,9 @@ class Epsilon(BoundaryCondition):
                 BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                 BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                 BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.CYCLIC_ACMI.value:         (lambda: self._constructCyclicACMI()),
                 BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
-            }.get(type_)()
+            }.get(type_, lambda: None)()
 
         return field
 

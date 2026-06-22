@@ -3,8 +3,8 @@
 
 from PySide6.QtWidgets import QWidget
 
+from baramFlow.base.boundary.turbulence import KEpsilonSpecification
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import KEpsilonSpecification
 from .turbulence_k_epsilon_widget_ui import Ui_turbulenceKEpsilonWidget
 
 
@@ -60,6 +60,9 @@ class TurbulenceKEpsilonWidget(QWidget):
                           self.tr("Turbulent Viscosity Ratio"))
 
         return True
+
+    def data(self):
+        return None
 
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)

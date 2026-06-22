@@ -8,6 +8,7 @@ import qasync
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
+from app_properties import meshAppProperties
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 
@@ -28,8 +29,8 @@ class ProjectDialog(QDialog):
         self._ui = Ui_ProjectSelector()
         self._ui.setupUi(self)
 
-        self.setWindowIcon(app.properties.icon())
-        self.setWindowTitle(f'{app.properties.fullName} Start')
+        self.setWindowIcon(meshAppProperties.icon())
+        self.setWindowTitle(f'{meshAppProperties.fullName} Start')
 
         self._dialog = None
         self._projectDirectory = None

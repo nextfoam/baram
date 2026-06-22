@@ -239,6 +239,8 @@
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionTutorials"/>
+    <addaction name="separator"/>
+    <addaction name="actionPrivacySettings"/>
    </widget>
    <widget class="QMenu" name="menuParallel">
     <property name="title">
@@ -361,6 +363,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionPrivacySettings">
+   <property name="text">
+    <string>&amp;Privacy Settings...</string>
    </property>
   </action>
   <action name="actionParallelEnvironment">

@@ -11,6 +11,7 @@ from lxml import etree
 import pandas as pd
 
 from baramFlow.coredb.libdb import E
+
 from resources import resource
 
 logger = logging.getLogger(__name__)
@@ -1285,9 +1286,16 @@ def _version_11(root: etree.Element, path):
 def _version_12(root: etree.Element, path):
     logger.debug('  Upgrading to v13')
 
-    # root.set('version', '13')
+    root.set('version', '13')
 
-    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/wall', namespaces=_nsmap):
+    for b in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if b.find('fan', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "fan" to  {b}')
+            b.insert(21,
+                     E('fan',
+                        E('reverseDirection', 'false')))
+
+        p = b.find('wall', namespaces=_nsmap)
         if p.find('heatTransfer', namespaces=_nsmap) is None:
             logger.debug(f'    Replacing "temperature" to "heatTransfer" in {p}')
             e = p.find('temperature', namespaces=_nsmap)
@@ -1295,7 +1303,7 @@ def _version_12(root: etree.Element, path):
             e.insert(3,
                      etree.fromstring(f'<temperatureDistributionName xmlns="{_ns}">00000000-0000-0000-0000-000000000000</temperatureDistributionName>'))
 
-    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/velocityInlet/velocity', namespaces=_nsmap):
+        p = b.find('velocityInlet/velocity', namespaces=_nsmap)
         if p.find('coordinateSystem', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "coordinateSystem" to {p}')
             child = etree.Element(f'{{{_ns}}}coordinateSystem')
@@ -1362,28 +1370,51 @@ def _version_12(root: etree.Element, path):
             ''')
             p.append(e)
 
-    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/temperature', namespaces=_nsmap):
+        p = b.find('turbulence', namespaces=_nsmap)
+        if p.find('transitionSST', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "transitionSST" to {p}')
+            e = E('transitionSST',
+                    E('intermittency',          '1'),
+                    E('momentumThicknessRe',    '200'))
+            p.insert(2, e)
+
+        p = b.find('temperature', namespaces=_nsmap)
         old = p.find('spatialDistribution', namespaces=_nsmap)
-        table = getFileData(path, old.text)
-        if table is not None:
-            e = etree.fromstring(f'''
-                <spatialDistribution xmlns="http://www.baramcfd.org/baram">
-                    <x>{" ".join(table[0])}</x>
-                    <y>{" ".join(table[1])}</y>
-                    <z>{" ".join(table[2])}</z>
-                    <v>{" ".join(table[3])}</v>
-                </spatialDistribution>
-            ''')
-        else:
-            e = etree.fromstring('''
-                <spatialDistribution xmlns="http://www.baramcfd.org/baram">
-                    <x>0</x>
-                    <y>0</y>
-                    <z>0</z>
-                    <v>0</v>
-                </spatialDistribution>
-            ''')
-        p.replace(old, e)
+        if old.find('x', namespaces=_nsmap) is None:
+            logger.debug(f'    Replacing File Data of {old} with element')
+            table = getFileData(path, old.text)
+            if table is not None:
+                e = etree.fromstring(f'''
+                    <spatialDistribution xmlns="http://www.baramcfd.org/baram">
+                        <x>{" ".join(table[0])}</x>
+                        <y>{" ".join(table[1])}</y>
+                        <z>{" ".join(table[2])}</z>
+                        <v>{" ".join(table[3])}</v>
+                    </spatialDistribution>
+                ''')
+            else:
+                e = etree.fromstring('''
+                    <spatialDistribution xmlns="http://www.baramcfd.org/baram">
+                        <x>0</x>
+                        <y>0</y>
+                        <z>0</z>
+                        <v>0</v>
+                    </spatialDistribution>
+                ''')
+            p.replace(old, e)
+
+        if b.find('fallbackBoundary', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "fallbackBoundary" to {b}')
+            coupled = b.find('coupledBoundary', namespaces=_nsmap)
+            e = etree.Element(f'{{{_ns}}}fallbackBoundary')
+            e.text = '0'
+            b.insert(list(b).index(coupled) + 1, e)
+
+    for p in root.findall('regions/region/initialization/initialValues', namespaces=_nsmap):
+        if p.find('intermittency', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "intermittency", "momentumThicknessRe" to {p}')
+            p.insert(6, E('intermittency',          '1'))
+            p.insert(7, E('momentumThicknessRe',    '200'))
 
     for p in root.findall('monitors/*/*', namespaces=_nsmap):
         if p.find('uuid', namespaces=_nsmap) is None:
@@ -1392,6 +1423,101 @@ def _version_12(root: etree.Element, path):
                           str(uuid4())))
             p.append(E('functionName',
                        p.find('name', namespaces=_nsmap).text))
+
+
+
+    motionDefinitions = []
+    order: int = 1
+    for p in root.findall(f'regions/region[name=""]/cellZones/cellZone', namespaces=_nsmap):
+        zoneType = p.find('zoneType', namespaces=_nsmap)
+        if zoneType.text == 'slidingMesh':
+            zoneType.text = 'none'
+            czid   = p.attrib['czid']
+            czname = p.find('name', namespaces=_nsmap).text
+            ox = p.find('slidingMesh/rotationAxisOrigin/x', namespaces=_nsmap).text
+            oy = p.find('slidingMesh/rotationAxisOrigin/y', namespaces=_nsmap).text
+            oz = p.find('slidingMesh/rotationAxisOrigin/z', namespaces=_nsmap).text
+            dx = p.find('slidingMesh/rotationAxisDirection/x', namespaces=_nsmap).text
+            dy = p.find('slidingMesh/rotationAxisDirection/y', namespaces=_nsmap).text
+            dz = p.find('slidingMesh/rotationAxisDirection/z', namespaces=_nsmap).text
+            rpm = p.find('slidingMesh/rotatingSpeed', namespaces=_nsmap).text
+
+            md = E('motionDefinition',
+                E('uuid', str(uuid4())),
+                E('name', f'moving_{czname}'),
+                E('order', str(order)),
+                E('motionFunctions',
+                    E('motionFunction',
+                        E('uuid', str(uuid4())),
+                        E('order', '1'),
+                        E('functionType', 'rotation'),
+                        E('origin',
+                            E('x', ox),
+                            E('y', oy),
+                            E('z', oz)),
+                        E('axis',
+                            E('x', dx),
+                            E('y', dy),
+                            E('z', dz)),
+                        E('rpm', rpm),
+                        E('velocity',         E('x', '0'), E('y', '0'), E('z', '0')),
+                        E('angularAmplitude', E('x', '0'), E('y', '0'), E('z', '0')),
+                        E('linearAmplitude',  E('x', '0'), E('y', '0'), E('z', '0')),
+                        E('frequency', '0'),
+                        E('positions',
+                            E('t', ''),
+                            E('surge', ''),
+                            E('sway', ''),
+                            E('heave', ''),
+                            E('roll', ''),
+                            E('pitch', ''),
+                            E('yaw', '')))),
+                E('cellZones', czid))
+
+            motionDefinitions.append(md)
+            order += 1
+
+    for p in root.findall(f'regions/region/cellZones/cellZone', namespaces=_nsmap):
+        slidingMesh = p.find('slidingMesh', namespaces=_nsmap)
+        if slidingMesh is not None:
+            p.remove(slidingMesh)
+
+    if (p := root.find('dynamicMesh', namespaces=_nsmap)) is None:
+        p = E('dynamicMesh',
+                 E('motionType', 'movingCellZone' if motionDefinitions else 'none'),
+                 E('movingCellZone', *motionDefinitions),
+                 E('movingBoundary'),  # each boundary will be added later in dynamic mesh service
+                 E('rigidBodyDynamics',
+                    E('rigidBodySolverType',
+                        E('solverType', 'newmark'),
+                        E('velocityIntegrationCoefficient', '0.5'),
+                        E('positionIntegrationCoefficient', '0.25'),
+                        E('offCenteringAccelerationCoefficient', '0.5'),
+                        E('offCenteringVelocityCoefficient', '0.5')
+                    ),
+                    E('accelerationRelaxationFactor', '0.7'),
+                    E('accelerationDampingFactor', '1.0'),
+                    E('bodies')
+                 )
+            )
+        index = root.index(root.find('regions', namespaces=_nsmap))
+        root.insert(index + 1, p)
+
+
+    ## This is for development. Remove this block before releasing v26.2.0
+    for p in root.findall('dynamicMesh/movingBoundary/boundary', namespaces=_nsmap):
+        if p.find('useFixedNormal', namespaces=_nsmap) is None:
+            index = p.index(p.find('normal', namespaces=_nsmap))
+            pointMotionType = p.find('pointMotionType', namespaces=_nsmap)
+            if pointMotionType.text == 'normal':
+                p.insert(index, E('useFixedNormal', True))
+                pointMotionType.text = 'slip'
+            else:
+                p.insert(index, E('useFixedNormal', False))
+
+        pointMotionType = p.find('pointMotionType', namespaces=_nsmap)
+        if pointMotionType.text in ['cyclic', 'symmetry', 'empty', 'wedge']:
+            pointMotionType.text = 'fixed'
 
 
 _fTable = [

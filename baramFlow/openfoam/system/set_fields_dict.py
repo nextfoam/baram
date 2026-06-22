@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from baramFlow.base.field import PRESSURE
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.base.material.material import MaterialType
@@ -47,10 +49,11 @@ class SetFieldsDict(DictionaryFile):
                     defaultFieldValues.append(('volVectorFieldValue', 'U', db.getVector(ivPath + '/velocity')))
 
             if db.getAttribute(sPath+'/pressure', 'disabled') == 'false':
-                fieldValues.append(('volScalarFieldValue', 'p', db.getValue(sPath + '/pressure')))
-                if 'p' not in defaultFields:
-                    defaultFields.append('p')
-                    defaultFieldValues.append(('volScalarFieldValue', 'p', db.getValue(ivPath + '/pressure')))
+                fieldName = getSolverFieldName(PRESSURE)
+                fieldValues.append(('volScalarFieldValue', fieldName, db.getValue(sPath + '/pressure')))
+                if fieldName not in defaultFields:
+                    defaultFields.append(fieldName)
+                    defaultFieldValues.append(('volScalarFieldValue', fieldName, db.getValue(ivPath + '/pressure')))
 
             if db.getAttribute(sPath+'/temperature', 'disabled') == 'false':
                 fieldValues.append(('volScalarFieldValue', 'T', db.getValue(sPath + '/temperature')))

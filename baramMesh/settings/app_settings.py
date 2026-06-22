@@ -33,31 +33,36 @@ class AppSettings:
     def __init__(self):
         self._settings = None
 
+        self._settingsPath = None
         self._settingsFile = None
         # self._lockFile = None
         self._lock = None
-        
-        
+
+
     def load(self, name):
-        path = Path.home() / f'.{name}'
-        self._settingsFile = path / 'baram.cfg.yaml'
-        # self._lockFile = path / 'baram.lock'
+        self._settingsPath = Path.home() / f'.{name}'
+        self._settingsFile = self._settingsPath / 'baram.cfg.yaml'
+        # self._lockFile = self._settingsPath / 'baram.lock'
 
         # ToDo: For compatibility. Remove this code block after 20240101
         # Migration from previous name of "BaramMesh"
         # Begin
         if name == 'BaramMesh':
             oldPath = Path.home().joinpath('.baram-snappy')
-            if not path.exists() and oldPath.is_dir():
-                oldPath.replace(path)
+            if not self._settingsPath.exists() and oldPath.is_dir():
+                oldPath.replace(self._settingsPath)
         # End
 
         if self._settingsFile.is_file():
             with open(self._settingsFile) as file:
                 self._settings = yaml.load(file, Loader=yaml.FullLoader)
         else:
-            path.mkdir(exist_ok=True)
+            self._settingsPath.mkdir(exist_ok=True)
             self._settings = {SettingKey.FORMAT_VERSION.value: FORMAT_VERSION}
+
+    def settingsPath(self) -> Path:
+        assert self._settingsPath is not None, 'AppSettings.load() must be called first'
+        return self._settingsPath
 
     def getRecentLocation(self):
         return self._get(SettingKey.RECENT_DIRECTORY, str(Path.home()))

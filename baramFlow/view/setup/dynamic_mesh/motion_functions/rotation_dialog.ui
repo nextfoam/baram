@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RotationDialog</class>
+ <widget class="QDialog" name="RotationDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Rotation</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Rotation Parameters</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="originLabel">
+        <property name="text">
+         <string>Origin (m)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="VectorWidget" name="origin"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="axisLabel">
+        <property name="text">
+         <string>Axis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="VectorWidget" name="axis"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="speedLabel">
+        <property name="text">
+         <string>Speed (rpm)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="PFloatLineEdit" name="speed"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VectorWidget</class>
+   <extends>QWidget</extends>
+   <header>baramFlow.view.widgets.vector_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.pfloat_line_edit</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

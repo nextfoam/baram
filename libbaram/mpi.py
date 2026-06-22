@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import platform
 import re
 from enum import IntEnum, auto
@@ -20,6 +21,7 @@ class MPIStatus(IntEnum):
     OK = 0
     NOT_FOUND = auto()
     LOW_VERSION = auto()
+    INVALID_PREFIX = auto()
 
 
 HOST_FILE_NAME = 'hostfile'
@@ -29,15 +31,27 @@ if platform.system() == 'Windows':
     VERSION_CHECK_OPTION = '-help'
     MAJOR_VERSION = 10
     MINOR_VERSION = 1
+    MPI_PREFIX = None
 else:
     MPICMD = 'mpirun'
     HOST_FILE_OPTION = '-hostfile'
     VERSION_CHECK_OPTION = '--version'
     MAJOR_VERSION = 4
     MINOR_VERSION = 1
+    MPI_PREFIX = os.environ.get('BARAM_MPI_PREFIX')
+
+    if MPI_PREFIX is not None:
+        cmd = Path(MPI_PREFIX, MPICMD)
+        if cmd.is_file():
+            MPICMD = str(cmd)
+        else:
+            MPICMD = ''
 
 
 async def checkMPI():
+    if platform.system() == 'Linux' and not MPICMD:
+        return MPIStatus.INVALID_PREFIX
+
     try:
         process = await runExternalCommand(MPICMD, VERSION_CHECK_OPTION,
                                           stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -86,6 +100,10 @@ class ParallelEnvironment:
         # windows: mpiexec
         # others: mpirun
         cmdline = [MPICMD]
+
+        if MPI_PREFIX is not None:
+            cmdline.append('--prefix')
+            cmdline.append(MPI_PREFIX)
 
         if self._type == ParallelType.CLUSTER:
             # windows: -env <name_1> <value_1> ... -env <name_n> <value_n>

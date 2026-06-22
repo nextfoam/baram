@@ -67,14 +67,19 @@ class PostFileReader(QObject):
 
         return changedFiles
 
-    def readDataFrame(self, path):
+    def readDataFrame(self, path) -> pd.DataFrame:
         with path.open(mode='r') as f:
             header = None
             line = f.readline()
+            if not line:  # end of file
+                return pd.DataFrame()  # return empty dataFrame
+
             while line[0] == '#':
                 p = f.tell()
                 header = line
                 line = f.readline()
+                if not line:  # end of file
+                    return pd.DataFrame()  # return empty dataFrame
 
             names = header[1:].split()  # read header
             if names[0] != 'Time':

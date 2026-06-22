@@ -7,8 +7,10 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.app import app
 from baramFlow.base.base import DirectionSpecificationMethod
 from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
+from baramFlow.base.dynamic_mesh.dynamic_mesh import MotionType
+from baramFlow.base.dynamic_mesh.moving_boundary import PointMotionType
 from baramFlow.base.field import HEAT_TRANSFER_COEFF, WALL_HEAT_FLUX, AGE, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY
-from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE
+from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE, VELOCITY
 from baramFlow.base.material.material import Phase
 from baramFlow.base.monitor.monitor import MonitorManager, ForceMonitorConfiguration, PointMonitorConfiguration
 from baramFlow.base.monitor.monitor import SurfaceMonitorConfiguration, VolumeMonitorConfiguration
@@ -24,7 +26,6 @@ from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects.collateral_fields import foAgeMonitor, foHeatTransferCoefficientMonitor
@@ -40,7 +41,9 @@ from baramFlow.openfoam.function_objects.patch_probes import foPatchProbesMonito
 from baramFlow.openfoam.function_objects.probes import foProbesMonitor
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueMonitor
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeType, foVolFieldValueMonitor
-from baramFlow.openfoam.solver import findSolver, usePrgh
+from baramFlow.openfoam.solver import findSolver
+from baramFlow.openfoam.solver_field import getAvailableFlowFields, getSolverFieldName
+from baramFlow.services.dynamic_mesh.dynamic_mesh_service import DynamicMeshService
 
 from .fv_options import generateSourceTermField, generateFixedValueField
 
@@ -52,7 +55,7 @@ def _getSolverInfoFields(rname: str)->list[str]:
     solveEnergy = (db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
     solveUDS = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS')
 
-    compresibleDensity = GeneralDB.isCompressibleDensity()
+    compressibleDensity = GeneralDB.isCompressibleDensity()
 
     mid = RegionDB.getMaterial(rname)
     phase = MaterialDB.getPhase(mid)
@@ -60,40 +63,18 @@ def _getSolverInfoFields(rname: str)->list[str]:
     fields: list[str] = []
 
     if solveFlow and phase != Phase.SOLID:
-        if compresibleDensity:
-            fields.extend(['rhoU', 'rho'])
-        else:
-            fields.append('U')
+        for f in getAvailableFlowFields():
+            if f == VELOCITY and compressibleDensity:
+                fields.append('rhoU')
+            else:
+                fields.append(getSolverFieldName(f))
 
-        if usePrgh():
-            fields.append('p_rgh')
-        else:
-            fields.append('p')
-
-        # Fields depending on the turbulence model
-        rasModel = TurbulenceModelsDB.getRASModel()
-        if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
-            fields.append('k')
-            fields.append('epsilon')
-        elif rasModel == TurbulenceModel.K_OMEGA:
-            fields.append('k')
-            fields.append('omega')
-        elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
-            fields.append('nuTilda')
-
-        if ModelsDB.isMultiphaseModelOn():
-            for _, name, _, phase in MaterialDB.getMaterials():
-                if phase != Phase.SOLID.value:
-                    fields.append(f'alpha.{name}')
-
-        if ModelsDB.isSpeciesModelOn():
-            for mixture, _ in RegionDB.getMixturesInRegions():
-                for name in MaterialDB.getSpecies(mixture).values():
-                    fields.append(name)
+        if compressibleDensity:
+            fields.append('rho')
 
     if solveEnergy:
         if ModelsDB.isEnergyModelOn():
-            if compresibleDensity:
+            if compressibleDensity:
                 fields.append('rhoE')
             else:
                 fields.append('h')
@@ -230,10 +211,19 @@ class ControlDict(DictionaryFile):
         if ModelsDB.isMultiphaseModelOn():
             self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
 
+        libs = []
         if (BoundaryDB.getBoundaryConditionsByType(BoundaryType.ABL_INLET)
                 or any([isAtmosphericWall(bcid)
                         for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
-            self._data['libs'] = ['atmosphericModels']
+            libs.append('atmosphericModels')
+
+        dm = DynamicMeshService().getDynamicMesh()
+        if dm.motionType == MotionType.MOVING_BOUNDARY:
+            if any([mb.pointMotionType == PointMotionType.RIGID_BODY_MOTION  for mb in dm.movingBoundaries]):
+                libs.append('sixDoFRigidBodyMotion')
+
+        if len(libs) > 0:
+            self._data['libs'] = libs
 
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
@@ -404,7 +394,7 @@ class ControlDict(DictionaryFile):
             pRef = referencePressure + operatingPressure
 
         data = foForcesMonitor(
-            patches, monitor.centerOfRotation.toList(), pRef, monitor.region, int(monitor.monitorBase.writeInterval))
+            patches, monitor.centerOfRotation.toFloatList(), pRef, monitor.region, int(monitor.monitorBase.writeInterval))
 
         return data
 
@@ -413,8 +403,8 @@ class ControlDict(DictionaryFile):
         lRef = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'))
         magUInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'))
         rhoInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'))
-        dragDir = monitor.forceDirection.dragDirection.toList()
-        liftDir = monitor.forceDirection.liftDirection.toList()
+        dragDir = monitor.forceDirection.dragDirection.toFloatList()
+        liftDir = monitor.forceDirection.liftDirection.toFloatList()
 
         if monitor.forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
             dragDir, liftDir = calucateDirectionsByRotation(
@@ -429,7 +419,7 @@ class ControlDict(DictionaryFile):
             pRef = referencePressure + operatingPressure
 
         data = foForceCoeffsMonitor(patches, aRef, lRef, magUInf, rhoInf, dragDir, liftDir,
-                                    monitor.centerOfRotation.toList(), pRef, monitor.region,
+                                    monitor.centerOfRotation.toFloatList(), pRef, monitor.region,
                                     int(monitor.monitorBase.writeInterval))
 
         return data
@@ -438,7 +428,7 @@ class ControlDict(DictionaryFile):
         if monitor.snapOntoBoundary == '0':
             if not monitor.region:
                 for name in self._db.getRegions():
-                    if isPointInDataSet(monitor.coordinate.toList(), app.internalMeshActor(name).dataSet):
+                    if isPointInDataSet(monitor.coordinate.toFloatList(), app.internalMeshActor(name).dataSet):
                         monitor.region = name
                         MonitorManager.updatePointMonitorRegion(monitor.monitorBase.uuid, name)
                         break
@@ -447,13 +437,13 @@ class ControlDict(DictionaryFile):
 
             self._appendAdditionalFO(monitor.field, monitor.region)
             data = foProbesMonitor(
-                monitor.field.openfoamField(), monitor.coordinate.toList(), monitor.region,
+                monitor.field.openfoamField(), monitor.coordinate.toFloatList(), monitor.region,
                 int(monitor.monitorBase.writeInterval))
         else:
             boundary = BoundaryDB.getBoundaryName(monitor.snapOntoBoundary)
             rname = BoundaryDB.getBoundaryRegion(monitor.snapOntoBoundary)
             data = foPatchProbesMonitor(
-                boundary, monitor.field.openfoamField(), monitor.coordinate.toList(), rname,
+                boundary, monitor.field.openfoamField(), monitor.coordinate.toFloatList(), rname,
                 int(monitor.monitorBase.writeInterval))
 
         return data
