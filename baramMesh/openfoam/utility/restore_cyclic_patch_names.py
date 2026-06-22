@@ -36,9 +36,6 @@ class RestoreCyclicPatchNames:
             assert boundaryDict.content[oldMaster]['type'] == 'cyclic'
             assert boundaryDict.content[oldSlave]['type'] == 'cyclic'
 
-            boundaryDict.content[oldMaster]['type'] = 'patch'
-            boundaryDict.content[oldSlave]['type'] = 'patch'
-
             # xx[newKey] = xx.pop(oldKey) cannot be used here
             # because boundaryDict is not a python dict but a PyFoam.Basics.DataStructures.DictProxy
             boundaryDict.content[master] = boundaryDict.content[oldMaster]
@@ -48,12 +45,11 @@ class RestoreCyclicPatchNames:
 
             self._removeEntry(boundaryDict, master, 'inGroups')
             self._removeEntry(boundaryDict, slave,  'inGroups')
-            self._removeEntry(boundaryDict, master, 'matchTolerance')
-            self._removeEntry(boundaryDict, slave,  'matchTolerance')
             self._removeEntry(boundaryDict, master, 'transform')
             self._removeEntry(boundaryDict, slave,  'transform')
-            self._removeEntry(boundaryDict, master, 'neighbourPatch')
-            self._removeEntry(boundaryDict, slave,  'neighbourPatch')
+
+            boundaryDict.content[master]['neighbourPatch'] = slave
+            boundaryDict.content[slave]['neighbourPatch'] = master
 
 
         #
