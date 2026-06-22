@@ -227,6 +227,15 @@ class RegionPage(StepPage):
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
 
     def _autoAddRegions(self):
+        if self._form.isVisible():
+            QMessageBox.information(
+                self._widget,
+                self.tr('Region Form In Progress'),
+                self.tr('Please finish adding or editing the current region first, '
+                        'or click Cancel, before using Batch Add from Volumes.')
+            )
+            return
+
         geometries = app.db.getElements('geometry')
 
         if not geometries:
