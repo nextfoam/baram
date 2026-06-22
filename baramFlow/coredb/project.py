@@ -9,6 +9,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 
 from baramFlow.solver_status import SolverStatus
@@ -163,16 +164,20 @@ class _Project(QObject):
         self._projectSettings.setProcess(process)
 
     def save(self):
+        EventBus().onSaving.emit()
         self._fileDB.save()
 
     async def saveAs(self, directory):
+        EventBus().onSaving.emit()
         self._fileDB.saveAs(directory)
         await self._close()
         await self._open(directory, ProjectOpenType.SAVE_AS)
         self.projectOpened.emit()
+        await EventBus().onProjectOpen.emit()
 
     def opened(self):
         self.projectOpened.emit()
+        EventBus().onProjectOpen.emitLater()
 
     def setParallelEnvironment(self, environment):
         self._settings.set(SettingKey.NP, environment.np())
@@ -198,7 +203,7 @@ class _Project(QObject):
 
         return status
 
-    def updateBatchStatuses(self, statuses: list[str]):
+    def updateBatchStatuses(self, statuses: dict):
         self._settings.set(SettingKey.BATCH_STATUS, statuses)
 
     def getBatchStatus(self, name) -> SolverStatus:
@@ -285,6 +290,8 @@ class _Project(QObject):
         await GraphicsDB().close()
 
         self.projectClosed.emit()
+        await EventBus().onProjectClose.emit()
+
         if self._projectLock:
             self._projectLock.release()
 
@@ -307,7 +314,7 @@ class Project:
         cls._instance = None
 
     @classmethod
-    def instance(cls):
+    def instance(cls) -> _Project:
         assert(cls._instance is not None)
         return cls._instance
 

@@ -14,5 +14,5 @@ class ContentPage(QWidget):
     async def save(self):
         return True
 
-    def checkToQuit(self):
+    async def checkToQuit(self):
         return True

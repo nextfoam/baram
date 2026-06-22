@@ -23,18 +23,16 @@ class MeshManager(ActorManager):
 
         self._name = 'Mesh'
 
-    async def load(self, time=None):
+    async def load(self, time: int):
+        assert time >= 0
+
         if not self._displayControl.isEnabled():
             return
 
         self.clear()
         self._visibility = True
 
-        if time is not None:
-            self._time = time
-
-        if self._time is None:
-            return
+        self._time = time
 
         progressDialog = ProgressDialog(app.window, self.tr('Loading Mesh'))
         progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -62,8 +60,14 @@ class MeshManager(ActorManager):
         self.hide()
         self._time = None
 
+    async def reload(self):
+        if self._time is None:
+            return
+
+        await self.load(self._time)
+
     @qasync.asyncSlot()
-    async def show(self, time):
+    async def show(self, time: int):
         if self._time == time:
             self._show()
         else:
@@ -72,17 +76,21 @@ class MeshManager(ActorManager):
     def boundaries(self):
         return self._actorInfos.keys()
 
-    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+    def getScalarRange(self, index: MeshQualityIndex) -> tuple[float, float]:
         actorInfo: ActorInfo
         for actorInfo in self._actorInfos.values():
             if isinstance(actorInfo, MeshActor):
                 return actorInfo.getScalarRange(index)
+
+        return 0.0, 0.0
 
     def getNumberOfDisplayedCells(self) -> int:
         actorInfo: ActorInfo
         for actorInfo in self._actorInfos.values():
             if isinstance(actorInfo, MeshActor):
                 return actorInfo.getNumberOfDisplayedCells()
+
+        return 0
 
     def setScalar(self, index: MeshQualityIndex):
         for actorInfo in self._actorInfos.values():

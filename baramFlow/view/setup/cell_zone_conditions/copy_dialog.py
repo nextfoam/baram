@@ -4,14 +4,15 @@
 import qasync
 from enum import Enum, auto
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QDialog, QListWidgetItem
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QWidget, QListWidget
 
-from baramFlow.coredb.cell_zone_db import CellZoneDB, copyCellZoneConditions
-from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb import coredb
+from baramFlow.services.cell_zone.cell_zone_service import CellZoneService
+from baramFlow.base.region.region_data import CellZoneModel
+from baramFlow.coredb.cell_zone_db import copyCellZoneConditions
+
 from .copy_dialog_ui import Ui_CopyDialog
 
 
@@ -21,21 +22,18 @@ class CopyMode(Enum):
 
 
 class CellZoneListItem(QListWidgetItem):
-    def __init__(self, parent, czid, czname, rname):
+    def __init__(self, parent: QListWidget, cellZone: CellZoneModel):
         super().__init__(parent)
 
-        self._czid = czid
+        self._czid: str = cellZone.czid
         self._textForFiltering: str = ''
 
-        if CellZoneDB.isRegion(czname):
-            if not rname:
-                rname = DEFAULT_REGION_NAME
-            self._textForFiltering = rname.lower()
-            self.setText(rname)
+        if cellZone.isRegion():
+            self._textForFiltering = cellZone.rname.lower()
+            self.setText(cellZone.rname)
         else:
-            self._textForFiltering = czname.lower()
-            prefix = '' if rname == '' else rname + ':'
-            self.setText(prefix + czname)
+            self._textForFiltering = cellZone.name.lower()
+            self.setText(cellZone.scopedName)
 
     def czid(self):
         return self._czid
@@ -60,18 +58,17 @@ class Filter:
 class CopyDialog(QDialog):
     cellZonesCopied = Signal(set)
 
-    def __init__(self, parent, czid, mode):
+    def __init__(self, parent: QWidget, czid: str, mode: CopyMode):
         super().__init__(parent)
         self._ui = Ui_CopyDialog()
         self._ui.setupUi(self)
 
-        self._sourceId = czid
+        self._sourceId: str = czid
         self._isRegionMode = False
 
-        self._items = {}
-        self._copied = set()
+        self._items: dict[str: CellZoneListItem] = {}
+        self._copied: set[str] = set()
 
-        self._sourceFilter = Filter(self._ui.sourceFilter, self._ui.source)
         self._targetFilter = Filter(self._ui.targetFilter, self._ui.targets)
 
         if mode == CopyMode.REGION:
@@ -82,30 +79,23 @@ class CopyDialog(QDialog):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
-        self._ui.source.itemClicked.connect(self._sourceChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.close.clicked.connect(self._close)
 
     def _load(self):
-        db = coredb.CoreDB()
-        for rname in db.getRegions():
-            for czid, czname in db.getCellZones(rname):
-                if CellZoneDB.isRegion(czname) == self._isRegionMode:
-                    item = CellZoneListItem(self._ui.source, czid, czname, rname)
-                    self._items[czid] = CellZoneListItem(self._ui.targets, czid, czname, rname)
+        source = CellZoneService.getCellZone(self._sourceId)
+        self._ui.source.setText(source.rname if self._isRegionMode else source.scopedName)
 
-                    if czid == self._sourceId:
-                        item.setSelected(True)
-                        self._items[czid].setFlags(self._items[czid].flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                    else:
-                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-
-    def _sourceChanged(self, item):
-        if self._sourceId is not None:
-            self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() | Qt.ItemFlag.ItemIsEnabled)
-
-        self._sourceId = item.czid()
-        self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() & ~Qt.ItemFlag.ItemIsEnabled)
+        for cellZone in CellZoneService.getCellZones():
+            if cellZone.isRegion() == self._isRegionMode and cellZone.czid != self._sourceId:
+                self._items[cellZone.czid] = CellZoneListItem(self._ui.targets, cellZone)
+    #
+    # def _sourceChanged(self, item):
+    #     if self._sourceId is not None:
+    #         self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() | Qt.ItemFlag.ItemIsEnabled)
+    #
+    #     self._sourceId = item.czid()
+    #     self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() & ~Qt.ItemFlag.ItemIsEnabled)
 
     @qasync.asyncSlot()
     async def _copy(self):
@@ -116,8 +106,8 @@ class CopyDialog(QDialog):
 
         if not await AsyncMessageBox().confirm(
                 self, self.tr('Copy Cell Zone Conditions'),
-                self.tr('Copy {} to ({})?'.format(
-                    self._ui.source.selectedItems()[0].text(),
+                self.tr('Copy {0} to ({1})?'.format(
+                    self._ui.source.text(),
                     ', '.join([item.text() for item in targets])))):
             return
 

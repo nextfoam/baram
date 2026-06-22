@@ -116,8 +116,8 @@ class DisplayControl(QObject):
         self._meshQualityInfo = MeshQualityInfo(ui)
         self._menu = ContextMenu(self._list)
 
-        self._items = {}
-        self._selectedItems = None
+        self._items: dict[str, DisplayItem] = {}
+        self._selectedItems: list[DisplayItem] = []
 
         self._pendingSplit: Optional[dict] = None
 
@@ -198,16 +198,14 @@ class DisplayControl(QObject):
         self._list.clear()
         self._view.clear()
         self._items = {}
-        self._selectedItems = None
+        self._selectedItems = []
         self._pendingSplit = None
 
-    def setSelectedActors(self, ids):
+    def setSelectedActors(self, ids: list[str]):
         self._list.clearSelection()
         for i in ids:
             if i in self._items:
                 self._items[i].setSelected(True)
-
-        self.selectionApplied.emit()
 
     def selectedItemsChanged(self):
         ids = []
@@ -352,19 +350,21 @@ class DisplayControl(QObject):
         if not ctrlKeyPressed and not forContextMenu:
             self._list.clearSelection()
 
-        if actor:
-            objectName = actor.GetObjectName()
-            if not objectName or objectName not in self._items:
-                return
+        if not actor:
+            return
 
-            item = self._items[objectName]
-            if not item.isSelected() and forContextMenu:
-                self._list.clearSelection()
+        actorInfoId: str = actor.GetObjectName()
+        if not actorInfoId or actorInfoId not in self._items:
+            return
 
-            if ctrlKeyPressed:
-                item.setSelected(not item.isSelected())
-            else:
-                item.setSelected(True)
+        item = self._items[actorInfoId]
+        if not item.isSelected() and forContextMenu:
+            self._list.clearSelection()
+
+        if ctrlKeyPressed:
+            item.setSelected(not item.isSelected())
+        else:
+            item.setSelected(True)
 
     def _actorSourceUpdated(self, id_):
         cutType, planes = self._cutTool.option()

@@ -3,25 +3,25 @@
 
 import qasync
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QDialog, QListWidgetItem
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QWidget, QListWidget
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.region.region_data import BoundaryModel
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from .copy_dialog_ui import Ui_CopyDialog
 
 
 class BoundaryListItem(QListWidgetItem):
-    def __init__(self, parent, bcid, bcname, rname):
+    def __init__(self, parent: QListWidget, boundary: BoundaryModel):
         super().__init__(parent)
 
-        self._bcid = bcid
-        self._textForFiltering: str = bcname.lower()
+        self._bcid: str = boundary.bcid
+        self._textForFiltering: str = boundary.name.lower()
 
-        prefix = '' if rname == '' else rname + ':'
-        self.setText(prefix + bcname)
+        self.setText(boundary.scopedName)
 
     def bcid(self):
         return self._bcid
@@ -46,47 +46,37 @@ class Filter:
 class CopyDialog(QDialog):
     boundariesCopied = Signal(set)
 
-    def __init__(self, parent, bcid):
+    def __init__(self, parent: QWidget, bcid: str):
         super().__init__(parent)
         self._ui = Ui_CopyDialog()
         self._ui.setupUi(self)
 
-        self._items = {}
-        self._sourceId = bcid
-        self._copied = set()
+        self._items: dict[str: BoundaryListItem] = {}
+        self._sourceId: str = bcid
+        self._copied: set[str] = set()
 
-        self._sourceFilter = Filter(self._ui.sourceFilter, self._ui.source)
         self._targetFilter = Filter(self._ui.targetFilter, self._ui.targets)
 
         self._load()
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
-        self._ui.source.itemClicked.connect(self._sourceChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.close.clicked.connect(self._close)
 
     def _load(self):
-        db = coredb.CoreDB()
-        for rname in db.getRegions():
-            for bcid, bcname, bctype in db.getBoundaryConditions(rname):
-                self._items[bcid] = BoundaryListItem(self._ui.targets, bcid, bcname, rname)
+        self._ui.source.setText(BoundaryService.getBoundary(self._sourceId).scopedName)
 
-                if not BoundaryDB.needsCoupledBoundary(BoundaryType(bctype)):
-                    item = BoundaryListItem(self._ui.source, bcid, bcname, rname)
-
-                    if bcid == self._sourceId:
-                        item.setSelected(True)
-                        self._items[bcid].setFlags(self._items[bcid].flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                    else:
-                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-
-    def _sourceChanged(self, item):
-        if self._sourceId is not None:
-            self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() | Qt.ItemFlag.ItemIsEnabled)
-
-        self._sourceId = item.bcid()
-        self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() & ~Qt.ItemFlag.ItemIsEnabled)
+        for boundary in BoundaryService.getBoundaries():
+            if boundary.bcid != self._sourceId:
+                self._items[boundary.bcid] = BoundaryListItem(self._ui.targets, boundary)
+    #
+    # def _sourceChanged(self, item):
+    #     if self._sourceId is not None:
+    #         self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() | Qt.ItemFlag.ItemIsEnabled)
+    #
+    #     self._sourceId = item.bcid()
+    #     self._items[self._sourceId].setFlags(self._items[self._sourceId].flags() & ~Qt.ItemFlag.ItemIsEnabled)
 
     @qasync.asyncSlot()
     async def _copy(self):
@@ -97,8 +87,8 @@ class CopyDialog(QDialog):
 
         if not await AsyncMessageBox().confirm(
                 self, self.tr('Copy Boundary Conditions'),
-                self.tr('Copy {} to ({})?'.format(
-                    self._ui.source.selectedItems()[0].text(),
+                self.tr('Copy {0} to ({1})?'.format(
+                    self._ui.source.text(),
                     ', '.join([item.text() for item in self._ui.targets.selectedItems()])))):
             return
 

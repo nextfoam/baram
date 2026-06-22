@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.base.boundary.turbulence import KEpsilonSpecification, KOmegaSpecification
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, InterfaceMode
+from baramFlow.coredb.boundary_db import InterfaceMode
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, SubgridKineticEnergySpecificationMethod
 from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -23,7 +24,7 @@ class K(BoundaryCondition):
         if not self._region.isFluid():
             return self
 
-        if (self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA
+        if (self._model in [TurbulenceModel.K_EPSILON, TurbulenceModel.K_OMEGA, TurbulenceModel.TRANSITION_SST]
                 or TurbulenceModelsDB.isLESKEqnModel()):
             self._data = {
                 'dimensions': self.DIMENSIONS,
@@ -64,8 +65,9 @@ class K(BoundaryCondition):
                 BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                 BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                 BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.CYCLIC_ACMI.value:         (lambda: self._constructCyclicACMI()),
                 BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
-            }.get(type_)()
+            }.get(type_, lambda: None)()
 
         return field
 
@@ -78,7 +80,7 @@ class K(BoundaryCondition):
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructTurbulentIntensityInletOutletTKE(
                     float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity')) / 100.0)
-        elif self._model == TurbulenceModel.K_OMEGA:
+        elif self._model == TurbulenceModel.K_OMEGA or self._model == TurbulenceModel.TRANSITION_SST:
             spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
                 return self._constructInletOutlet(
@@ -138,7 +140,7 @@ class K(BoundaryCondition):
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructTurbulentIntensityInletOutletTKE(
                     float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity')) / 100.0)
-        elif self._model == TurbulenceModel.K_OMEGA:
+        elif self._model == TurbulenceModel.K_OMEGA or self._model == TurbulenceModel.TRANSITION_SST:
             spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
                 k = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))

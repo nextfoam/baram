@@ -3,9 +3,9 @@
 
 from PySide6.QtWidgets import QDialog, QVBoxLayout
 
+from app_properties import meshAppProperties
 from widgets.new_project_widget import NewProjectWidget
 
-from baramMesh.app import app
 from .export_dialog_ui import Ui_ExportDialog
 
 
@@ -15,7 +15,10 @@ class ExportDialog(QDialog):
         self._ui = Ui_ExportDialog()
         self._ui.setupUi(self)
 
-        self._pathWidget = NewProjectWidget(self._ui.path, suffix=app.properties.exportSuffix)
+        self._pathWidget = NewProjectWidget(self._ui.path, suffix=meshAppProperties.exportSuffix)
+
+        self.setWindowTitle(self.tr('Export as {0} Project').format(meshAppProperties.flowAppName))
+        self._ui.run.setText(self.tr('Run {0} on Exported Project').format(meshAppProperties.flowAppName))
 
         self._ui.ok.setEnabled(False)
 

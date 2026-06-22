@@ -43,6 +43,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._modelRadios.addEnumButton(self._ui.spalartAllmaras, TurbulenceModel.SPALART_ALLMARAS)
         self._modelRadios.addEnumButton(self._ui.kEpsilon,        TurbulenceModel.K_EPSILON)
         self._modelRadios.addEnumButton(self._ui.kOmega,          TurbulenceModel.K_OMEGA)
+        self._modelRadios.addEnumButton(self._ui.transitionSST,   TurbulenceModel.TRANSITION_SST)
         self._modelRadios.addEnumButton(self._ui.DES,             TurbulenceModel.DES)
         self._modelRadios.addEnumButton(self._ui.LES,             TurbulenceModel.LES)
 

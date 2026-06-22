@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from enum import Enum, auto
 
 import qasync
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, Signal
 from PySide6.QtGui import QRegularExpressionValidator
 
 from widgets.async_message_box import AsyncMessageBox
-from widgets.validation.validation import FormValidator
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
@@ -32,9 +32,11 @@ ALL_MATERIALS_TEXT = QCoreApplication.translate('UserDefinedScalar', 'All')
 ALL_MATERIALS_MID = '0'
 
 SCALAR_SPECIFICATION_METHODS = {
-    ScalarSpecificationMethod.CONSTANT:                         QCoreApplication.translate('UserDefinedScalar', 'Constant'),
+    ScalarSpecificationMethod.CONSTANT:
+        QCoreApplication.translate('UserDefinedScalar', 'Constant'),
     # ScalarSpecificationMethod.TURBULENT_VISCOSITY:              QCoreApplication.translate('UserDefinedScalar', 'Turbulent Viscosity'),
-    ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY:  QCoreApplication.translate('UserDefinedScalar', 'Laminar and Turbulent Viscosity')
+    ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY:
+        QCoreApplication.translate('UserDefinedScalar', 'Laminar and Turbulent Viscosity')
 }
 
 
@@ -43,7 +45,9 @@ class Mode(Enum):
     Edit = auto()
 
 
-class UserDefiendScalarDialog(ResizableDialog):
+class UserDefinedScalarDialog(ResizableDialog):
+    dataAccepted = Signal(UserDefinedScalar)
+
     def __init__(self, parent, scalar: UserDefinedScalar):
         super().__init__(parent)
         self._ui = Ui_UserDefinedScalarDialog()
@@ -65,7 +69,10 @@ class UserDefiendScalarDialog(ResizableDialog):
         else:
             self._ui.basicsLayout.setRowVisible(self._ui.target, False)
 
-        self._ui.specificationMethod.addEnumItems(SCALAR_SPECIFICATION_METHODS)
+        self._ui.specificationMethod.addItem(self.tr('Constant'),
+                                             ScalarSpecificationMethod.CONSTANT)
+        self._ui.specificationMethod.addItem(self.tr('Laminar and Turbulent Viscosity'),
+                                             ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY)
 
         if scalar.fieldName:
             self._ui.fieldName.setEnabled(False)
@@ -77,28 +84,11 @@ class UserDefiendScalarDialog(ResizableDialog):
         self._connectSignalsSlots()
         self._load(scalar)
 
-    def scalar(self) -> UserDefinedScalar:
-        self._scalar.fieldName = self._ui.fieldName.text()
-
-        if ModelsDB.isMultiphaseModelOn():
-            self._scalar.material = self._ui.target.currentData()
-        elif RegionDB.isMultiRegion():
-            self._scalar.rname = self._ui.target.currentText()
-
-        self._scalar.specificationMethod = self._ui.specificationMethod.currentData()
-        if self._scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:
-            self._scalar.constantDiffusivity = self._ui.diffusivity.text()
-        else:
-            self._scalar.laminarViscosityCoefficient = self._ui.laminarViscosityCoefficient.text()
-            self._scalar.turbulentViscosityCoefficient = self._ui.turbulentViscosityCoefficient.text()
-
-        return self._scalar
-
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._onSpecificationMethodChanged)
         self._ui.ok.clicked.connect(self._accept)
 
-    def _load(self, scalar):
+    def _load(self, scalar: UserDefinedScalar):
         if ModelsDB.isMultiphaseModelOn():
             if scalar.material != '0':
                 self._ui.target.setCurrentText(MaterialDB.getName(scalar.material))
@@ -108,38 +98,54 @@ class UserDefiendScalarDialog(ResizableDialog):
             self._ui.target.setCurrentText(scalar.rname)
 
         self._ui.fieldName.setText(scalar.fieldName)
-        self._ui.specificationMethod.setCurrentData(scalar.specificationMethod)
-        self._ui.diffusivity.setText(scalar.constantDiffusivity)
-        self._ui.laminarViscosityCoefficient.setText(scalar.laminarViscosityCoefficient)
-        self._ui.turbulentViscosityCoefficient.setText(scalar.turbulentViscosityCoefficient)
+        self._ui.specificationMethod.setCurrentIndex(self._ui.specificationMethod.findData(scalar.specificationMethod))
+        self._ui.diffusivity.setPFloat(scalar.constantDiffusivity)
+        self._ui.laminarViscosityCoefficient.setPFloat(scalar.laminarViscosityCoefficient)
+        self._ui.turbulentViscosityCoefficient.setPFloat(scalar.turbulentViscosityCoefficient)
 
-    def _specificationMethodChanged(self, method):
+        self._onSpecificationMethodChanged()
+
+    def _onSpecificationMethodChanged(self):
+        method = self._ui.specificationMethod.currentData()
         self._ui.constant.setVisible(method == ScalarSpecificationMethod.CONSTANT)
         self._ui.laminarAndTurbulentViscosity.setVisible(
             method == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY)
 
     @qasync.asyncSlot()
     async def _accept(self):
-        fieldName = self._ui.fieldName.text()
+        fieldName = self._ui.fieldName.text().strip()
+
+        if fieldName == '':
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Field Name is required.'))
+            return
 
         if fieldName in RESERVED_FIELDS:
-            await AsyncMessageBox().information(self, 'Input Error', 'Field Name is not available.')
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Field Name is not available.'))
             return
 
         if self._mode == Mode.Add and self.parent().fieldNameExists(fieldName):
-            await AsyncMessageBox().information(self, 'Input Error', 'Field Name already exists.')
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Field Name already exists.'))
             return
 
-        validator = FormValidator()
-        validator.addRequiredValidation(self._ui.fieldName, self.tr('Field Name'))
-        validator.addRequiredValidation(self._ui.diffusivity, self.tr('Diffusivity'))
-        validator.addRequiredValidation(self._ui.laminarViscosityCoefficient, self.tr('Laminar Viscosity Coefficient'))
-        validator.addRequiredValidation(self._ui.turbulentViscosityCoefficient,
-                                        self.tr('Turbulent Viscosity Coefficient'))
+        data = deepcopy(self._scalar)
+        data.fieldName = self._ui.fieldName.text().strip()
+        try:
+            if ModelsDB.isMultiphaseModelOn():
+                data.material = self._ui.target.currentData()
+            elif RegionDB.isMultiRegion():
+                data.rname = self._ui.target.currentText()
 
-        valid, msg = validator.validate()
-        if not valid:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+            data.specificationMethod = self._ui.specificationMethod.currentData()
+            if data.specificationMethod == ScalarSpecificationMethod.CONSTANT:
+                data.constantDiffusivity = self._ui.diffusivity.pFloat(self.tr('Diffusivity'))
+            else:
+                data.laminarViscosityCoefficient = self._ui.laminarViscosityCoefficient.pFloat(
+                    self.tr('Laminar Viscosity Coefficient'))
+                data.turbulentViscosityCoefficient = self._ui.turbulentViscosityCoefficient.pFloat(
+                    self.tr('Turbulent Viscosity Coefficient'))
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
+        self.dataAccepted.emit(data)
         self.accept()

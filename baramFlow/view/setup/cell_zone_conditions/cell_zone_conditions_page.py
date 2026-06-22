@@ -6,13 +6,15 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from widgets.async_message_box import AsyncMessageBox
+
 from baramFlow.case_manager import CaseManager
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.project import Project
+from baramFlow.services.region.region_service import RegionService
 from baramFlow.view.widgets.content_page import ContentPage
-from widgets.async_message_box import AsyncMessageBox
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget, RegionWidget
@@ -75,11 +77,13 @@ class CellZoneConditionsPage(ContentPage):
         self._ui = Ui_CellZoneConditionsPage()
         self._ui.setupUi(self)
 
+        self._items = {}
+        self._actor = None
+
         self._ui.cellZones.setSortingEnabled(True)
         self._ui.cellZones.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
-        self._items = {}
-        self._actor = None
+        self._ui.edit.setEnabled(False)
 
         self._connectSignalsSlots()
         self._updateCopyEnabled()
@@ -89,8 +93,9 @@ class CellZoneConditionsPage(ContentPage):
         if not ev.spontaneous():
             if self._actor:
                 view = app.renderingView
-                view.removeActor(self._actor)
-                view.refresh()
+                if view is not None:
+                    view.removeActor(self._actor)
+                    view.refresh()
 
                 self._ui.cellZones.clearSelection()
                 self._actor = None
@@ -104,7 +109,7 @@ class CellZoneConditionsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         self._ui.cellZones.itemDoubleClicked.connect(self._edit)
-        self._ui.cellZones.currentItemChanged.connect(self._cellZoneSelected)
+        self._ui.cellZones.currentItemChanged.connect(self._onSelectedCellZoneChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
 
@@ -124,15 +129,18 @@ class CellZoneConditionsPage(ContentPage):
         self._ui.cellZones.expandAll()
 
     def _updateCopyEnabled(self):
-        self._ui.edit.setEnabled(not CaseManager().isActive())
+        item = self._ui.cellZones.currentItem()
+        self._ui.copy.setEnabled(not CaseManager().isActive()
+                                 and item is not None
+                                 and (not item.isRegion() or RegionService.isMultiRegion()))
 
     def _edit(self):
         if item := self._ui.cellZones.currentItem():
-            self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
+            self._dialog = CellZoneConditionDialog(self, str(item.czid()), item.rname())
             self._dialog.accepted.connect(item.update)
             self._dialog.open()
 
-    def _cellZoneSelected(self, item):
+    def _onSelectedCellZoneChanged(self, item):
         view = app.renderingView
         if self._actor:
             view.removeActor(self._actor)
@@ -148,10 +156,14 @@ class CellZoneConditionsPage(ContentPage):
 
         view.refresh()
 
+        self._ui.edit.setEnabled(True)
+        self._updateCopyEnabled()
+
     @qasync.asyncSlot()
     async def _copy(self):
         if item := self._ui.cellZones.currentItem():
-            self._dialog = CopyDialog(self, item.czid(), CopyMode.REGION if item.isRegion() else CopyMode.CELL_ZONE)
+            self._dialog = CopyDialog(
+                self, str(item.czid()), CopyMode.REGION if item.isRegion() else CopyMode.CELL_ZONE)
             self._dialog.cellZonesCopied.connect(self._refresh)
             self._dialog.open()
         else:
@@ -173,4 +185,4 @@ class CellZoneConditionsPage(ContentPage):
 
     def _refresh(self, cellZones):
         for czid in cellZones:
-            self._items[czid].update()
+            self._items[int(czid)].update()

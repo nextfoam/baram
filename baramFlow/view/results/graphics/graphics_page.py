@@ -83,13 +83,18 @@ class GraphicsPage(ContentPage):
     async def _openAddGraphicDialog(self):
         if len(ScaffoldsDB().getScaffolds()) == 0:
             await AsyncMessageBox().warning(self, self.tr('Warning'),
-                                            self.tr('There is no Scaffold.\nAt least one scaffold is required to configure Graphics Report'))
+                                            self.tr('There is no Scaffold.\nAt least one scaffold is required to configure Graphics Report.'))
+            return
+
+        times = FileSystem.times()
+        if len(times) == 0:
+            await AsyncMessageBox().warning(self, self.tr('Warning'),
+                                            self.tr('There is no calculation result.\nInitialize and start calculation for the result.'))
             return
 
         uuid = uuid4()
         name = GraphicsDB().getNewGraphicName()
         self._report = Graphic(uuid=uuid, name=name)
-        times = FileSystem.times()
         self._report.time = times[-1]
         self._dialog = GraphicDialog(self, self._report, times)
         self._dialog.accepted.connect(self._addGraphic)

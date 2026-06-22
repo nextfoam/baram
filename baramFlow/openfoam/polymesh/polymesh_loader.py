@@ -1,30 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import logging
 import re
+from typing import Optional
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA
 
-from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.model.DPM_model import DPMModelManager
-from baramFlow.base.monitor.monitor import MonitorManager
-from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.openfoam.constants import Directory
 
 from baramFlow.app import app
+from baramFlow.base.event_bus import EventBus, RegionComponents
+from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.monitor.monitor import MonitorManager
+from baramFlow.base.region.poly_mesh import PolyMeshRegion
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, GeometricalType, BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
-from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.region_db import RegionDB, DEFAULT_REGION_NAME
+from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.constant.region_properties import RegionProperties
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.mesh.mesh_model import ActorInfo, MeshModel
+from baramFlow.services.region.region_service import RegionService
 
 
 logger = logging.getLogger(__name__)
@@ -89,6 +93,9 @@ def defaultBoundaryType(name, geometricalType: GeometricalType)->BoundaryType:
     if geometricalType == GeometricalType.CYCLIC_AMI:
         return BoundaryType.INTERFACE
 
+    if geometricalType == GeometricalType.CYCLIC_ACMI:
+        return BoundaryType.CYCLIC_ACMI
+
     if geometricalType == GeometricalType.MAPPED_WALL:
         return BoundaryType.THERMO_COUPLED_WALL
 
@@ -111,6 +118,27 @@ class PolyMeshLoader(QObject):
     def loadBoundaryDict(cls, path, listLengthUnparsed=None, longListOutputThreshold=None):
         return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True, longListOutputThreshold=longListOutputThreshold)
 
+    def buildMeshTopology(self):
+        mesh: dict[str, RegionComponents] = {}
+
+        db = coredb.CoreDB()
+        for rname in db.getRegions():
+            cellZones: dict[str, str] = {}
+            boundaries: dict[str, str] = {}
+
+            for czid, czname in db.getCellZones(rname):
+                cellZones[czname] = str(czid)
+
+            for bcid, bcname, _ in db.getBoundaryConditions(rname):
+                boundaries[bcname] = str(bcid)
+
+            mesh[rname] = {
+                'cellZones': cellZones,
+                'boundaries': boundaries
+            }
+
+        return mesh
+
     async def loadMesh(self):
         self.progress.emit(self.tr("Loading Mesh..."))
         boundaries = self._loadBoundaries()
@@ -119,7 +147,13 @@ class PolyMeshLoader(QObject):
             await reader.setupReader()
 
         vtkMesh = await self._getVtkMesh()
+
+        oldMesh = self.buildMeshTopology()
         updated = self._updateDB(vtkMesh, boundaries)
+        newMesh = self.buildMeshTopology()
+
+        await EventBus().onMeshLoading.emit(oldMesh, newMesh)
+
         await self._updateMeshModel(vtkMesh)
         if updated:
             app.updateMesh()
@@ -189,20 +223,6 @@ class PolyMeshLoader(QObject):
         return vtkMesh
 
     def _updateDB(self, vtkMesh, boundaries):
-        def oldBoundaries(region):
-            return set(bcname for _, bcname, _ in db.getBoundaryConditions(region))
-
-        def newBoundareis(region):
-            return set(vtkMesh[region]['boundary'].keys())
-
-        def oldCellZones(region):
-            return set(czname for _, czname in db.getCellZones(region) if not CellZoneDB.isRegion(czname))
-
-        def newCellZones(region):
-            return set(vtkMesh[region]['zones']['cellZones'].keys()) \
-                if 'zones' in vtkMesh[region] and 'cellZones' in vtkMesh[region]['zones'] \
-                else set()
-
         def getSamplePatch(rname, bcname):
             region = None
             patch = None
@@ -257,32 +277,23 @@ class PolyMeshLoader(QObject):
             return None
 
         db = coredb.CoreDB()
-        if set(db.getRegions()) == set(r for r in vtkMesh if 'boundary' in vtkMesh[r]) and \
-                all(oldBoundaries(rname) == newBoundareis(rname) and oldCellZones(rname) == newCellZones(rname)
-                    for rname in boundaries):
+        if RegionService.matches(vtkMesh):
+            RegionService.updatePolyMeshData(boundaries)
             return False
 
         UserDefinedScalarsDB.clearUserDefinedScalars(db)
-        db.clearRegions()
+        RegionService.clear()
         MonitorManager.clearMonitors()
         DPMModelManager.turnOff(meshUpdated=True)
 
+        regions = []
         for rname in boundaries:
-            RegionDB.addRegion(rname)
-
-            # Initial value of "0" for pressure in density-based solvers causes trouble by making density zero
-            # because operating pressure is fixed to "0" for density-based solvers
-            if GeneralDB.isDensityBased():
-                pressurePath = f'/regions/region[name="{rname}"]/initialization/initialValues/pressure'
-                db.setValue(pressurePath, '101325')
-
             for bcname in vtkMesh[rname]['boundary']:
                 boundary = boundaries[rname][bcname]
                 geometricalType = GeometricalType(boundary['type'])
-                boundaryType = boundary['bctype']
 
-                coupledBoundary = None
-                if BoundaryDB.needsCoupledBoundary(boundaryType):
+                coupledBoundary: Optional[dict] = None
+                if BoundaryDB.needsCoupledBoundary(boundary['bctype']):
                     if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
                         sampleRegion, samplePatch = getSamplePatch(rname, bcname)
                         if samplePatch and getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
@@ -291,29 +302,27 @@ class PolyMeshLoader(QObject):
                         neighbourPatch = getNeighbourPatch(rname, bcname)
                         if neighbourPatch and getNeighbourPatch(rname, neighbourPatch) == bcname:
                             coupledBoundary = boundaries[rname][neighbourPatch]
-                elif boundaryType == BoundaryType.WALL:     # Geometrica type is patch or wall.
+                elif boundary['bctype'] == BoundaryType.WALL:     # Geometrica type is patch or wall.
                     if couple := getCouplePatchByName(bcname):
                         coupleRegion, coupleName = couple
                         coupledBoundary = boundaries[coupleRegion][coupleName]
                         if coupleRegion == rname:
-                            boundaryType = BoundaryType.INTERFACE
+                            boundary['bctype'] = BoundaryType.INTERFACE
                         else:
-                            boundaryType = BoundaryType.THERMO_COUPLED_WALL
+                            boundary['bctype'] = BoundaryType.THERMO_COUPLED_WALL
 
-                boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
+                if coupledBoundary and ('bctype' in coupledBoundary) and (coupledBoundary['bctype'] == boundary['bctype']):
+                    boundary['couple'] = coupledBoundary
+                    coupledBoundary['couple'] = boundary
 
-                xpath = BoundaryDB.getXPath(boundary['bcid'])
+            regions.append(
+                PolyMeshRegion(rname=rname,
+                               boundaries=boundaries[rname],
+                               cellZones=(vtkMesh[rname]['zones']['cellZones'].keys()
+                                          if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']
+                                          else [])))
 
-                if coupledBoundary and 'bcid' in coupledBoundary:
-                    db.setValue(xpath + '/coupledBoundary', coupledBoundary['bcid'])
-                    db.setValue(BoundaryDB.getXPath(coupledBoundary['bcid']) + '/coupledBoundary', boundary['bcid'])
-
-                interactionType = DPMModelManager.getDefaultPatchInteractionType(boundaryType)
-                db.setValue(xpath + '/patchInteraction/type', interactionType.value)
-
-            if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
-                for czname in vtkMesh[rname]['zones']['cellZones']:
-                    db.addCellZone(rname, czname)
+        RegionService.replace(regions)
 
         return True
 

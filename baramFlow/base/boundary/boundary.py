@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from xml.etree.ElementTree import Element
 
-from lxml import etree
+from libbaram.pfloat import PFloat
 
-from baramFlow.base.base import BatchableNumber
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, GeometricalType
-from baramFlow.coredb.coredb import CoreDB
-from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.libdb import nsmap, xmlToBool, ValueException, dbErrorToMessage
+from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.coredb import _CoreDB
+from baramFlow.coredb.libdb import nsmap, E, xmlToBool
 
 
 class PatchInteractionType(Enum):
@@ -22,59 +19,44 @@ class PatchInteractionType(Enum):
     RECYCLE = 'recycle'
 
 
-def _updateUserDefinedScalars(db, bcid, scalars):
-    if scalars is None:
-        return
-
-    element = db.getElement(BoundaryDB.getXPath(bcid) + '/userDefinedScalars')
-    element.clear()
-
-    for s in scalars:
-        element.append(
-            etree.fromstring(f'''
-                <scalar xmlns="http://www.baramcfd.org/baram">
-                    <scalarID>{s.scalarID}</scalarID>
-                    <value>{s.value}</value>
-                </scalar>
-            '''))
-
-def _updateSpecies(db, bcid, specieRatios):
-    if specieRatios is None:
-        return
-
-    element = db.getElement(f'{BoundaryDB.getXPath(bcid)}/species/mixture[mid="{specieRatios.mid}"]')
-    for s in specieRatios.ratios:
-        element.find(f'specie[mid="{s.mid}"]/value', namespaces=nsmap).text = s.value
-
-
 @dataclass
 class CoefficientOfRestitution:
-    normal: BatchableNumber
-    tangential: BatchableNumber
+    normal: PFloat      = field(default_factory=lambda: PFloat('1'))
+    tangential: PFloat  = field(default_factory=lambda: PFloat('1'))
 
     @staticmethod
     def fromElement(e):
-        return CoefficientOfRestitution(normal=BatchableNumber.fromElement(e.find('normal', namespaces=nsmap)),
-                                        tangential=BatchableNumber.fromElement(e.find('tangential', namespaces=nsmap)))
+        return CoefficientOfRestitution(normal=PFloat.fromElement(e.find('normal', namespaces=nsmap)),
+                                        tangential=PFloat.fromElement(e.find('tangential', namespaces=nsmap)))
+
+    def toElement(self):
+        return E('coefficientOfRestitution',
+                 self.normal.toElement('normal'),
+                 self.tangential.toElement('tangential'))
 
 
 @dataclass
 class RecycleProperties:
-    recycleBoundary: str
-    recycleFraction: BatchableNumber
+    recycleBoundary: str    = '0'
+    recycleFraction: PFloat = field(default_factory=lambda: PFloat('1'))
 
     @staticmethod
     def fromElement(e):
         return RecycleProperties(
             recycleBoundary=e.find('recycleBoundary', namespaces=nsmap).text,
-            recycleFraction=BatchableNumber.fromElement(e.find('recycleFraction', namespaces=nsmap)))
+            recycleFraction=PFloat.fromElement(e.find('recycleFraction', namespaces=nsmap)))
+
+    def toElement(self):
+        return E('recycle',
+                 E('recycleBoundary', self.recycleBoundary),
+                 self.recycleFraction.toElement('recycleFraction'))
 
 
 @dataclass
 class PatchInteraction:
-    type: PatchInteractionType
-    reflect: CoefficientOfRestitution
-    recycle: RecycleProperties
+    type: PatchInteractionType = PatchInteractionType.REFLECT
+    reflect: CoefficientOfRestitution = field(default_factory=CoefficientOfRestitution)
+    recycle: RecycleProperties = field(default_factory=RecycleProperties)
 
     @staticmethod
     def fromElement(e):
@@ -84,35 +66,63 @@ class PatchInteraction:
             recycle=RecycleProperties.fromElement(e.find('recycle', namespaces=nsmap)))
 
     def toElement(self):
-        return etree.fromstring(
-            f'''
-                <patchInteraction xmlns="http://www.baramcfd.org/baram">
-                    <type>{self.type.value}</type>
-                    <reflect>
-                        <coefficientOfRestitution>
-                            {self.reflect.normal.toXML('normal')}
-                            {self.reflect.tangential.toXML('tangential')}
-                        </coefficientOfRestitution>
-                    </reflect>
-                    <recycle>
-                        <recycleBoundary>{self.recycle.recycleBoundary}</recycleBoundary>
-                        {self.recycle.recycleFraction.toXML('recycleFraction')}
-                    </recycle>
-                </patchInteraction>
-            '''
-        )
+        return E('patchInteraction',
+                    E('type', self.type),
+                    E('reflect', self.reflect.toElement()),
+                    self.recycle.toElement()
+                 )
 
 
 @dataclass
 class UserDefinedScalarValue:
     scalarID: str
-    value: str
+    value: PFloat
+
+    def toElement(self):
+        return E('scalar',
+                 E('scalarID', self.scalarID),
+                 self.value.toElement('value'))
+
+    @staticmethod
+    def fromElement(element):
+        return UserDefinedScalarValue(scalarID=element.find('scalarID', namespaces=nsmap).text,
+                                      value=PFloat.fromElement(element.find('value', namespaces=nsmap)))
+
+
+def updateUserDefinedScalarsInDB(db, bcid, scalars: list[UserDefinedScalarValue]):
+    if scalars is None:
+        return
+
+    element = db.getElement(BoundaryDB.getXPath(bcid) + '/userDefinedScalars')
+    element.clear()
+
+    for s in scalars:
+        element.append(s.toElement())
+
+
+def userDefinedScalarsFromElement(element):
+    data = []
+
+    for row in element.findall('scalar', namespaces=nsmap):
+        data.append(UserDefinedScalarValue.fromElement(row))
+
+    return data
 
 
 @dataclass
 class SpecieValue:
     mid: str
-    value: str
+    value: PFloat
+
+    def toElement(self):
+        return E('specie',
+                 E('mid', self.mid),
+                 self.value.toElement('value'))
+    #
+    # @staticmethod
+    # def fromElement(element):
+    #     return SpecieValue(mid=element.get('mid'),
+    #                        value=PFloat(element.find('value', namespaces=nsmap).text))
 
 
 @dataclass
@@ -120,90 +130,68 @@ class SpecieRatios:
     mid: str
     ratios: list[SpecieValue]
 
+    def applyToDBByPath(self, db: _CoreDB, parentPath: str):
+        element = E('mixture',
+                    E('mid', self.mid))
+
+        for s in self.ratios:
+            element.append(s.toElement())
+
+        db.replaceElement(f'{parentPath}/mixture[mid="{self.mid}"]', element)
+
+
+def updateSpeciesInDB(db: _CoreDB, bcid: str, specieRatios: SpecieRatios):
+    if specieRatios is not None:
+        specieRatios.applyToDBByPath(db, f'{BoundaryDB.getXPath(bcid)}/species')
+#
+#
+# def speciesFromElement(element):
+#     data = []
+#
+#     for row in element.findall('species/', namespaces=nsmap):
+#         data.append(SpecieValue.fromElement(row))
+#
+#     return data
+
 
 @dataclass
 class TemperatureLayer:
-    thickness: str
-    thermalConductivity : str
+    thickness: PFloat
+    thermalConductivity : PFloat
 
 
 @dataclass
 class TemperatureLayers:
-    disabled: bool
-    layers: list[TemperatureLayer] = None
+    disabled: bool                  = True
+    layers: list[TemperatureLayer]  = None
 
-    def toUpdateListForCoreDB(self, xpath):
-        data = []
+    def update(self, new):
+        self.disabled = new.disabled
 
-        if not self.disabled:
-            thicknessLayers = ''
-            thermalConductivityLayers = ''
-            for row in self.layers:
-                thicknessLayers += row.thickness + ' '
-                thermalConductivityLayers += row.thermalConductivity + ' '
+        if new.disabled:
+            return
 
-            data.append((xpath + '/thicknessLayers', thicknessLayers))
-            data.append((xpath + '/thermalConductivityLayers', thermalConductivityLayers))
-
-        return data, [(xpath, 'disabled', xmlToBool(self.disabled))]    # data, attributes
+        self.layers = new.layers
 
 
-@dataclass
-class BoundaryBase:
-    bcid: str = ''
-    name: str = ''
-    geometricalType: GeometricalType = GeometricalType.PATCH
-    bctype: BoundaryType = BoundaryType.WALL
-    volumeFractions: list = None
-    userDefinedScalars: list = None
-    species: SpecieRatios = None
-    patchInteraction: PatchInteraction = None
+    def toElement(self):
+        thicknessLayers = ''
+        thermalConductivityLayers = ''
+        for row in self.layers:
+            thicknessLayers += str(row.thickness) + ' '
+            thermalConductivityLayers += str(row.thermalConductivity) + ' '
 
-    def update(self, writer: CoreDBWriter = None):
-        try:
-            with CoreDB() as db:
-                _updateUserDefinedScalars(db, self.bcid, self.userDefinedScalars)
-                _updateSpecies(db, self.bcid, self.species)
-
-                self._updateTypeConditionIn(db)
-
-                if writer is not None:
-                    writer.updateInDB(db)
-
-                db.increaseConfigCount()
-        except ValueException as e:
-            raise ValueError(dbErrorToMessage(e))
-
-    def _updateTypeConditionIn(self, db):
-        pass
-
-
-class BoundaryManager:
-    @staticmethod
-    def getElement(bcid, name):
-        if name is None:
-            return CoreDB().getElement(BoundaryDB.getXPath(bcid))
+        return E('wallLayers',
+                    E('thicknessLayers', thicknessLayers),
+                    E('thermalConductivityLayers', thermalConductivityLayers),
+                    disabled=self.disabled)
 
     @staticmethod
-    def patchInteraction(bcid: str):
-        return PatchInteraction.fromElement(CoreDB().getElement(BoundaryDB.getXPath(bcid) + '/patchInteraction'))
+    def fromElement(e):
+        thicknessLayers = e.find('thicknessLayers', namespaces=nsmap).text.split()
+        thermalConductivityLayers = e.find('thermalConductivityLayers', namespaces=nsmap).text.split()
 
-    @staticmethod
-    def updatePatchInteractionIn(db, bcid, patchInteraction):
-        p = db.getElement(BoundaryDB.getXPath(bcid))
-
-        new: Element = patchInteraction.toElement()
-
-        for i, child in enumerate(p):
-            if child.tag == new.tag:
-                p.remove(child)
-                p.insert(i, new)
-                break
-        else:
-            assert False
-
-        db.increaseConfigCount()
-
-    @staticmethod
-    def updateBoundaryCondition(condition: BoundaryBase, writer: CoreDBWriter = None):
-        condition.update(writer)
+        return TemperatureLayers(disabled=xmlToBool(e.get('disabled')),
+                                 layers=[TemperatureLayer(thickness=thicknessLayers[i],
+                                                          thermalConductivity=thermalConductivityLayers[i])
+                                         for i in range(len(thicknessLayers))])

@@ -33,10 +33,8 @@ class SnapPage(StepPage):
         self._surfaces = None
         self._oldSurfaces = None
 
-        self._ui.featureSnapType.addEnumItems({
-            FeatureSnapType.EXPLICIT: self.tr('explicit'),
-            FeatureSnapType.IMPLICIT: self.tr('implicit')
-        })
+        self._ui.featureSnapType.addItem(self.tr('explicit'),   FeatureSnapType.EXPLICIT)
+        self._ui.featureSnapType.addItem(self.tr('implicit'),   FeatureSnapType.IMPLICIT)
 
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerLaplacian, BufferLayerPointSmoothingMethod.LAPLACIAN)
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerGETMe, BufferLayerPointSmoothingMethod.GETME)
@@ -45,11 +43,13 @@ class SnapPage(StepPage):
 
         self._connectSignalsSlots()
 
-    async def show(self, isCurrentStep, batchRunning):
-        self.load()
+    def open(self):
+        self._loadSurfaces()
+
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.updateWorkingStatus()
 
-        self._ui.snap.setEnabled(isCurrentStep and not batchRunning)
+        self._ui.snap.setEnabled(isWorkingStep and not batchRunning)
 
     async def save(self):
         try:
@@ -106,25 +106,8 @@ class SnapPage(StepPage):
         if self._loaded:
             return
 
-        dbElement = app.db.checkout()
-
-        self._setConfigurations(dbElement.getElement('snap'))
-
-        self._availableSurfaces = []
-        self._surfaces = []
-        self._ui.bufferLayerSurfaces.clear()
-        for gid, geometry in app.db.getElements('geometry').items():
-            if geometry.enum('gType') == GeometryType.SURFACE:
-                name = geometry.value('name')
-                isInterface = geometry.enum('cfdType') == CFDType.INTERFACE
-
-                self._availableSurfaces.append(SelectorItem(name, name, gid, not isInterface))
-
-                if geometry.value('addBufferLayers') or isInterface:
-                    self._ui.bufferLayerSurfaces.addItem(name)
-                    self._surfaces.append(gid)
-
-        self._oldSurfaces = self._surfaces
+        self._setConfigurations(app.db.getElement('snap'))
+        self._loadSurfaces()
 
         self._loaded = True
 
@@ -141,8 +124,8 @@ class SnapPage(StepPage):
         self._ui.snap.clicked.connect(self._snap)
         self._ui.snapCancel.clicked.connect(snappyHexMesh.cancel)
         self._ui.snapReset.clicked.connect(self._reset)
-        self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
-        self._smoothingMethod.selectionChanged.connect(self._smootingMethodChanged)
+        self._ui.featureSnapType.currentIndexChanged.connect(self._onFeatureSnapTypeChanged)
+        self._smoothingMethod.selectionChanged.connect(self._onSmoothingMethodChanged)
         self._ui.bufferLayerSurfacesSelect.clicked.connect(self._selectSurfaces)
 
     @qasync.asyncSlot()
@@ -158,7 +141,8 @@ class SnapPage(StepPage):
         self._ui.meshDisplacementRelaxation.setText(snap.value('nSolveIter'))
         self._ui.globalSnappingRelaxation.setText(snap.value('nRelaxIter'))
         self._ui.featureSnappingRelaxation.setText(snap.value('nFeatureSnapIter'))
-        self._ui.featureSnapType.setCurrentData(FeatureSnapType(snap.value('featureSnapType')))
+        self._ui.featureSnapType.setCurrentIndex(
+            self._ui.featureSnapType.findData(FeatureSnapType(snap.value('featureSnapType'))))
         self._ui.multiSurfaceFeatureSnap.setChecked(snap.value('multiRegionFeatureSnap'))
         self._ui.tolerance.setText(snap.value('tolerance'))
         self._ui.concaveAngle.setText(snap.value('concaveAngle'))
@@ -169,6 +153,25 @@ class SnapPage(StepPage):
         self._smoothingMethod.setCheckedData(bufferLayer.enum('pointSmoothingMethod'))
         self._ui.bufferLayerNumberOfPointSmootherIteration.setText(bufferLayer.value('numberOfPointSmoothingIteration'))
         self._ui.bufferLayerGETMeTransformationParameter.setText(bufferLayer.value('GETMeTransformationParameter'))
+
+        self._onFeatureSnapTypeChanged()
+
+    def _loadSurfaces(self):
+        self._availableSurfaces = []
+        self._surfaces = []
+        self._ui.bufferLayerSurfaces.clear()
+        for gid, geometry in app.db.getElements('geometry').items():
+            if geometry.enum('gType') == GeometryType.SURFACE:
+                name = geometry.value('name')
+                isInterface = geometry.enum('cfdType') == CFDType.INTERFACE
+
+                self._availableSurfaces.append(SelectorItem(name, name, gid, not isInterface))
+
+                if geometry.value('addBufferLayers') or isInterface:
+                    self._ui.bufferLayerSurfaces.addItem(name)
+                    self._surfaces.append(gid)
+
+        self._oldSurfaces = self._surfaces
 
     @qasync.asyncSlot()
     async def _snap(self):
@@ -199,10 +202,10 @@ class SnapPage(StepPage):
         self._ui.snap.setEnabled(True)
         self.stepReset.emit()
 
-    def _featureSnapTypeChanged(self, type_):
-        self._ui.multiSurfaceFeatureSnap.setEnabled(type_ == FeatureSnapType.EXPLICIT)
+    def _onFeatureSnapTypeChanged(self):
+        self._ui.multiSurfaceFeatureSnap.setEnabled(self._ui.featureSnapType.currentData() == FeatureSnapType.EXPLICIT)
 
-    def _smootingMethodChanged(self, method):
+    def _onSmoothingMethodChanged(self, method):
         self._ui.bufferLayerGETMeTransformationParameter.setEnabled(method == BufferLayerPointSmoothingMethod.GETME)
 
     def _selectSurfaces(self):
@@ -222,7 +225,6 @@ class SnapPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.snap.hide()
             self._ui.snapReset.show()
-            print(self._locked)
         else:
             self._ui.snap.show()
             self._ui.snap.setEnabled(True)

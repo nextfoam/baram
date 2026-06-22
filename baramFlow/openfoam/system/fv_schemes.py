@@ -44,11 +44,13 @@ class FvSchemes(DictionaryFile):
             },
             'gradSchemes': {
                 'default': 'Gauss linear',
-                'grad(k)':       'VKLimited Gauss linear 0.5',
-                'grad(epsilon)': 'VKLimited Gauss linear 0.5',
-                'grad(omega)':   'VKLimited Gauss linear 0.5',
-                'grad(nuTilda)': 'VKLimited Gauss linear 0.5',
-                'reconGrad':     'VKLimited Gauss linear 0.5'
+                'grad(k)':        'VKLimited Gauss linear 0.5',
+                'grad(epsilon)':  'VKLimited Gauss linear 0.5',
+                'grad(omega)':    'VKLimited Gauss linear 0.5',
+                'grad(nuTilda)':  'VKLimited Gauss linear 0.5',
+                'grad(gammaInt)': 'VKLimited Gauss linear 0.5',
+                'grad(ReThetat)': 'VKLimited Gauss linear 0.5',
+                'reconGrad':      'VKLimited Gauss linear 0.5'
             },
             'laplacianSchemes': self._constructLaplacianSchemes(),
             'interpolationSchemes': {
@@ -67,18 +69,22 @@ class FvSchemes(DictionaryFile):
         if turbulentKineticEnergy == 'firstOrderUpwind':
             self._data['divSchemes'] = {
                 'default': 'Gauss linear',
-                'div(phi,k)':       'Gauss upwind',
-                'div(phi,epsilon)': 'Gauss upwind',
-                'div(phi,omega)':   'Gauss upwind',
-                'div(phi,nuTilda)': 'Gauss upwind'
-            }
+                'div(phi,k)':        'Gauss upwind',
+                'div(phi,epsilon)':  'Gauss upwind',
+                'div(phi,omega)':    'Gauss upwind',
+                'div(phi,nuTilda)':  'Gauss upwind',
+                'div(phi,gammaInt)': 'Gauss upwind',
+                'div(phi,ReThetat)': 'Gauss upwind',
+           }
         elif turbulentKineticEnergy == 'secondOrderUpwind':
             self._data['divSchemes'] = {
                 'default': 'Gauss linear',
-                'div(phi,k)':       'Gauss linearUpwind reconGrad',
-                'div(phi,epsilon)': 'Gauss linearUpwind reconGrad',
-                'div(phi,omega)':   'Gauss linearUpwind reconGrad',
-                'div(phi,nuTilda)': 'Gauss linearUpwind reconGrad'
+                'div(phi,k)':        'Gauss linearUpwind reconGrad',
+                'div(phi,epsilon)':  'Gauss linearUpwind reconGrad',
+                'div(phi,omega)':    'Gauss linearUpwind reconGrad',
+                'div(phi,nuTilda)':  'Gauss linearUpwind reconGrad',
+                'div(phi,gammaInt)': 'Gauss linearUpwind reconGrad',
+                'div(phi,ReThetat)': 'Gauss linearUpwind reconGrad',
             }
 
         return self
@@ -198,17 +204,21 @@ class FvSchemes(DictionaryFile):
 
         if turbulentKineticEnergy == 'firstOrderUpwind':
             divSchemes.update({
-                'div(phi,k)': f'{bounded}Gauss upwind',
-                'div(phi,epsilon)': f'{bounded}Gauss upwind',
-                'div(phi,omega)': f'{bounded}Gauss upwind',
-                'div(phi,nuTilda)': f'{bounded}Gauss upwind'
+                'div(phi,k)':        f'{bounded}Gauss upwind',
+                'div(phi,epsilon)':  f'{bounded}Gauss upwind',
+                'div(phi,omega)':    f'{bounded}Gauss upwind',
+                'div(phi,nuTilda)':  f'{bounded}Gauss upwind',
+                'div(phi,gammaInt)': f'{bounded}Gauss upwind',
+                'div(phi,ReThetat)': f'{bounded}Gauss upwind',
             })
         elif turbulentKineticEnergy == 'secondOrderUpwind':
             divSchemes.update({
-                'div(phi,k)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
-                'div(phi,epsilon)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
-                'div(phi,omega)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
-                'div(phi,nuTilda)': f'{bounded}Gauss linearUpwind turbulenceReconGrad'
+                'div(phi,k)':        f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,epsilon)':  f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,omega)':    f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,nuTilda)':  f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,gammaInt)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,ReThetat)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
             })
 
         if energyModel != 'off':

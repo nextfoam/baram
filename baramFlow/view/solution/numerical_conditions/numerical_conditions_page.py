@@ -3,7 +3,7 @@
 
 import qasync
 
-from PySide6.QtWidgets import QMessageBox
+from widgets.async_message_box import AsyncMessageBox
 
 import baramFlow.openfoam.solver
 
@@ -36,41 +36,62 @@ class NumericalConditionsPage(ContentPage):
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
         self._dialog = None
 
-        self._upwindDiscretizationSchemes = {
-            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND: self.tr('First Order Upwind'),
-            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND: self.tr('Second Order Upwind'),
-        }
+        self._ui.pressureVelocityCouplingScheme.addItem(self.tr('SIMPLE'),  PressureVelocityCouplingScheme.SIMPLE)
+        self._ui.pressureVelocityCouplingScheme.addItem(self.tr('SIMPLEC'), PressureVelocityCouplingScheme.SIMPLEC)
 
-        self._ui.pressureVelocityCouplingScheme.addEnumItems({
-            PressureVelocityCouplingScheme.SIMPLE: self.tr('SIMPLE'),
-            PressureVelocityCouplingScheme.SIMPLEC: self.tr('SIMPLEC'),
-        })
-        self._ui.formulation.addEnumItems({
-            Formulation.IMPLICIT: self.tr('Implicit'),
-            # Formulation.EXPLICIT: self.tr('Explicit'),
-        })
-        self._ui.fluxType.addEnumItems({
-            FluxType.ROE_FDS: self.tr('Roe-FDS'),
-            FluxType.AUSM: self.tr('ASUM'),
-            FluxType.AUSM_UP: self.tr('ASUM-up'),
-        })
+        self._ui.formulation.addItem(self.tr('Implicit'),   Formulation.IMPLICIT)
+
+        self._ui.fluxType.addItem(self.tr('Roe-FDS'),   FluxType.ROE_FDS)
+        self._ui.fluxType.addItem(self.tr('ASUM'),      FluxType.AUSM)
+        self._ui.fluxType.addItem(self.tr('ASUM-up'),   FluxType.AUSM_UP)
+
         self._ui.discretizationSchemeTime.addItem(self.tr('First Order Implicit'),
                                                   ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT),
         self._ui.discretizationSchemeTime.addItem(self.tr('Second Order Implicit'),
                                                   ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT),
-        
-        self._ui.discretizationSchemeMomentum.addEnumItems(self._upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeEnergy.addEnumItems(self._upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeTurbulence.addEnumItems(self._upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeVolumeFraction.addEnumItems(self._upwindDiscretizationSchemes)
-        self._ui.discretizationSchemePressure.addEnumItems({
-            InterpolationScheme.LINEAR: self.tr('Linear'),
-            InterpolationScheme.MOMENTUM_WEIGHTED_RECONSTRUC: self.tr('Momentum Weighted Reconstruct'),
-            InterpolationScheme.MOMENTUM_WEIGHTED: self.tr('Momentum Weighted'),
-        })
 
-        self._ui.discretizationSchemeScalar.addEnumItems(self._upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeSpecies.addEnumItems(self._upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeMomentum.addItem(self.tr('First Order Upwind'),
+                                                            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeMomentum.addItem(self.tr('Second Order Upwind'),
+                                                            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemeEnergy.addItem(self.tr('First Order Upwind'),
+                                                      UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeEnergy.addItem(self.tr('Second Order Upwind'),
+                                                      UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemeTurbulence.addItem(self.tr('First Order Upwind'),
+                                                      UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeTurbulence.addItem(self.tr('Second Order Upwind'),
+                                                      UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemeVolumeFraction.addItem(self.tr('First Order Upwind'),
+                                                      UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeVolumeFraction.addItem(self.tr('Second Order Upwind'),
+                                                      UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemeVolumeFraction.addItem(self.tr('First Order Upwind'),
+                                                            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeVolumeFraction.addItem(self.tr('Second Order Upwind'),
+                                                            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemePressure.addItem(self.tr('Linear'),
+                                                      InterpolationScheme.LINEAR)
+        self._ui.discretizationSchemePressure.addItem(self.tr('Momentum Weighted Reconstruct'),
+                                                      InterpolationScheme.MOMENTUM_WEIGHTED_RECONSTRUC)
+        self._ui.discretizationSchemePressure.addItem(self.tr('Momentum Weighted'),
+                                                      InterpolationScheme.MOMENTUM_WEIGHTED)
+
+
+        self._ui.discretizationSchemeScalar.addItem(self.tr('First Order Upwind'),
+                                                            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeScalar.addItem(self.tr('Second Order Upwind'),
+                                                            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
+
+        self._ui.discretizationSchemeSpecies.addItem(self.tr('First Order Upwind'),
+                                                    UpwindDiscretizationScheme.FIRST_ORDER_UPWIND)
+        self._ui.discretizationSchemeSpecies.addItem(self.tr('Second Order Upwind'),
+                                                    UpwindDiscretizationScheme.SECOND_ORDER_UPWIND)
 
         self._updateEnabled()
         self._connectSignalsSlots()
@@ -152,13 +173,15 @@ class NumericalConditionsPage(ContentPage):
             self._ui.absoluteSpecies.setEnabled(False)
             self._ui.relativeSpecies.setEnabled(False)
 
-        self._ui.pressureVelocityCouplingScheme.setCurrentData(
-            PressureVelocityCouplingScheme(db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
+        self._ui.pressureVelocityCouplingScheme.setCurrentIndex(
+            self._ui.pressureVelocityCouplingScheme.findData(
+                PressureVelocityCouplingScheme(db.getValue(self._xpath + '/pressureVelocityCouplingScheme'))))
 
-        self._ui.formulation.setCurrentData(Formulation(
-            db.getValue(self._xpath + '/densityBasedSolverParameters/formulation')))
-        self._ui.fluxType.setCurrentData(FluxType(
-            db.getValue(self._xpath + '/densityBasedSolverParameters/fluxType')))
+        self._ui.formulation.setCurrentIndex(
+            self._ui.formulation.findData(
+                Formulation(db.getValue(self._xpath + '/densityBasedSolverParameters/formulation'))))
+        self._ui.fluxType.setCurrentIndex(
+            self._ui.fluxType.findData(FluxType(db.getValue(self._xpath + '/densityBasedSolverParameters/fluxType'))))
         self._ui.entropyFixCoefficient.setText(db.getValue(
             self._xpath + '/densityBasedSolverParameters/entropyFixCoefficient'))
         self._ui.cutOffMachNumber.setText(
@@ -177,21 +200,29 @@ class NumericalConditionsPage(ContentPage):
         self._ui.useMomentumPredictor.setChecked(db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
         self._ui.discretizationSchemeTime.setCurrentIndex(
             self._ui.discretizationSchemeTime.findData(discretizationSchemeTime))
-        self._ui.discretizationSchemePressure.setCurrentData(
-            InterpolationScheme(db.getValue(self._xpath + '/discretizationSchemes/pressure')))
-        self._ui.discretizationSchemeMomentum.setCurrentData(
-            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/momentum')))
-        self._ui.discretizationSchemeEnergy.setCurrentData(
-            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/energy')))
-        self._ui.discretizationSchemeTurbulence.setCurrentData(
-            UpwindDiscretizationScheme(
-                db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')))
-        self._ui.discretizationSchemeVolumeFraction.setCurrentData(
-            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')))
-        self._ui.discretizationSchemeScalar.setCurrentData(
-            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/scalar')))
-        self._ui.discretizationSchemeSpecies.setCurrentData(
-            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/species')))
+        self._ui.discretizationSchemePressure.setCurrentIndex(
+            self._ui.discretizationSchemePressure.findData(
+                InterpolationScheme(db.getValue(self._xpath + '/discretizationSchemes/pressure'))))
+        self._ui.discretizationSchemeMomentum.setCurrentIndex(
+            self._ui.discretizationSchemeMomentum.findData(
+                UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/momentum'))))
+
+        self._ui.discretizationSchemeEnergy.setCurrentIndex(
+            self._ui.discretizationSchemeEnergy.findData(
+                UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/energy'))))
+        self._ui.discretizationSchemeTurbulence.setCurrentIndex(
+            self._ui.discretizationSchemeTurbulence.findData(
+                UpwindDiscretizationScheme(
+                    db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy'))))
+        self._ui.discretizationSchemeVolumeFraction.setCurrentIndex(
+            self._ui.discretizationSchemeVolumeFraction.findData(
+                UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/volumeFraction'))))
+        self._ui.discretizationSchemeScalar.setCurrentIndex(
+            self._ui.discretizationSchemeScalar.findData(
+                UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/scalar'))))
+        self._ui.discretizationSchemeSpecies.setCurrentIndex(
+            self._ui.discretizationSchemeSpecies.findData(
+                UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/species'))))
 
         self._ui.underRelaxationFactorPressure.setText(
             db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
@@ -280,15 +311,17 @@ class NumericalConditionsPage(ContentPage):
             convergenceCriteriaLayout.removeWidget(widget)
             widget.deleteLater()
 
+        self._onFluxTypeChanged()
+
     @qasync.asyncSlot()
     async def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
-                      self._ui.pressureVelocityCouplingScheme.currentValue(), None)
+                      self._ui.pressureVelocityCouplingScheme.currentData().value, None)
 
         writer.append(self._xpath + '/densityBasedSolverParameters/formulation',
-                      self._ui.formulation.currentValue(), None)
-        writer.append(self._xpath + '/densityBasedSolverParameters/fluxType', self._ui.fluxType.currentValue(), None)
+                      self._ui.formulation.currentData().value, None)
+        writer.append(self._xpath + '/densityBasedSolverParameters/fluxType', self._ui.fluxType.currentData().value, None)
         writer.append(self._xpath + '/densityBasedSolverParameters/entropyFixCoefficient',
                       self._ui.entropyFixCoefficient.text(), self.tr('Entropy Fix Coefficient'))
         writer.append(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber',
@@ -300,19 +333,19 @@ class NumericalConditionsPage(ContentPage):
         writer.append(self._xpath + '/discretizationSchemes/time',
                       self._ui.discretizationSchemeTime.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/pressure',
-                      self._ui.discretizationSchemePressure.currentValue(), None)
+                      self._ui.discretizationSchemePressure.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/momentum',
-                      self._ui.discretizationSchemeMomentum.currentValue(), None)
+                      self._ui.discretizationSchemeMomentum.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/energy',
-                      self._ui.discretizationSchemeEnergy.currentValue(), None)
+                      self._ui.discretizationSchemeEnergy.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/turbulentKineticEnergy',
-                      self._ui.discretizationSchemeTurbulence.currentValue(), None)
+                      self._ui.discretizationSchemeTurbulence.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/volumeFraction',
-                      self._ui.discretizationSchemeVolumeFraction.currentValue(), None)
+                      self._ui.discretizationSchemeVolumeFraction.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/scalar',
-                      self._ui.discretizationSchemeScalar.currentValue(), None)
+                      self._ui.discretizationSchemeScalar.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/species',
-                      self._ui.discretizationSchemeSpecies.currentValue(), None)
+                      self._ui.discretizationSchemeSpecies.currentData().value, None)
 
         writer.append(self._xpath + '/underRelaxationFactors/pressure',
                       self._ui.underRelaxationFactorPressure.text(), self.tr('Under-Relaxation Factor Pressure'))
@@ -414,7 +447,7 @@ class NumericalConditionsPage(ContentPage):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+            await AsyncMessageBox().critical(self, self.tr('Input Error'), writer.firstError().toMessage())
             return False
 
         return True
@@ -429,7 +462,7 @@ class NumericalConditionsPage(ContentPage):
         Project.instance().solverStatusChanged.connect(self._updateEnabled)
 
         self._ui.advanced.clicked.connect(self._advancedSetup)
-        self._ui.fluxType.currentDataChanged.connect(self._fluxTypeChanged)
+        self._ui.fluxType.currentIndexChanged.connect(self._onFluxTypeChanged)
 
     def _updateEnabled(self):
         caseManager = CaseManager()
@@ -440,8 +473,9 @@ class NumericalConditionsPage(ContentPage):
         self._dialog = AdvancedDialog(self)
         self._dialog.open()
 
-    def _fluxTypeChanged(self, fluxType):
+    def _onFluxTypeChanged(self):
+        fluxType = self._ui.fluxType.currentData()
         self._ui.densityBasedSolverParametersLayout.setRowVisible(
-            self._ui.entropyFixCoefficient,fluxType == FluxType.ROE_FDS)
+            self._ui.entropyFixCoefficient, fluxType == FluxType.ROE_FDS)
         self._ui.densityBasedSolverParametersLayout.setRowVisible(
-            self._ui.cutOffMachNumber,fluxType == FluxType.AUSM_UP)
+            self._ui.cutOffMachNumber, fluxType == FluxType.AUSM_UP)

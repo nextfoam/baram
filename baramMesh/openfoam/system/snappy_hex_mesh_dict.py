@@ -286,7 +286,7 @@ class SnappyHexMeshDict(DictionaryFile):
                     if curvature.value('excludeSharpSurface'):
                         minEdgeLen = min(app.window.geometryManager.getCellSize())
                         cells = min(curvature.float('minRadius'), minEdgeLen)
-                        minRadius = min(round(log2(minEdgeLen / cells)), 10)
+                        minRadius = min(round(log2(minEdgeLen / cells)), 100)
 
                     data[name]['curvatureLevel'] = [curvature.value('numberOfCells'),
                                                     0,

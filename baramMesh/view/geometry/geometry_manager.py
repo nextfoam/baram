@@ -3,6 +3,8 @@
 
 from PySide6.QtCore import Signal
 
+from libbaram.simple_db.simple_db import Element
+
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape
 from baramMesh.rendering.actor_info import GeometryActor
@@ -31,16 +33,10 @@ def platePolyData(shape, volume):
 class GeometryManager(ActorManager):
     selectedActorsChanged = Signal(list)
 
-    SYNCING_FROM_DISPLAY = 1
-    SYNCING_TO_DISPLAY = 2
-
     def __init__(self):
         super().__init__()
 
-        self._syncingMode = None
-
-        self._displayControl.selectedActorsChanged.connect(self._selectedActorsChanged)
-        self._displayControl.selectionApplied.connect(self._clearSyncingToDisplay)
+        self._displayControl.selectedActorsChanged.connect(self.selectedActorsChanged)
 
     def subSurfaces(self, gId):
         return app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
@@ -63,15 +59,16 @@ class GeometryManager(ActorManager):
 
         self.applyToDisplay()
 
-    def updateCustomSurfaces(self, volume, surfaces):
+    def updateCustomSurfacesByVolume(self, volume, surfaces):
         for gId, surface in surfaces.items():
             self.update(gId, self._surfaceToPolyData(surface, volume))
 
         self.applyToDisplay()
 
-    def updateIndependentSurface(self, gId, surface):
+    def updateSurface(self, gId, surface: Element):
         self._updateActorName(gId, surface.value('name'))
-        self.update(gId, self._surfaceToPolyData(surface))
+        if surface.enum('shape') == Shape.TRI_SURFACE_MESH:
+            self.update(gId, self._surfaceToPolyData(surface))
 
         self.applyToDisplay()
 
@@ -85,29 +82,7 @@ class GeometryManager(ActorManager):
         self._show()
 
     def selectActors(self, ids):
-        if self._syncingMode == self.SYNCING_FROM_DISPLAY:
-            return
-
-        self._syncingMode = self.SYNCING_TO_DISPLAY
         self._displayControl.setSelectedActors(ids)
-
-    def clearSyncingFromDisplay(self):
-        if self._syncingMode != self.SYNCING_FROM_DISPLAY:
-            raise RuntimeError
-
-        self._syncingMode = None
-
-    def startSyncingFromDisplay(self):
-        self._displayControl.selectedItemsChanged()
-
-    def enableSyncingToDisplay(self):
-        if self._syncingMode == self.SYNCING_TO_DISPLAY:
-            return
-
-        self._syncingMode = None
-
-    def disableSyncingToDisplay(self):
-        self._syncingMode = self.SYNCING_FROM_DISPLAY
 
     def getBoundingHex6(self):
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"

@@ -139,6 +139,8 @@ class StepManager(QObject):
         return await self.currentPage().save()
 
     def openNextStep(self):
+        if self._workingStep >= Step.LAST_STEP:
+            return
         self._open(self._workingStep + 1)
 
     def retranslatePages(self):
@@ -157,7 +159,7 @@ class StepManager(QObject):
             self._pages[step].stepReset.connect(self._buttons.disableNextButton)
 
         for step in range(Step.CASTELLATION, Step.EXPORT):
-            self._pages[step].stepCompleted.connect(lambda: self._buttons.showButton(ButtonID.NEXT))
+            self._pages[step].stepCompleted.connect(self._onIntermediateStepCompleted)
             self._pages[step].stepReset.connect(lambda: self._buttons.showButton(ButtonID.FINISH))
 
         self._pages[Step.GEOMETRY].geometryRemoved.connect(self._geometryRemoved)
@@ -204,6 +206,17 @@ class StepManager(QObject):
 
     @qasync.asyncSlot()
     async def _finishSteps(self):
+        if self._batchRunning:
+            return
+
+        # Commit any uncommitted UI state on the current (working) page first.
+        # The load() call inside the loop checks out a fresh self._db from app.db,
+        # which would otherwise drop refinements/layers the user just added via a
+        # dialog but hasn't saved yet — leaving zombie list items pointing at
+        # keys that no longer exist in self._db.
+        if not await self._pages[self._workingStep].save():
+            return
+
         self._batchRunning = True
         self._buttons.showButton(ButtonID.CANCEL)
 
@@ -221,6 +234,9 @@ class StepManager(QObject):
         else:
             await AsyncMessageBox().information(self._contentStack, self.tr('Process Completed'),
                                                 self.tr('All steps complete.'))
+
+        if self._workingStep > Step.LAST_STEP:
+            self._workingStep = Step.LAST_STEP
 
         # Apply current workingStep
         self._setWorkingStep(self._workingStep)
@@ -266,6 +282,10 @@ class StepManager(QObject):
     def _geometryRemoved(self):
         self._pages[Step.CASTELLATION].unload()
         self._pages[Step.BOUNDARY_LAYER].unload()
+
+    def _onIntermediateStepCompleted(self):
+        if self._navigation.currentStep() < Step.LAST_STEP:
+            self._buttons.showButton(ButtonID.NEXT)
 
     def _updateControlButtons(self, step):
         if self._batchRunning:

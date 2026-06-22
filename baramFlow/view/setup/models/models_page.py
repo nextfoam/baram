@@ -4,7 +4,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
-from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import Models, DPMParticleType
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
@@ -13,7 +12,6 @@ from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
-from .DPM.DPM_dialog import DPMDialog
 from .energy_dialog import EnergyDialog
 from .models_page_ui import Ui_ModelsPage
 from .species_dialog import SpeciesDialog
@@ -78,13 +76,14 @@ class ModelsPage(ContentPage):
         }
 
         turbulenceModelTexts = {
-            TurbulenceModel.INVISCID: self.tr('Inviscid'),
-            TurbulenceModel.LAMINAR: self.tr('Laminar'),
-            TurbulenceModel.SPALART_ALLMARAS: self.tr('Spalart-Allmaras'),
-            TurbulenceModel.K_EPSILON: self.tr('k-epsilon'),
-            TurbulenceModel.K_OMEGA: self.tr('k-omega'),
-            TurbulenceModel.DES: self.tr('DES'),
-            TurbulenceModel.LES: self.tr('LES'),
+            TurbulenceModel.INVISCID:           self.tr('Inviscid'),
+            TurbulenceModel.LAMINAR:            self.tr('Laminar'),
+            TurbulenceModel.SPALART_ALLMARAS:   self.tr('Spalart-Allmaras'),
+            TurbulenceModel.K_EPSILON:          self.tr('k-epsilon'),
+            TurbulenceModel.K_OMEGA:            self.tr('k-omega'),
+            TurbulenceModel.TRANSITION_SST:     self.tr('Transition SST'),
+            TurbulenceModel.DES:                self.tr('DES'),
+            TurbulenceModel.LES:                self.tr('LES'),
         }
 
         solverTypeTexts = {

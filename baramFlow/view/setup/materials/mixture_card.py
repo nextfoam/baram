@@ -7,7 +7,8 @@ from PySide6.QtCore import Signal
 
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.material.material import MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
+from baramFlow.base.material.constants import MaterialType
+from baramFlow.base.material.constants import SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException

@@ -161,7 +161,7 @@ class TemperatureWidget(QWidget):
             db = coredb.CoreDB()
             self._polynomial = db.getValue(self._xpath + '/temporalDistribution/polynomial')
 
-        self._dialog = PolynomialDialog(self, self.tr("Temporal Distribution"), self._polynomial, "a")
+        self._dialog = PolynomialDialog(self, self.tr('Temporal Distribution'), self._polynomial.split(), "a")
         self._dialog.accepted.connect(self._polynomialAccepted)
         self._dialog.open()
 

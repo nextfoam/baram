@@ -3,18 +3,19 @@
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb.cell_zone_db import SpecificationMethod
+from baramFlow.base.cell_zone.cell_zone import SpecificationMethod
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceFields, TurbulenceModelsDB
 
 
 _modelFields = {
-    TurbulenceModel.INVISCID: [],
-    TurbulenceModel.LAMINAR: [],
-    TurbulenceModel.SPALART_ALLMARAS: [TurbulenceFields.NU_TILDA],
-    TurbulenceModel.K_EPSILON: [TurbulenceFields.K, TurbulenceFields.EPSILON],
-    TurbulenceModel.K_OMEGA: [TurbulenceFields.K, TurbulenceFields.OMEGA],
-    TurbulenceModel.DES: [],
-    TurbulenceModel.LES: [],
+    TurbulenceModel.INVISCID:           [],
+    TurbulenceModel.LAMINAR:            [],
+    TurbulenceModel.SPALART_ALLMARAS:   [TurbulenceFields.NU_TILDA],
+    TurbulenceModel.K_EPSILON:          [TurbulenceFields.K, TurbulenceFields.EPSILON],
+    TurbulenceModel.K_OMEGA:            [TurbulenceFields.K, TurbulenceFields.OMEGA],
+    TurbulenceModel.TRANSITION_SST:     [TurbulenceFields.K, TurbulenceFields.OMEGA],
+    TurbulenceModel.DES:                [],
+    TurbulenceModel.LES:                [],
 }
 
 
@@ -98,4 +99,4 @@ def getTurbulenceFields():
     if model == TurbulenceModel.DES:
         model = TurbulenceModelsDB.getRASModel()
 
-    return [_fields[f] for f in _modelFields[model]]
+    return {f: _fields[f] for f in _modelFields[model]}

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QWizard
 
-from baramFlow.base.material.material import DensitySpecification
+from baramFlow.base.material.constants import DensitySpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import MultiphaseModel

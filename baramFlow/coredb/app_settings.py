@@ -71,6 +71,11 @@ class AppSettings:
         materialsBase.loadThermos(resource.file(THERMOS_FILE_NAME))
 
     @classmethod
+    def settingsPath(cls) -> Path:
+        assert cls._settingsPath is not None, 'AppSettings.setup() must be called first'
+        return cls._settingsPath
+
+    @classmethod
     def casesPath(cls):
         return cls._casesPath
 

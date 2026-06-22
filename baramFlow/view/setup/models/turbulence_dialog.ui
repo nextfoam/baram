@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>552</width>
-    <height>1258</height>
+    <width>658</width>
+    <height>1284</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -94,6 +94,13 @@
              <widget class="QRadioButton" name="kOmega">
               <property name="text">
                <string>k-omega</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="transitionSST">
+              <property name="text">
+               <string>Transition SST, (4ea)</string>
               </property>
              </widget>
             </item>

@@ -655,6 +655,7 @@
                         <xs:enumeration value="spalartAllmaras"/>
                         <xs:enumeration value="k-epsilon"/>
                         <xs:enumeration value="k-omega"/>
+                        <xs:enumeration value="transitionSST"/>
                         <xs:enumeration value="des"/>
                         <xs:enumeration value="les"/>
                     </xs:restriction>
@@ -842,14 +843,6 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="slidingMeshZoneType">
-        <xs:sequence>
-            <xs:element name="rotatingSpeed" type="inputNumberType" default="1000"/>
-            <xs:element name="rotationAxisOrigin" type="vector"/>
-            <xs:element name="rotationAxisDirection" type="vector"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="actuatorDiskZoneType">
         <xs:sequence>
             <xs:element name="diskDirection" type="vector"/>
@@ -886,13 +879,11 @@
                             <xs:enumeration value="mrf"/>
                             <xs:enumeration value="porous"/>
                             <xs:enumeration value="actuatorDisk"/>
-                            <xs:enumeration value="slidingMesh"/>
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
                 <xs:element name="mrf" type="mrfZoneType"/>
                 <xs:element name="porous" type="porousZoneType"/>
-                <xs:element name="slidingMesh" type="slidingMeshZoneType"/>
                 <xs:element name="actuatorDisk" type="actuatorDiskZoneType"/>
                 <xs:element name="sourceTerms">
                     <xs:complexType>
@@ -1263,6 +1254,14 @@
                         <xs:element name="specificDissipationRate" type="inputNumberType" default="1"/>
                         <xs:element name="turbulentIntensity" type="inputNumberType" default="1"/>
                         <xs:element name="turbulentViscosityRatio" type="inputNumberType" default="10"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="transitionSST">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="intermittency" type="inputRatioType" default="1"/>
+                        <xs:element name="momentumThicknessRe" type="inputNonNegativeNumberType" default="200"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1787,7 +1786,6 @@
 
     <xs:complexType name="fanType">
         <xs:sequence>
-            <xs:element name="fanCurveFile" type="xs:string"/> <!-- HDF5 Dataset -->
             <xs:element name="reverseDirection" type="xs:boolean"/>
         </xs:sequence>
     </xs:complexType>
@@ -1807,6 +1805,7 @@
                             <xs:enumeration value="wedge"/>
                             <xs:enumeration value="cyclic"/>
                             <xs:enumeration value="cyclicAMI"/>
+                            <xs:enumeration value="cyclicACMI"/>
                             <xs:enumeration value="wall"/>
                             <xs:enumeration value="processor"/>
                             <xs:enumeration value="mappedWall"/>
@@ -1841,6 +1840,7 @@
                             <xs:enumeration value="fan"/>
                             <xs:enumeration value="empty"/>
                             <xs:enumeration value="cyclic"/>
+                            <xs:enumeration value="cyclicACMI"/>
                             <xs:enumeration value="wedge"/>
                         </xs:restriction>
                     </xs:simpleType>
@@ -1875,7 +1875,7 @@
                 <!--  <xs:element name="symmetry" type="symmetryType" /> -->
                 <xs:element name="interface" type="interfaceType"/>
                 <xs:element name="porousJump" type="porousJumpType"/>
-                <!-- <xs:element name="fan" type="fanType"/> -->
+                <xs:element name="fan" type="fanType"/>
                 <!-- no setting for empty -->
                 <!-- <xs:element name="empty" type="emptyType" /> -->
                 <!-- xs:element name="cyclic" type="cyclicType"/> -->
@@ -1885,6 +1885,7 @@
                 <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
                 <xs:element name="coupledBoundary" type="xs:nonNegativeInteger" default="0"/>
+                <xs:element name="fallbackBoundary" type="xs:nonNegativeInteger" default="0"/>  <!-- cyclicACMI nonOverlapPatch -->
                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
                 <xs:element name="userDefinedScalars">
                     <xs:complexType>
@@ -2368,6 +2369,118 @@
                 <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="volume" type="xs:nonNegativeInteger"/>   <!-- cellZone czid -->
                 <xs:element name="functionName" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="motionFunctions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="motionFunction" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="uuid" type="uuidType"/>
+                            <xs:element name="order" type="xs:positiveInteger"/> <!-- order of this motionFunction in motionFunctions -->
+                            <xs:element name="functionType">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="rotation"/>
+                                        <xs:enumeration value="rotatingOscillation"/>
+                                        <xs:enumeration value="linearTranslation"/>
+                                        <xs:enumeration value="linearOscillation"/>
+                                        <xs:enumeration value="manualPosition"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="origin" type="vector"/>
+                            <xs:element name="axis" type="vector"/>
+                            <xs:element name="rpm" type="inputNumberType"/>
+                            <xs:element name="velocity" type="vector"/>
+                            <xs:element name="angularAmplitude" type="vector"/>
+                            <xs:element name="linearAmplitude" type="vector"/>
+                            <xs:element name="frequency" type="inputNumberType"/>
+                            <xs:element name="positions">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="t" type="inputNumberListType"/>
+                                        <xs:element name="surge" type="inputNumberListType"/>
+                                        <xs:element name="sway" type="inputNumberListType"/>
+                                        <xs:element name="heave" type="inputNumberListType"/>
+                                        <xs:element name="roll" type="inputNumberListType"/>
+                                        <xs:element name="pitch" type="inputNumberListType"/>
+                                        <xs:element name="yaw" type="inputNumberListType"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="rigidBodySolverType">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="solverType" default="newmark">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="newmark"/>
+                            <xs:enumeration value="crankNicolson"/>
+                            <xs:enumeration value="symplectic"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="velocityIntegrationCoefficient" type="inputNumberType"/>
+                <xs:element name="positionIntegrationCoefficient" type="inputNumberType"/>
+                <xs:element name="offCenteringAccelerationCoefficient" type="inputNumberType"/>
+                <xs:element name="offCenteringVelocityCoefficient" type="inputNumberType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="rigidBodyRestraints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="restraint" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="uuid" type="uuidType"/>
+                            <xs:element name="order" type="xs:positiveInteger"/> <!-- order of this restraint in restraints -->
+                            <xs:element name="restraintType">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="simpleDamper"/>
+                                        <xs:enumeration value="translationalSpring"/>
+                                        <xs:enumeration value="rotationalSpring"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="dampingConstant" type="inputNumberType"/>
+                            <xs:element name="springConstant" type="inputNumberType"/>
+                            <xs:element name="restLength" type="inputNumberType"/>
+                            <xs:element name="axis" type="vector"/>
+                            <xs:element name="attachmentPoint" type="vector"/>
+                            <xs:element name="anchorPoint" type="vector"/>
+                            <xs:element name="useBoundaryOrientation" type="xs:boolean" default="true"/>
+                            <xs:element name="orientation">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="r11" type="inputNumberType"/>
+                                        <xs:element name="r12" type="inputNumberType"/>
+                                        <xs:element name="r13" type="inputNumberType"/>
+                                        <xs:element name="r21" type="inputNumberType"/>
+                                        <xs:element name="r22" type="inputNumberType"/>
+                                        <xs:element name="r23" type="inputNumberType"/>
+                                        <xs:element name="r31" type="inputNumberType"/>
+                                        <xs:element name="r32" type="inputNumberType"/>
+                                        <xs:element name="r33" type="inputNumberType"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -2951,6 +3064,8 @@
                                                                 <xs:element name="scaleOfVelocity" type="inputNumberType" default="1"/>
                                                                 <xs:element name="turbulentIntensity" type="inputPercentType" default="1"/>
                                                                 <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
+                                                                <xs:element name="intermittency" type="inputRatioType" default="1"/>
+                                                                <xs:element name="momentumThicknessRe" type="inputNonNegativeNumberType" default="200"/>
                                                                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
                                                                 <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType"/>
                                                                 <xs:element name="species" type="speciesListType"/>
@@ -3047,6 +3162,238 @@
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="dynamicMesh">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="motionType" default="none">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="none"/>
+                                        <xs:enumeration value="movingCellZone"/>
+                                        <xs:enumeration value="movingBoundary"/>
+                                        <xs:enumeration value="rigidBodyDynamics"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="movingCellZone">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="motionDefinition" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="order" type="xs:positiveInteger"/> <!-- order of this motionDefinition -->
+                                                    <xs:element ref="motionFunctions"/>
+                                                    <xs:element name="cellZones">
+                                                        <xs:simpleType>
+                                                            <xs:list itemType="xs:positiveInteger"/>  <!-- cellZone czid -->
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="movingBoundary">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="boundary" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid -->
+                                                    <xs:element name="pointMotionType">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="fixed"/>
+                                                                <xs:enumeration value="slip"/>
+                                                                <xs:enumeration value="prescribedMotion"/>
+                                                                <xs:enumeration value="rigidBodyMotion"/>
+                                                                <xs:enumeration value="cyclic"/>
+                                                                <xs:enumeration value="symmetry"/>
+                                                                <xs:enumeration value="empty"/>
+                                                                <xs:enumeration value="wedge"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="useFixedNormal" type="xs:boolean" default="false"/>
+                                                    <xs:element name="normal" type="vector"/>
+                                                    <xs:element ref="motionFunctions"/>
+                                                    <xs:element name="rigidBodyMotion">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="mass" type="inputNumberType"/>
+                                                                <xs:element name="centerOfMass" type="vector"/>
+                                                                <xs:element name="centerOfRotation" type="vector"/>
+                                                                <xs:element name="orientation">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="r11" type="inputNumberType"/>
+                                                                            <xs:element name="r12" type="inputNumberType"/>
+                                                                            <xs:element name="r13" type="inputNumberType"/>
+                                                                            <xs:element name="r21" type="inputNumberType"/>
+                                                                            <xs:element name="r22" type="inputNumberType"/>
+                                                                            <xs:element name="r23" type="inputNumberType"/>
+                                                                            <xs:element name="r31" type="inputNumberType"/>
+                                                                            <xs:element name="r32" type="inputNumberType"/>
+                                                                            <xs:element name="r33" type="inputNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="momentOfInertia">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="ixx" type="inputNumberType"/>
+                                                                            <xs:element name="iyy" type="inputNumberType"/>
+                                                                            <xs:element name="izz" type="inputNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="translationalConstraintType" default="free">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="free"/>
+                                                                            <xs:enumeration value="plane"/>
+                                                                            <xs:enumeration value="line"/>
+                                                                            <xs:enumeration value="fixed"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="rotationalConstraintType" default="free">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="free"/>
+                                                                            <xs:enumeration value="axis"/>
+                                                                            <xs:enumeration value="fixed"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="direction" type="vector"/>  <!-- For line -->
+                                                                <xs:element name="normal" type="vector"/>  <!-- For plane -->
+                                                                <xs:element name="axis" type="vector"/>  <!-- For axis -->
+                                                                <xs:element name="limitAngle" type="xs:boolean" default="false"/>
+                                                                <xs:element name="clockwise" type="inputNumberType"/>
+                                                                <xs:element name="counterclockwise" type="inputNumberType"/>
+                                                                <xs:element name="useBoundaryOrientation" type="xs:boolean" default="true"/>
+                                                                <xs:element name="constraintOrientation">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="r11" type="inputNumberType"/>
+                                                                            <xs:element name="r12" type="inputNumberType"/>
+                                                                            <xs:element name="r13" type="inputNumberType"/>
+                                                                            <xs:element name="r21" type="inputNumberType"/>
+                                                                            <xs:element name="r22" type="inputNumberType"/>
+                                                                            <xs:element name="r23" type="inputNumberType"/>
+                                                                            <xs:element name="r31" type="inputNumberType"/>
+                                                                            <xs:element name="r32" type="inputNumberType"/>
+                                                                            <xs:element name="r33" type="inputNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element ref="rigidBodyRestraints"/>
+                                                                <xs:element ref="rigidBodySolverType"/>
+                                                                <xs:element name="accelerationRelaxationFactor" type="inputNumberType"/>
+                                                                <xs:element name="accelerationDampingFactor" type="inputNumberType"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="rigidBodyDynamics">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element ref="rigidBodySolverType"/>
+                                        <xs:element name="accelerationRelaxationFactor" type="inputNumberType"/>
+                                        <xs:element name="accelerationDampingFactor" type="inputNumberType"/>
+                                        <xs:element name="bodies">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="body" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="uuid" type="uuidType"/>
+                                                                <xs:element name="name" type="xs:string"/>
+                                                                <xs:element name="parent" type="uuidType"/>
+                                                                <xs:element name="mass" type="inputNumberType"/>
+                                                                <xs:element name="centerOfMass" type="vector"/>
+                                                                <xs:element name="localOrigin" type="vector"/>
+                                                                <xs:element name="orientation">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="r11" type="inputNumberType"/>
+                                                                            <xs:element name="r12" type="inputNumberType"/>
+                                                                            <xs:element name="r13" type="inputNumberType"/>
+                                                                            <xs:element name="r21" type="inputNumberType"/>
+                                                                            <xs:element name="r22" type="inputNumberType"/>
+                                                                            <xs:element name="r23" type="inputNumberType"/>
+                                                                            <xs:element name="r31" type="inputNumberType"/>
+                                                                            <xs:element name="r32" type="inputNumberType"/>
+                                                                            <xs:element name="r33" type="inputNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="momentOfInertia">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="ixx" type="inputNumberType"/>
+                                                                            <xs:element name="ixy" type="inputNumberType"/>
+                                                                            <xs:element name="ixz" type="inputNumberType"/>
+                                                                            <xs:element name="iyy" type="inputNumberType"/>
+                                                                            <xs:element name="iyz" type="inputNumberType"/>
+                                                                            <xs:element name="izz" type="inputNumberType"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="boundaries">
+                                                                    <xs:simpleType>
+                                                                        <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="joints">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="joint" minOccurs="0" maxOccurs="unbounded">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="jointType">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="prismatic"/>
+                                                                                                    <xs:enumeration value="revolute"/>
+                                                                                                    <xs:enumeration value="spherical"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="direction" type="vector"/>
+                                                                                        <xs:element name="axis" type="vector"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element ref="rigidBodyRestraints"/>
+                                                                <xs:element name="deformationOffset" type="inputNumberType"/>
+                                                                <xs:element name="deformationDistance" type="inputNumberType"/>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
@@ -3267,6 +3614,7 @@
                                         <xs:element name="vectorFieldCategory">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="geometry"/>
                                                     <xs:enumeration value="basic"/>
                                                     <xs:enumeration value="collateral"/>
                                                     <xs:enumeration value="phase"/>
@@ -3359,7 +3707,7 @@
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="dataWritePrecision" type="xs:positiveInteger" default="6"/>
+                                        <xs:element name="dataWritePrecision" type="xs:positiveInteger" default="12"/>
                                         <xs:element name="timePrecision" type="xs:positiveInteger" default="6"/>
                                     </xs:sequence>
                                 </xs:complexType>

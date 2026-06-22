@@ -21,6 +21,7 @@ class MenuItem(Enum):
     MENU_SETUP_MATERIALS = auto()
     MENU_SETUP_CELL_ZONE_CONDITIONS = auto()
     MENU_SETUP_BOUNDARY_CONDITIONS = auto()
+    MENU_SETUP_DYNAMIC_MESH = auto()
     MENU_SETUP_REFERENCE_VALUES = auto()
 
     # Solution
@@ -56,6 +57,7 @@ class NavigatorView(QObject):
             MenuItem.MENU_SETUP_MATERIALS.value: lambda: self.tr('Materials'),
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value: lambda: self.tr('Cell Zone Conditions'),
             MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value: lambda: self.tr('Boundary Conditions'),
+            MenuItem.MENU_SETUP_DYNAMIC_MESH.value: lambda: self.tr('Dynamic Mesh'),
             MenuItem.MENU_SETUP_REFERENCE_VALUES.value: lambda: self.tr('Reference Values'),
 
             # Solution
@@ -80,6 +82,7 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SETUP_MATERIALS, setupMenu)
         self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, setupMenu)
         self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_DYNAMIC_MESH, setupMenu)
         self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, setupMenu)
 
         solutionMenu = self._addTopMenu(MenuItem.MENU_SOLUTION)

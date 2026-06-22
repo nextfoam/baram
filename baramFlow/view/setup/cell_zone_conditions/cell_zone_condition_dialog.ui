@@ -138,22 +138,6 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QRadioButton" name="slidingMesh">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>Sliding Mesh</string>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">zoneTypeRadioGroup</string>
-                  </attribute>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QRadioButton" name="actuatorDisk">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

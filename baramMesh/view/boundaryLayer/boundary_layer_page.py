@@ -38,11 +38,11 @@ class BoundaryLayerPage(StepPage):
 
         self._connectSignalsSlots()
 
-    async def show(self, isCurrentStep, batchRunning):
+    async def show(self, isWorkingStep: bool, batchRunning: bool):
         self.load()
         self.updateWorkingStatus()
 
-        self._ui.boundaryLayerApply.setEnabled(isCurrentStep and not batchRunning)
+        self._ui.boundaryLayerApply.setEnabled(isWorkingStep and not batchRunning)
 
     async def save(self):
         try:

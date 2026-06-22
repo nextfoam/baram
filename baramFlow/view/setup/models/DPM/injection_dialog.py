@@ -1,35 +1,42 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import asyncio
+import copy
 from typing import cast
 
 import qasync
-from PySide6.QtWidgets import QDialog, QFormLayout
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QFormLayout, QWidget
 
-from baramFlow.base.base import Vector
-from baramFlow.coredb.general_db import GeneralDB
+from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
+from widgets.simple_sheet_dialog import SimpleSheetDialog
 
+from baramFlow.base.base import Vector
 from baramFlow.base.constants import Function1Type
+from baramFlow.base.model.DPM_model import Injection
 from baramFlow.base.model.model import DPMFlowRateSpec, DPMInjectionType, DPMConeInjectorType, DPMParticleSpeed
 from baramFlow.base.model.model import DPMParticleVelocityType, DPMDiameterDistribution, DPM_INJECTION_TYPE_TEXTS
 from baramFlow.coredb.boundary_db import BoundaryDB
-from widgets.simple_sheet_dialog import SimpleSheetDialog
+from baramFlow.coredb.general_db import GeneralDB
 from .injection_dialog_ui import Ui_InjectionDialog
 
 
 class InjectionDialog(QDialog):
-    def __init__(self, parent, injection, usedNames):
+    dataAccepted = Signal(Injection)
+
+    def __init__(self, parent: QWidget, injection: Injection, usedNames: list[str]):
         super().__init__(parent)
         self._ui = Ui_InjectionDialog()
         self._ui.setupUi(self)
 
-        self._injection = injection
-        self._usedNames = usedNames
+        self._data: Injection = injection
+        self._usedNames: list[str] = usedNames
 
-        self._positions = None
-        self._surface = None
+        self._positions: list[Vector] | None = None
+        self._surface: str = '0'
 
         transient = GeneralDB.isTimeTransient()
         if transient:
@@ -98,12 +105,9 @@ class InjectionDialog(QDialog):
 
         self._load()
 
-    def injection(self):
-        return self._injection
-
     def _connectSignalsSlots(self):
         self._ui.injectionType.currentIndexChanged.connect(self._injectionTypeChanged)
-        self._ui.editPosition.clicked.connect(self._opePositionEditor)
+        self._ui.editPosition.clicked.connect(self._openPositionEditor)
         self._ui.flowRateSpec.currentIndexChanged.connect(self._flowRateSpecChanged)
         self._ui.surfaceParticleVelocityType.currentIndexChanged.connect(self._surfaceParticleVelocityTypeChanged)
         self._ui.surfaceSelect.clicked.connect(self._openSurfaceSelector)
@@ -113,57 +117,57 @@ class InjectionDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
-        self._ui.name.setText(self._injection.name)
-        self._ui.injectionType.setCurrentIndex(self._ui.injectionType.findData(self._injection.type))
+        self._ui.name.setText(self._data.name)
+        self._ui.injectionType.setCurrentIndex(self._ui.injectionType.findData(self._data.type))
 
-        self._ui.numberOfParticlesPerPoint.setBatchableNumber(
-            self._injection.injector.pointInjection.numberOfParticlesPerPoint)
-        self._ui.injectionTime.setBatchableNumber(self._injection.injector.pointInjection.injectionTime)
-        self._ui.pointParticleVelocity.setVector(self._injection.injector.pointInjection.particleVelocity)
+        self._ui.numberOfParticlesPerPoint.setPFloat(
+            self._data.injector.pointInjection.numberOfParticlesPerPoint)
+        self._ui.injectionTime.setPFloat(self._data.injector.pointInjection.injectionTime)
+        self._ui.pointParticleVelocity.setVector(self._data.injector.pointInjection.particleVelocity)
 
         self._ui.flowRateSpec.setCurrentIndex(
-            self._ui.flowRateSpec.findData(self._injection.injector.flowRate.specification))
-        self._ui.countParcelPerSecond.setBatchableNumber(
-            self._injection.injector.flowRate.particleCount.parcelPerSecond)
-        self._ui.numberOfParticlesPerParcel.setBatchableNumber(
-            self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel)
-        self._ui.volumeParcelPerSecond.setBatchableNumber(
-            self._injection.injector.flowRate.particleVolume.parcelPerSecond)
-        self._ui.totalMass.setBatchableNumber(self._injection.injector.flowRate.particleVolume.totalMass)
-        self._ui.volumeFlowRate.setData(self._injection.injector.flowRate.particleVolume.volumeFlowRate)
-        self._ui.massFlowRate.setBatchableNumber(self._injection.injector.flowRate.particleVolume.massFlowRate)
-        self._ui.startTime.setBatchableNumber(self._injection.injector.flowRate.startTime)
-        self._ui.stopTime.setBatchableNumber(self._injection.injector.flowRate.stopTime)
+            self._ui.flowRateSpec.findData(self._data.injector.flowRate.specification))
+        self._ui.countParcelPerSecond.setPFloat(
+            self._data.injector.flowRate.particleCount.parcelPerSecond)
+        self._ui.numberOfParticlesPerParcel.setPFloat(
+            self._data.injector.flowRate.particleCount.numberOfParticlesPerParcel)
+        self._ui.volumeParcelPerSecond.setPFloat(
+            self._data.injector.flowRate.particleVolume.parcelPerSecond)
+        self._ui.totalMass.setPFloat(self._data.injector.flowRate.particleVolume.totalMass)
+        self._ui.volumeFlowRate.setData(self._data.injector.flowRate.particleVolume.volumeFlowRate)
+        self._ui.massFlowRate.setPFloat(self._data.injector.flowRate.particleVolume.massFlowRate)
+        self._ui.startTime.setPFloat(self._data.injector.flowRate.startTime)
+        self._ui.stopTime.setPFloat(self._data.injector.flowRate.stopTime)
 
         self._ui.surfaceParticleVelocityType.setCurrentIndex(
             self._ui.surfaceParticleVelocityType.findData(
-                self._injection.injector.surfaceInjection.particleVelocity.type))
-        self._ui.surfaceParticleVelocity.setVector(self._injection.injector.surfaceInjection.particleVelocity.value)
-        self._setSurface(self._injection.injector.surfaceInjection.bcid)
+                self._data.injector.surfaceInjection.particleVelocity.type))
+        self._ui.surfaceParticleVelocity.setVector(self._data.injector.surfaceInjection.particleVelocity.value)
+        self._setSurface(self._data.injector.surfaceInjection.bcid)
 
         self._ui.coneInjectorType.setCurrentIndex(
-            self._ui.coneInjectorType.findData(self._injection.injector.coneInjection.injectorType))
-        self._ui.conePosition.setData(self._injection.injector.coneInjection.position)
-        self._ui.coneAxis.setData(self._injection.injector.coneInjection.axis)
-        self._ui.outerConeAngle.setData(self._injection.injector.coneInjection.outerConeAngle)
-        self._ui.innerConeAngle.setData(self._injection.injector.coneInjection.innerConeAngle)
-        self._ui.outerRadius.setBatchableNumber(self._injection.injector.coneInjection.outerRadius)
-        self._ui.innerRadius.setBatchableNumber(self._injection.injector.coneInjection.innerRadius)
-        self._ui.swirlVelocity.setData(self._injection.injector.coneInjection.swirlVelocity)
+            self._ui.coneInjectorType.findData(self._data.injector.coneInjection.injectorType))
+        self._ui.conePosition.setData(self._data.injector.coneInjection.position)
+        self._ui.coneAxis.setData(self._data.injector.coneInjection.axis)
+        self._ui.outerConeAngle.setData(self._data.injector.coneInjection.outerConeAngle)
+        self._ui.innerConeAngle.setData(self._data.injector.coneInjection.innerConeAngle)
+        self._ui.outerRadius.setPFloat(self._data.injector.coneInjection.outerRadius)
+        self._ui.innerRadius.setPFloat(self._data.injector.coneInjection.innerRadius)
+        self._ui.swirlVelocity.setData(self._data.injector.coneInjection.swirlVelocity)
         self._ui.coneParticleSpeed.setCurrentIndex(
-            self._ui.coneParticleSpeed.findData(self._injection.injector.coneInjection.particleSpeed))
-        self._ui.injectionSpeed.setBatchableNumber(self._injection.injector.coneInjection.injectionSpeed)
-        self._ui.injectorPressure.setData(self._injection.injector.coneInjection.injectorPressure)
-        self._ui.dischargeCoeff.setData(self._injection.injector.coneInjection.dischargeCoeff)
+            self._ui.coneParticleSpeed.findData(self._data.injector.coneInjection.particleSpeed))
+        self._ui.injectionSpeed.setPFloat(self._data.injector.coneInjection.injectionSpeed)
+        self._ui.injectorPressure.setData(self._data.injector.coneInjection.injectorPressure)
+        self._ui.dischargeCoeff.setData(self._data.injector.coneInjection.dischargeCoeff)
 
         self._ui.diameterDistribution.setCurrentIndex(
-            self._ui.diameterDistribution.findData(self._injection.diameterDistribution.type))
-        self._ui.diameter.setBatchableNumber(self._injection.diameterDistribution.diameter)
-        self._ui.minDiameter.setBatchableNumber(self._injection.diameterDistribution.minDiameter)
-        self._ui.maxDiameter.setBatchableNumber(self._injection.diameterDistribution.maxDiameter)
-        self._ui.meanDiameter.setBatchableNumber(self._injection.diameterDistribution.meanDiameter)
-        self._ui.spreadParameter.setBatchableNumber(self._injection.diameterDistribution.spreadParameter)
-        self._ui.stdDeviation.setBatchableNumber(self._injection.diameterDistribution.stdDeviation)
+            self._ui.diameterDistribution.findData(self._data.diameterDistribution.type))
+        self._ui.diameter.setPFloat(self._data.diameterDistribution.diameter)
+        self._ui.minDiameter.setPFloat(self._data.diameterDistribution.minDiameter)
+        self._ui.maxDiameter.setPFloat(self._data.diameterDistribution.maxDiameter)
+        self._ui.meanDiameter.setPFloat(self._data.diameterDistribution.meanDiameter)
+        self._ui.spreadParameter.setPFloat(self._data.diameterDistribution.spreadParameter)
+        self._ui.stdDeviation.setPFloat(self._data.diameterDistribution.stdDeviation)
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -172,149 +176,130 @@ class InjectionDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Injection Name is required.'))
             return
 
-        if name != self._injection.name and name in self._usedNames:
+        if name != self._data.name and name in self._usedNames:
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Injection Name "{}" is already used.').format(name))
             return
 
-        injectionType = self._ui.injectionType.currentData()
-        flowRateSpec = self._ui.flowRateSpec.currentData()
-        coneInjectorType = self._ui.coneInjectorType.currentData()
-        coneParticleSpeed = self._ui.coneParticleSpeed.currentData()
-        diameterDistribution = self._ui.diameterDistribution.currentData()
-
         try:
-            if injectionType == DPMInjectionType.POINT:
-                self._ui.numberOfParticlesPerPoint.validate(self.tr('Number of Particles per Point'))
-                self._ui.injectionTime.validate(self.tr('Injection Time'), low=0, lowInclusive=True)
-                self._ui.pointParticleVelocity.validate(self.tr('Particle Velocity'))
-            else:
-                if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
-                    self._ui.countParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
-                    self._ui.numberOfParticlesPerParcel.validate(self.tr('Number of Particles per Pacel'),
-                                                                 low=0, lowInclusive=False)
-                elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
-                    self._ui.volumeParcelPerSecond.validate(self.tr('Parcels per Second'), low=0, lowInclusive=False)
-                    self._ui.totalMass.validate(self.tr('Total Mass'), low=0, lowInclusive=False)
-                    self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
-                    self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
+            data = copy.deepcopy(self._data)
+            data.name = name
 
-                self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=True)
-                self._ui.stopTime.validate(self.tr('Stop Time'))
-                if self._ui.startTime.validatedFloat() >= self._ui.stopTime.validatedFloat():
+            injectionType = self._ui.injectionType.currentData()
+            data.type = injectionType
+            if injectionType == DPMInjectionType.POINT:
+                data.injector.pointInjection.numberOfParticlesPerPoint = self._ui.numberOfParticlesPerPoint.pFloat(
+                    self.tr('Number of Particles per Point'))
+                data.injector.pointInjection.injectionTime = self._ui.injectionTime.pFloat(
+                    self.tr('Injection Time'), low=0, lowInclusive=True)
+                data.injector.pointInjection.particleVelocity = self._ui.pointParticleVelocity.vector(
+                    self.tr('Particle Velocity'))
+                if self._positions is not None:  # is edited
+                    data.injector.pointInjection.positions = self._positions
+            else:
+                flowRateSpec = self._ui.flowRateSpec.currentData()
+                data.injector.flowRate.specification = flowRateSpec
+                if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
+                    data.injector.flowRate.particleCount.parcelPerSecond = self._ui.countParcelPerSecond.pFloat(
+                        self.tr('Parcels per Second'), low=0, lowInclusive=False)
+                    data.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesPerParcel.pFloat(
+                        self.tr('Number of Particles per Parcel'), low=0, lowInclusive=False)
+                elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
+                    data.injector.flowRate.particleVolume.parcelPerSecond = self._ui.volumeParcelPerSecond.pFloat(
+                        self.tr('Parcels per Second'), low=0, lowInclusive=False)
+                    data.injector.flowRate.particleVolume.totalMass = self._ui.totalMass.pFloat(
+                        self.tr('Total Mass'), low=0, lowInclusive=False)
+                    data.injector.flowRate.particleVolume.volumeFlowRate = self._ui.volumeFlowRate.data(
+                        self.tr('Volume FlowRate'), low=0)
+                    data.injector.flowRate.particleVolume.massFlowRate = self._ui.massFlowRate.pFloat(
+                        self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
+
+                startTime = self._ui.startTime.pFloat(self.tr('Start Time'), low=0, lowInclusive=True)
+                stopTime = self._ui.stopTime.pFloat(self.tr('Stop Time'))
+                if startTime >= stopTime:
                     await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                         self.tr('Stop Time must be greater than Start Time.'))
                     return
 
+                data.injector.flowRate.startTime = startTime
+                data.injector.flowRate.stopTime = stopTime
+
                 if injectionType == DPMInjectionType.SURFACE:
-                    self._ui.surfaceParticleVelocity.validate(self.tr('Particle Velocity'))
                     if self._surface == '0':
                         await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Surface.'))
                         return
+
+                    data.injector.surfaceInjection.particleVelocity.type = self._ui.surfaceParticleVelocityType.currentData()
+                    data.injector.surfaceInjection.particleVelocity.value = self._ui.surfaceParticleVelocity.vector(
+                        self.tr('Particle Velocity'))
+                    data.injector.surfaceInjection.bcid = self._surface
                 elif injectionType == DPMInjectionType.CONE:
-                    self._ui.conePosition.validate(self.tr('Position'))
-                    self._ui.coneAxis.validate(self.tr('Axis'))
-                    self._ui.outerConeAngle.validate(self.tr('Outer Cone Angle'), low=0)
-                    self._ui.innerConeAngle.validate(self.tr('Inner Cone Angle'), low=0)
+                    coneInjectorType = self._ui.coneInjectorType.currentData()
+                    data.injector.coneInjection.injectorType = coneInjectorType
+                    data.injector.coneInjection.position = self._ui.conePosition.data(self.tr('Position'))
+                    data.injector.coneInjection.axis = self._ui.coneAxis.data(self.tr('Axis'))
+                    data.injector.coneInjection.outerConeAngle = self._ui.outerConeAngle.data(
+                        self.tr('Outer Cone Angle'), low=0)
+                    data.injector.coneInjection.innerConeAngle = self._ui.innerConeAngle.data(
+                        self.tr('Inner Cone Angle'), low=0)
 
                     if coneInjectorType == DPMConeInjectorType.DISC:
-                        self._ui.outerRadius.validate(self.tr('Outer Radius'))
-                        self._ui.innerRadius.validate(self.tr('Inner Radius'), low=0)
-                        if self._ui.outerRadius.validatedFloat() < self._ui.innerRadius.validatedFloat():
+                        outerRadius = self._ui.outerRadius.pFloat(self.tr('Outer Radius'))
+                        innerRadius = self._ui.innerRadius.pFloat(self.tr('Inner Radius'), low=0)
+                        if outerRadius < innerRadius:
                             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                                 self.tr('Inner Radius must be less than Outer Radius.'))
                             return
 
-                    self._ui.swirlVelocity.validate(self.tr('Swirl Velocity'), low=0)
+                        data.injector.coneInjection.outerRadius = outerRadius
+                        data.injector.coneInjection.innerRadius = innerRadius
 
+                    data.injector.coneInjection.swirlVelocity = self._ui.swirlVelocity.data(
+                        self.tr('Swirl Velocity'), low=0)
+
+                    coneParticleSpeed = self._ui.coneParticleSpeed.currentData()
+                    data.injector.coneInjection.particleSpeed = coneParticleSpeed
                     if coneParticleSpeed == DPMParticleSpeed.FROM_INJECTION_SPEED:
-                        self._ui.injectionSpeed.validate(self.tr('Injection Speed'), low=0)
+                        data.injector.coneInjection.injectionSpeed= self._ui.injectionSpeed.pFloat(
+                            self.tr('Injection Speed'), low=0)
                     elif coneParticleSpeed == DPMParticleSpeed.FROM_PRESSURE:
-                        self._ui.injectorPressure.validate(self.tr('Injection Pressure'), low=0)
+                        data.injector.coneInjection.injectorPressure = self._ui.injectorPressure.data(
+                            self.tr('Injection Pressure'), low=0)
                     elif coneParticleSpeed == DPMParticleSpeed.FROM_DISCHARGE_COEFF:
-                        self._ui.dischargeCoeff.validate(self.tr('Discharge Coeff'), low=0)
+                        data.injector.coneInjection.dischargeCoeff = self._ui.dischargeCoeff.data(
+                            self.tr('Discharge Coeff'), low=0)
 
+            diameterDistribution = self._ui.diameterDistribution.currentData()
+            data.diameterDistribution.type = diameterDistribution
             if diameterDistribution == DPMDiameterDistribution.UNIFORM:
-                self._ui.diameter.validate(self.tr('Diameter'), low=0, lowInclusive=False)
+                data.diameterDistribution.diameter = self._ui.diameter.pFloat(
+                    self.tr('Diameter'), low=0, lowInclusive=False)
             else:
-                self._ui.minDiameter.validate(self.tr('Min. Diameter'), low=0, lowInclusive=False)
-                self._ui.maxDiameter.validate(self.tr('Max. Diameter'))
-                if self._ui.minDiameter.validatedFloat() > self._ui.maxDiameter.validatedFloat():
+                minDiameter = self._ui.minDiameter.pFloat(self.tr('Min. Diameter'), low=0, lowInclusive=False)
+                maxDiameter = self._ui.maxDiameter.pFloat(self.tr('Max. Diameter'))
+                if minDiameter > maxDiameter:
                     await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                         self.tr('Max. Diameter must be greater than Min. Diameter.'))
                     return
+
+                data.diameterDistribution.minDiameter = minDiameter
+                data.diameterDistribution.maxDiameter = maxDiameter
+
                 if diameterDistribution != DPMDiameterDistribution.LINEAR:
-                    self._ui.meanDiameter.validate(self.tr('Mean Diameter'))
+                    data.diameterDistribution.meanDiameter = self._ui.meanDiameter.pFloat(
+                        self.tr('Mean Diameter'))
                     if diameterDistribution in (
                             DPMDiameterDistribution.ROSIN_RAMMLER, DPMDiameterDistribution.MASS_ROSIN_RAMMLER):
-                        self._ui.spreadParameter.validate(self.tr('Spread Parameter'), low=0, lowInclusive=False)
+                        data.diameterDistribution.spreadParameter = self._ui.spreadParameter.pFloat(
+                            self.tr('Spread Parameter'), low=0, lowInclusive=False)
                     elif diameterDistribution == DPMDiameterDistribution.NORMAL:
-                        self._ui.stdDeviation.validate(self.tr('Std. Deviation'), low=0, lowInclusive=False)
+                        data.diameterDistribution.stdDeviation = self._ui.stdDeviation.pFloat(
+                            self.tr('Std. Deviation'), low=0, lowInclusive=False)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        self._injection.name = self._ui.name.text()
-        self._injection.type = injectionType
-        if injectionType == DPMInjectionType.POINT:
-            self._injection.injector.pointInjection.numberOfParticlesPerPoint = self._ui.numberOfParticlesPerPoint.batchableNumber()
-            self._injection.injector.pointInjection.injectionTime = self._ui.injectionTime.batchableNumber()
-            self._injection.injector.pointInjection.particleVelocity = self._ui.pointParticleVelocity.vector()
-            if self._positions is not None:  # is edited
-                self._injection.injector.pointInjection.positions = self._positions
-        else:
-            self._injection.injector.flowRate.specification = flowRateSpec
-            if flowRateSpec == DPMFlowRateSpec.PARTICLE_COUNT:
-                self._injection.injector.flowRate.particleCount.parcelPerSecond = self._ui.countParcelPerSecond.batchableNumber()
-                self._injection.injector.flowRate.particleCount.numberOfParticlesPerParcel = self._ui.numberOfParticlesPerParcel.batchableNumber()
-            elif flowRateSpec == DPMFlowRateSpec.PARTICLE_VOLUME:
-                self._injection.injector.flowRate.particleVolume.parcelPerSecond = self._ui.volumeParcelPerSecond.batchableNumber()
-                self._injection.injector.flowRate.particleVolume.totalMass = self._ui.totalMass.batchableNumber()
-                self._ui.volumeFlowRate.updateData(self._injection.injector.flowRate.particleVolume.volumeFlowRate)
-                self._injection.injector.flowRate.particleVolume.massFlowRate = self._ui.massFlowRate.batchableNumber()
-
-            self._injection.injector.flowRate.startTime = self._ui.startTime.batchableNumber()
-            self._injection.injector.flowRate.stopTime = self._ui.stopTime.batchableNumber()
-
-            self._injection.injector.coneInjection.injectorType = coneInjectorType
-            if injectionType == DPMInjectionType.SURFACE:
-                self._injection.injector.surfaceInjection.particleVelocity.type = self._ui.surfaceParticleVelocityType.currentData()
-                self._injection.injector.surfaceInjection.particleVelocity.value = self._ui.surfaceParticleVelocity.vector()
-                self._injection.injector.surfaceInjection.bcid = self._surface
-            elif injectionType == DPMInjectionType.CONE:
-                self._ui.conePosition.updateData(self._injection.injector.coneInjection.position)
-                self._ui.coneAxis.updateData(self._injection.injector.coneInjection.axis)
-                self._ui.outerConeAngle.updateData(self._injection.injector.coneInjection.outerConeAngle)
-                self._ui.innerConeAngle.updateData(self._injection.injector.coneInjection.innerConeAngle)
-
-                if coneInjectorType == DPMConeInjectorType.DISC:
-                    self._injection.injector.coneInjection.outerRadius = self._ui.outerRadius.batchableNumber()
-                    self._injection.injector.coneInjection.innerRadius = self._ui.innerRadius.batchableNumber()
-
-                self._ui.swirlVelocity.updateData(self._injection.injector.coneInjection.swirlVelocity)
-
-                self._injection.injector.coneInjection.particleSpeed = coneParticleSpeed
-                if coneParticleSpeed == DPMParticleSpeed.FROM_INJECTION_SPEED:
-                    self._injection.injector.coneInjection.injectionSpeed= self._ui.injectionSpeed.batchableNumber()
-                elif coneParticleSpeed == DPMParticleSpeed.FROM_PRESSURE:
-                    self._ui.injectorPressure.updateData(self._injection.injector.coneInjection.injectorPressure)
-                elif coneParticleSpeed == DPMParticleSpeed.FROM_DISCHARGE_COEFF:
-                    self._ui.dischargeCoeff.updateData(self._injection.injector.coneInjection.dischargeCoeff)
-
-        self._injection.diameterDistribution.type = diameterDistribution
-        if diameterDistribution == DPMDiameterDistribution.UNIFORM:
-            self._injection.diameterDistribution.diameter = self._ui.diameter.batchableNumber()
-        else:
-            self._injection.diameterDistribution.minDiameter = self._ui.minDiameter.batchableNumber()
-            self._injection.diameterDistribution.maxDiameter = self._ui.maxDiameter.batchableNumber()
-            if diameterDistribution != DPMDiameterDistribution.LINEAR:
-                self._injection.diameterDistribution.meanDiameter = self._ui.meanDiameter.batchableNumber()
-                if diameterDistribution in (
-                        DPMDiameterDistribution.ROSIN_RAMMLER, DPMDiameterDistribution.MASS_ROSIN_RAMMLER):
-                    self._injection.diameterDistribution.spreadParameter = self._ui.spreadParameter.batchableNumber()
-                elif diameterDistribution == DPMDiameterDistribution.NORMAL:
-                    self._injection.diameterDistribution.stdDeviation = self._ui.stdDeviation.batchableNumber()
-
+        self.dataAccepted.emit(data)
         self.accept()
 
     def _setSurface(self, bcid):
@@ -330,15 +315,15 @@ class InjectionDialog(QDialog):
         self._ui.coneInjection.setVisible(type_ == DPMInjectionType.CONE)
 
     @qasync.asyncSlot()
-    async def _opePositionEditor(self):
+    async def _openPositionEditor(self):
         if self._positions is None:
-            self._positions = self._injection.injector.pointInjection.positions
+            self._positions = self._data.injector.pointInjection.positions
 
         dialog = SimpleSheetDialog(
             self, self.tr('Injection Positions'), ['x', 'y', 'z'],
-            [[float(row.x.text), float(row.y.text), float(row.z.text)] for row in self._positions])
+            [[float(row.x), float(row.y), float(row.z)] for row in self._positions])
         try:
-            self._positions = [Vector.new(str(x), str(y), str(z)) for x, y, z in await dialog.show()]
+            self._positions = [Vector(PFloat(str(x)), PFloat(str(y)), PFloat(str(z))) for x, y, z in await dialog.show()]
         except asyncio.exceptions.CancelledError:
             return
 

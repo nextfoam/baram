@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB, RANSModel
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.species_widget import SpeciesWidget
 from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
@@ -22,6 +22,9 @@ class EmptyWidget:
     def appendToWriter(self, writer):
         return True
 
+    def data(self):
+        return None
+
     def load(self):
         return
 
@@ -29,23 +32,17 @@ class EmptyWidget:
 class ConditionalWidgetHelper:
     @classmethod
     def turbulenceWidget(cls, xpath, layout) -> TurbulenceKEpsilonWidget | TurbulenceKOmegaWidget | TurbulenceSpalartAllmarasWidget | TurbulenceLESWidget | EmptyWidget:
-        turbulenceModel = TurbulenceModelsDB.getModel()
+        rasModel = TurbulenceModelsDB.getRASModel()
 
         widget = None
-        if turbulenceModel == TurbulenceModel.K_EPSILON:
+        if rasModel == TurbulenceModel.K_EPSILON:
             widget = TurbulenceKEpsilonWidget(xpath)
-        elif turbulenceModel == TurbulenceModel.K_OMEGA:
+        elif rasModel == TurbulenceModel.K_OMEGA or rasModel == TurbulenceModel.TRANSITION_SST:
             widget = TurbulenceKOmegaWidget(xpath)
-        elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+        elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
             widget = TurbulenceSpalartAllmarasWidget(xpath)
-        elif turbulenceModel == TurbulenceModel.DES:
-            ransModel = TurbulenceModelsDB.getDESRansModel()
-            if ransModel == RANSModel.SPALART_ALLMARAS:
-                widget = TurbulenceSpalartAllmarasWidget(xpath)
-            elif ransModel == RANSModel.K_OMEGA_SST:
-                widget = TurbulenceKOmegaWidget(xpath)
         elif TurbulenceModelsDB.isLESKEqnModel():
-                widget = TurbulenceLESWidget(xpath)
+            widget = TurbulenceLESWidget(xpath)
 
         if widget:
             layout.addWidget(widget)

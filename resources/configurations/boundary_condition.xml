@@ -260,6 +260,9 @@
         <inertialCoefficient>5</inertialCoefficient>
         <porousMediaThickness>0.05</porousMediaThickness>
     </porousJump>
+    <fan>
+        <reverseDirection>false</reverseDirection>
+    </fan>
     <turbulence>
         <k-epsilon>
             <specification>intensityAndViscosityRatio</specification>
@@ -275,6 +278,10 @@
             <turbulentIntensity>1</turbulentIntensity>
             <turbulentViscosityRatio>10</turbulentViscosityRatio>
         </k-omega>
+        <transitionSST>
+            <intermittency>1</intermittency>
+            <momentumThicknessRe>200</momentumThicknessRe>
+        </transitionSST>
         <spalartAllmaras>
             <specification>modifiedTurbulentViscosity</specification>
             <modifiedTurbulentViscosity>0</modifiedTurbulentViscosity>
@@ -306,6 +313,7 @@
         </temporalDistribution>
     </temperature>
     <coupledBoundary>0</coupledBoundary>
+    <fallbackBoundary>0</fallbackBoundary>
     <volumeFractions/>
     <userDefinedScalars/>
     <species/>

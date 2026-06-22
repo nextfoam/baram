@@ -9,6 +9,7 @@ import qasync
 from PySide6.QtWidgets import QWidget
 
 from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.pfloat import PFloat
 from widgets.simple_sheet_dialog import SimpleSheetDialog
 
 from baramFlow.base.base import TrackedData
@@ -43,35 +44,23 @@ class WallHeatTransferContent(QWidget):
 
         data = WallHeatTransfer(mode=self._ui.mode.currentData())
         if mode == WallHeatTransferMode.CONSTANT_TEMPERATURE:
-            data.temperature = self._ui.temperature.text()
-        elif mode == WallHeatTransferMode.TEMPERATURE_DISTRIBUTION:
-            if self._temperatureDistribution.isModified():
-                data.temperatureDistribution = pd.DataFrame(self._temperatureDistribution.data())
-        elif mode == WallHeatTransferMode.CONSTANT_HEAT_FLUX:
-            data.heatFlux = self._ui.heatFlux.text()
-        elif mode == WallHeatTransferMode.CONVECTION:
-            data.heatTransferCoefficient = self._ui.heatTransferCoefficient.text()
-            data.freeStreamTemperature = self._ui.freeStreamTemperature.text()
-            data.externalEmissivity = self._ui.externalEmissivity.text()
-            data.wallLayers = self._ui.wallLayers.data()
-
-        return data
-
-    def validate(self):
-        mode = self._ui.mode.currentData()
-
-        if mode == WallHeatTransferMode.CONSTANT_TEMPERATURE:
-            self._ui.temperature.validate(self.tr('Temperature'))
+            data.temperature = self._ui.temperature.pFloat(self.tr('Temperature'))
         elif mode == WallHeatTransferMode.TEMPERATURE_DISTRIBUTION:
             if self._temperatureDistribution.isNone() and self._temperatureDistributionName.int == 0:
                 raise ValueError(self.tr('Edit Temperature Distribution.'))
+
+            if self._temperatureDistribution.isModified():
+                data.temperatureDistribution = pd.DataFrame(self._temperatureDistribution.data())
         elif mode == WallHeatTransferMode.CONSTANT_HEAT_FLUX:
-            self._ui.heatFlux.validate(self.tr('Heat Flux'))
+            data.heatFlux = self._ui.heatFlux.pFloat(self.tr('Temperature'))
+            data.heatFlux = PFloat(self._ui.heatFlux.text(), self.tr('Temperature'))
         elif mode == WallHeatTransferMode.CONVECTION:
-            self._ui.heatTransferCoefficient.validate(self.tr('Heat Transfer Coefficient'))
-            self._ui.freeStreamTemperature.validate(self.tr('Free Stream Temperature'))
-            self._ui.externalEmissivity.validate(self.tr('External Emissivity'))
-            self._ui.wallLayers.validate()
+            data.heatTransferCoefficient = self._ui.heatTransferCoefficient.pFloat(self.tr('Heat Transfer Coefficient'))
+            data.freeStreamTemperature = self._ui.freeStreamTemperature.pFloat(self.tr('Free Stream Temperature'))
+            data.externalEmissivity = self._ui.externalEmissivity.pFloat(self.tr('External Emissivity'), low=0, high=1)
+            data.wallLayers = self._ui.wallLayers.data()
+
+        return data
 
     def _connectSignalsSlots(self):
         self._ui.mode.currentIndexChanged.connect(self._onModeChanged)

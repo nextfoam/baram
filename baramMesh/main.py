@@ -18,11 +18,14 @@ from vtkmodules.vtkCommonCore import vtkSMPTools
 # noinspection PyUnresolvedReferences
 import resource_rc
 
-from libbaram.mpi import checkMPI, MPIStatus
+from app_properties import meshAppProperties
+from libbaram.mpi import checkMPI, MPIStatus, MPI_PREFIX
 from libbaram.process import getAvailablePhysicalCores
 
+from analytics import Analytics
+from analytics.events import EVENT_LOOP_ERROR
+
 from baramMesh.app import app
-from baramMesh.settings.app_properties import AppProperties
 from baramMesh.view.main_window.main_window import MainWindow
 
 logger = logging.getLogger()
@@ -39,13 +42,19 @@ def handle_exception(eType, eValue, eTraceback):
         return
 
     logger.critical("Uncaught exception", exc_info=(eType, eValue, eTraceback))
+    Analytics().captureException(eValue)
 
 
 sys.excepthook = handle_exception
 
 
 def loop_exception(loop, context):
-    print("exception handling: ", context["exception"])
+    exception = context.get('exception')
+    print("exception handling: ", exception if exception is not None else context.get('message', ''))
+    if exception is not None:
+        Analytics().captureException(exception, {'source': 'event_loop'})
+    else:
+        Analytics().capture(EVENT_LOOP_ERROR, {'message': context.get('message', '')})
     loop.stop()
 
 
@@ -57,18 +66,20 @@ def main():
             message = QApplication.translate('main', 'MPI package NOT available in the system.')
         elif mpiStatus == MPIStatus.LOW_VERSION:
             message = QApplication.translate('main', 'MPI package version low. Recent version required.')
+        elif mpiStatus == MPIStatus.INVALID_PREFIX:
+            message = QApplication.translate(
+                'main', f'Incorrect "$BARAM_MPI_PREFIX" environment variable.<br/>'
+                        f'"{MPI_PREFIX}/mpirun" does NOT exist.')
 
         QMessageBox.information(None, QApplication.translate('main', 'Check MPI'), message)
         return
 
-    app.setupApplication(AppProperties(
-        name='BaramMesh',
-        fullName=QApplication.translate('Main', 'BaramMesh'),
-        iconResource='baramMesh.ico',
-        logoResource='baramMesh.ico',
-        projectSuffix='.bm',
-        exportSuffix='.bf'
-    ))
+    app.setupApplication(meshAppProperties)
+
+    Analytics().configure(
+        app_name=meshAppProperties.name,
+        app_version=meshAppProperties.version,
+        config_dir=app.settings.settingsPath())
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
@@ -89,6 +100,9 @@ def main():
 
     app.applyLanguage()
 
+    if Analytics().ensureConsent():
+        Analytics().init()
+
     app.window = MainWindow()
 
     background_tasks = set()
@@ -100,6 +114,7 @@ def main():
         loop.run_forever()
 
     loop.close()
+    Analytics().shutdown(final=True)
 
 
 if __name__ == '__main__':

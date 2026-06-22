@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import qasync
 
-from PySide6.QtWidgets import QMessageBox
+from libbaram.pfloat import PFloat
+from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.base import Vector
+from baramFlow.base.boundary.boundary_patch import SupersonicInflowUpdate
+from baramFlow.base.boundary.supersonic_inflow import SupersonicInflow
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .supersonic_inflow_dialog_ui import Ui_SupersonicInflowDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -19,32 +25,41 @@ class SupersonicInflowDialog(ResizableDialog):
         self._ui = Ui_SupersonicInflowDialog()
         self._ui.setupUi(self)
 
+        self._bcid = bcid
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
 
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
 
+        self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
-        xpath = self._xpath + self.RELATIVE_XPATH
+    def _connectSignalsSlots(self):
+        self._ui.ok.clicked.connect(self._accept)
 
-        writer = CoreDBWriter()
-        writer.append(xpath + '/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
-        writer.append(xpath + '/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
-        writer.append(xpath + '/velocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
-        writer.append(xpath + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
-        writer.append(xpath + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
+    @qasync.asyncSlot()
+    async def _accept(self):
+        try:
+            writer = CoreDBWriter()
+            if not self._turbulenceWidget.appendToWriter(writer):
+                return
 
-        if not self._turbulenceWidget.appendToWriter(writer):
+            data = SupersonicInflowUpdate(
+                supersonicInflow=SupersonicInflow(
+                    velocity=Vector(x=PFloat(self._ui.xVelocity.text(), self.tr("X-Velocity")),
+                                    y=PFloat(self._ui.yVelocity.text(), self.tr("Y-Velocity")),
+                                    z=PFloat(self._ui.zVelocity.text(), self.tr("Z-Velocity"))),
+                    staticPressure=PFloat(self._ui.staticPressure.text(), self.tr("Static Pressure")),
+                    staticTemperature=PFloat(self._ui.staticTemperature.text(), self.tr("Static Temperature"))),
+                turbulence=self._turbulenceWidget.data())
+
+            BoundaryService.updateBoundaryCondition(self._bcid, data, writer)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().accept()
+        self.accept()
 
     def _load(self):
         db = coredb.CoreDB()

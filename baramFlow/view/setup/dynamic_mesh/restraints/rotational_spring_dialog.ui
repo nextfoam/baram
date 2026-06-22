@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RotationalSpringDialog</class>
+ <widget class="QDialog" name="RotationalSpringDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>334</width>
+    <height>373</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Rotational Spring</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Restraint Parameters</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QFormLayout" name="formLayout">
+         <property name="horizontalSpacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="axisLabel">
+           <property name="text">
+            <string>Axis</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="VectorWidget" name="axis" native="true"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="springConstantLabel">
+           <property name="text">
+            <string>Spring Constant (N/m)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="PFloatLineEdit" name="springConstant"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="dampingConstantLabel">
+           <property name="text">
+            <string>Damping Constant (Ns/m)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="PFloatLineEdit" name="dampingConstant"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="orientation">
+        <property name="title">
+         <string>Orientation (Rotation Tensor)</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="useBoundaryOrientation">
+           <property name="text">
+            <string>Use the Orientation of the boundary</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="privateOrientation" native="true">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0" columnstretch="0,0,0">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="2" column="1">
+             <widget class="PFloatLineEdit" name="ori21"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="PFloatLineEdit" name="ori10"/>
+            </item>
+            <item row="1" column="2">
+             <widget class="PFloatLineEdit" name="ori12"/>
+            </item>
+            <item row="2" column="2">
+             <widget class="PFloatLineEdit" name="ori22"/>
+            </item>
+            <item row="1" column="1">
+             <widget class="PFloatLineEdit" name="ori11"/>
+            </item>
+            <item row="0" column="1">
+             <widget class="PFloatLineEdit" name="ori01"/>
+            </item>
+            <item row="0" column="2">
+             <widget class="PFloatLineEdit" name="ori02"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="PFloatLineEdit" name="ori20"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="PFloatLineEdit" name="ori00"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VectorWidget</class>
+   <extends>QWidget</extends>
+   <header>baramFlow.view.widgets.vector_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.pfloat_line_edit</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

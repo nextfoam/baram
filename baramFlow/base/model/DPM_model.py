@@ -5,7 +5,9 @@ from dataclasses import dataclass, field
 
 from lxml import etree
 
-from baramFlow.base.base import BatchableNumber, Vector, Function1Scalar, Function1Vector
+from libbaram.pfloat import PFloat
+
+from baramFlow.base.base import Function1Scalar, Function1Vector, Vector
 from baramFlow.base.boundary.boundary import PatchInteractionType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType
@@ -52,7 +54,7 @@ class DropletCompositionMaterial:
 @dataclass
 class DropletProperties:
     composition: list[DropletCompositionMaterial]
-    temperature: BatchableNumber
+    temperature: PFloat
 
     @staticmethod
     def fromElement(e):
@@ -61,7 +63,7 @@ class DropletProperties:
             composition.append(DropletCompositionMaterial.fromElement(material))
 
         return DropletProperties(composition=composition,
-                                 temperature=BatchableNumber.fromElement(e.find('temperature', namespaces=nsmap)))
+                                 temperature=PFloat.fromElement(e.find('temperature', namespaces=nsmap)))
 
     def toElement(self, tag: str):
         compositionElement =  E('composition')
@@ -73,8 +75,8 @@ class DropletProperties:
 @dataclass
 class NumericalConditions:
     interactionWithContinuousPhase: bool
-    maxParticleCourantNumber: BatchableNumber
-    DPMIterationInterval: BatchableNumber
+    maxParticleCourantNumber: PFloat
+    DPMIterationInterval: PFloat
     nodeBasedAveraging: bool
     trackingScheme: DPMTrackingScheme
 
@@ -82,8 +84,8 @@ class NumericalConditions:
     def fromElement(e):
         return NumericalConditions(
             interactionWithContinuousPhase=xmlToBool(e.find('interactionWithContinuousPhase', namespaces=nsmap).text),
-            maxParticleCourantNumber=BatchableNumber.fromElement(e.find('maxParticleCourantNumber', namespaces=nsmap)),
-            DPMIterationInterval=BatchableNumber.fromElement(e.find('DPMIterationInterval', namespaces=nsmap)),
+            maxParticleCourantNumber=PFloat.fromElement(e.find('maxParticleCourantNumber', namespaces=nsmap)),
+            DPMIterationInterval=PFloat.fromElement(e.find('DPMIterationInterval', namespaces=nsmap)),
             nodeBasedAveraging=xmlToBool(e.find('nodeBasedAveraging', namespaces=nsmap).text),
             trackingScheme=DPMTrackingScheme(e.find('trackingScheme', namespaces=nsmap).text))
 
@@ -97,12 +99,12 @@ class NumericalConditions:
 
 @dataclass
 class NonSphereDrag:
-    shapeFactor: BatchableNumber
+    shapeFactor: PFloat
 
     @staticmethod
     def fromElement(e):
         return NonSphereDrag(
-            shapeFactor=BatchableNumber.fromElement(e.find('shapeFactor', namespaces=nsmap)))
+            shapeFactor=PFloat.fromElement(e.find('shapeFactor', namespaces=nsmap)))
 
     def toElement(self, tag: str):
         return E(tag,
@@ -110,13 +112,13 @@ class NonSphereDrag:
 
 @dataclass
 class TomiyamaDrag:
-    surfaceTension: BatchableNumber
+    surfaceTension: PFloat
     contamination: Contamination
 
     @staticmethod
     def fromElement(e):
         return TomiyamaDrag(
-            surfaceTension=BatchableNumber.fromElement(e.find('surfaceTension', namespaces=nsmap)),
+            surfaceTension=PFloat.fromElement(e.find('surfaceTension', namespaces=nsmap)),
             contamination=Contamination(e.find('contamination', namespaces=nsmap).text))
 
     def toElement(self, tag: str):
@@ -145,12 +147,12 @@ class DragForce:
 
 @dataclass
 class TomiyamaLift:
-    surfaceTension: BatchableNumber
+    surfaceTension: PFloat
 
     @staticmethod
     def fromElement(e):
         return TomiyamaLift(
-            surfaceTension=BatchableNumber.fromElement(e.find('surfaceTension', namespaces=nsmap)))
+            surfaceTension=PFloat.fromElement(e.find('surfaceTension', namespaces=nsmap)))
 
     def toElement(self, tag: str):
         return E(tag,
@@ -175,14 +177,14 @@ class LiftForce:
 @dataclass
 class BrownianMotionForce:
     disabled: bool
-    molecularFreePathLength: BatchableNumber
+    molecularFreePathLength: PFloat
     useTurbulence: bool
 
     @staticmethod
     def fromElement(e):
         return BrownianMotionForce(
             disabled=xmlToBool(e.get('disabled')),
-            molecularFreePathLength=BatchableNumber.fromElement(e.find('molecularFreePathLength', namespaces=nsmap)),
+            molecularFreePathLength=PFloat.fromElement(e.find('molecularFreePathLength', namespaces=nsmap)),
             useTurbulence=xmlToBool(e.find('useTurbulence', namespaces=nsmap).text))
 
     def toElement(self, tag: str):
@@ -298,10 +300,10 @@ class DPMModelProperties:
 
 @dataclass
 class PointInjection:
-    numberOfParticlesPerPoint: BatchableNumber  = field(default_factory=lambda: BatchableNumber('100'))
-    injectionTime: BatchableNumber              = field(default_factory=lambda: BatchableNumber('0'))
-    particleVelocity: Vector                    = field(default_factory=lambda: Vector.new('1', '1', '1'))
-    positions: list[Vector]                     = field(default_factory=list)
+    numberOfParticlesPerPoint: PFloat   = field(default_factory=lambda: PFloat('100'))
+    injectionTime: PFloat               = field(default_factory=lambda: PFloat('0'))
+    particleVelocity: Vector            = field(default_factory=Vector.xUnit)
+    positions: list[Vector]             = field(default_factory=list)
 
     @staticmethod
     def fromElement(e):
@@ -310,8 +312,8 @@ class PointInjection:
             positions.append(Vector.fromElement(p))
 
         return PointInjection(
-            numberOfParticlesPerPoint=BatchableNumber.fromElement(e.find('numberOfParticlesPerPoint', namespaces=nsmap)),
-            injectionTime=BatchableNumber.fromElement(e.find('injectionTime', namespaces=nsmap)),
+            numberOfParticlesPerPoint=PFloat.fromElement(e.find('numberOfParticlesPerPoint', namespaces=nsmap)),
+            injectionTime=PFloat.fromElement(e.find('injectionTime', namespaces=nsmap)),
             particleVelocity=Vector.fromElement(e.find('particleVelocity', namespaces=nsmap)),
             positions=positions
         )
@@ -327,14 +329,14 @@ class PointInjection:
 
 @dataclass
 class ParticleCountParameters:
-    parcelPerSecond: BatchableNumber            = field(default_factory=lambda: BatchableNumber('100'))
-    numberOfParticlesPerParcel: BatchableNumber = field(default_factory=lambda: BatchableNumber('100'))
+    parcelPerSecond: PFloat             = field(default_factory=lambda: PFloat('100'))
+    numberOfParticlesPerParcel: PFloat  = field(default_factory=lambda: PFloat('100'))
 
     @staticmethod
     def fromElement(e):
         return ParticleCountParameters(
-            parcelPerSecond=BatchableNumber.fromElement(e.find('parcelPerSecond', namespaces=nsmap)),
-            numberOfParticlesPerParcel=BatchableNumber.fromElement(
+            parcelPerSecond=PFloat.fromElement(e.find('parcelPerSecond', namespaces=nsmap)),
+            numberOfParticlesPerParcel=PFloat.fromElement(
                 e.find('numberOfParticlesPerParcel',namespaces=nsmap)))
 
     def toElement(self, tag: str):
@@ -344,18 +346,18 @@ class ParticleCountParameters:
 
 @dataclass
 class ParticleVolumeParameters:
-    parcelPerSecond: BatchableNumber    = field(default_factory=lambda: BatchableNumber('100'))
-    totalMass: BatchableNumber          = field(default_factory=lambda: BatchableNumber('100'))
-    volumeFlowRate: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('100')))
-    massFlowRate: BatchableNumber       = field(default_factory=lambda: BatchableNumber('100'))
+    parcelPerSecond: PFloat         = field(default_factory=lambda: PFloat('100'))
+    totalMass: PFloat               = field(default_factory=lambda: PFloat('100'))
+    volumeFlowRate: Function1Scalar = field(default_factory=lambda: Function1Scalar(constant=PFloat('100')))
+    massFlowRate: PFloat            = field(default_factory=lambda: PFloat('100'))
 
     @staticmethod
     def fromElement(e):
         return ParticleVolumeParameters(
-            parcelPerSecond=BatchableNumber.fromElement(e.find('parcelPerSecond', namespaces=nsmap)),
-            totalMass=BatchableNumber.fromElement(e.find('totalMass',namespaces=nsmap)),
+            parcelPerSecond=PFloat.fromElement(e.find('parcelPerSecond', namespaces=nsmap)),
+            totalMass=PFloat.fromElement(e.find('totalMass',namespaces=nsmap)),
             volumeFlowRate=Function1Scalar.fromElement(e.find('volumeFlowRate',namespaces=nsmap)),
-            massFlowRate=BatchableNumber.fromElement(e.find('massFlowRate',namespaces=nsmap)))
+            massFlowRate=PFloat.fromElement(e.find('massFlowRate',namespaces=nsmap)))
 
     def toElement(self, tag: str):
         return E(tag,
@@ -369,8 +371,8 @@ class FlowRate:
     specification: DPMFlowRateSpec              = DPMFlowRateSpec.PARTICLE_COUNT
     particleCount: ParticleCountParameters      = field(default_factory=ParticleCountParameters)
     particleVolume: ParticleVolumeParameters    = field(default_factory=ParticleVolumeParameters)
-    startTime: BatchableNumber                  = field(default_factory=lambda: BatchableNumber('0'))
-    stopTime: BatchableNumber                   = field(default_factory=lambda: BatchableNumber('1'))
+    startTime: PFloat                           = field(default_factory=lambda: PFloat('0'))
+    stopTime: PFloat                            = field(default_factory=lambda: PFloat('1'))
 
     @staticmethod
     def fromElement(e):
@@ -378,8 +380,8 @@ class FlowRate:
             specification=DPMFlowRateSpec(e.find('specification', namespaces=nsmap).text),
             particleCount=ParticleCountParameters.fromElement(e.find('particleCount', namespaces=nsmap)),
             particleVolume=ParticleVolumeParameters.fromElement(e.find('particleVolume', namespaces=nsmap)),
-            startTime=BatchableNumber.fromElement(e.find('startTime', namespaces=nsmap)),
-            stopTime=BatchableNumber.fromElement(e.find('stopTime', namespaces=nsmap)))
+            startTime=PFloat.fromElement(e.find('startTime', namespaces=nsmap)),
+            stopTime=PFloat.fromElement(e.find('stopTime', namespaces=nsmap)))
 
     def toElement(self, tag: str):
         return E(tag,
@@ -392,17 +394,17 @@ class FlowRate:
 @dataclass
 class ConeInjection:
     injectorType: DPMConeInjectorType   = DPMConeInjectorType.DISC
-    position: Function1Vector           = field(default_factory=lambda: Function1Vector(constant=Vector.new('1', '1', '1')))
-    axis: Function1Vector               = field(default_factory=lambda: Function1Vector(constant=Vector.new('1', '1', '1')))
-    outerConeAngle: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('30')))
-    innerConeAngle: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
-    outerRadius: BatchableNumber        = field(default_factory=lambda: BatchableNumber('1'))
-    innerRadius: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0'))
-    swirlVelocity: Function1Scalar      = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
+    position: Function1Vector           = field(default_factory=lambda: Function1Vector(constant=Vector.xUnit()))
+    axis: Function1Vector               = field(default_factory=lambda: Function1Vector(constant=Vector.zUnit()))
+    outerConeAngle: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=PFloat('30')))
+    innerConeAngle: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=PFloat('0')))
+    outerRadius: PFloat                 = field(default_factory=lambda: PFloat('1'))
+    innerRadius: PFloat                 = field(default_factory=lambda: PFloat('0'))
+    swirlVelocity: Function1Scalar      = field(default_factory=lambda: Function1Scalar(constant=PFloat('0')))
     particleSpeed: DPMParticleSpeed     = DPMParticleSpeed.FROM_INJECTION_SPEED
-    injectionSpeed: BatchableNumber     = field(default_factory=lambda: BatchableNumber('1'))
-    injectorPressure: Function1Scalar   = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
-    dischargeCoeff: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('0')))
+    injectionSpeed: PFloat              = field(default_factory=lambda: PFloat('1'))
+    injectorPressure: Function1Scalar   = field(default_factory=lambda: Function1Scalar(constant=PFloat('0')))
+    dischargeCoeff: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=PFloat('0')))
 
     @staticmethod
     def fromElement(e):
@@ -412,11 +414,11 @@ class ConeInjection:
             axis=Function1Vector.fromElement(e.find('axis', namespaces=nsmap)),
             outerConeAngle=Function1Scalar.fromElement(e.find('outerConeAngle', namespaces=nsmap)),
             innerConeAngle=Function1Scalar.fromElement(e.find('innerConeAngle', namespaces=nsmap)),
-            outerRadius=BatchableNumber.fromElement(e.find('outerRadius', namespaces=nsmap)),
-            innerRadius=BatchableNumber.fromElement(e.find('innerRadius', namespaces=nsmap)),
+            outerRadius=PFloat.fromElement(e.find('outerRadius', namespaces=nsmap)),
+            innerRadius=PFloat.fromElement(e.find('innerRadius', namespaces=nsmap)),
             swirlVelocity=Function1Scalar.fromElement(e.find('swirlVelocity', namespaces=nsmap)),
             particleSpeed=DPMParticleSpeed(e.find('particleSpeed', namespaces=nsmap).text),
-            injectionSpeed=BatchableNumber.fromElement(e.find('injectionSpeed', namespaces=nsmap)),
+            injectionSpeed=PFloat.fromElement(e.find('injectionSpeed', namespaces=nsmap)),
             injectorPressure=Function1Scalar.fromElement(e.find('injectorPressure', namespaces=nsmap)),
             dischargeCoeff=Function1Scalar.fromElement(e.find('dischargeCoeff', namespaces=nsmap)))
 
@@ -438,7 +440,7 @@ class ConeInjection:
 @dataclass
 class ParticleVelocity:
     type: DPMParticleVelocityType   = DPMParticleVelocityType.CONSTANT
-    value: Vector                   = field(default_factory=lambda: Vector.new('1', '1', '1'))
+    value: Vector                   = field(default_factory=Vector.xUnit)
 
     @staticmethod
     def fromElement(e):
@@ -490,24 +492,24 @@ class InjectorProperties:
 
 @dataclass
 class DiameterDistribution:
-    type: DPMDiameterDistribution       = DPMDiameterDistribution.UNIFORM
-    diameter: BatchableNumber           = field(default_factory=lambda: BatchableNumber('0.0001'))
-    minDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.0001'))
-    maxDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.0001'))
-    meanDiameter: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.0001'))
-    spreadParameter: BatchableNumber    = field(default_factory=lambda: BatchableNumber('0.0001'))
-    stdDeviation: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.0001'))
+    type: DPMDiameterDistribution   = DPMDiameterDistribution.UNIFORM
+    diameter: PFloat                = field(default_factory=lambda: PFloat('0.0001'))
+    minDiameter: PFloat             = field(default_factory=lambda: PFloat('0.0001'))
+    maxDiameter: PFloat             = field(default_factory=lambda: PFloat('0.0001'))
+    meanDiameter: PFloat            = field(default_factory=lambda: PFloat('0.0001'))
+    spreadParameter: PFloat         = field(default_factory=lambda: PFloat('0.0001'))
+    stdDeviation: PFloat            = field(default_factory=lambda: PFloat('0.0001'))
 
     @staticmethod
     def fromElement(e):
         return DiameterDistribution(
             type=DPMDiameterDistribution(e.find('type', namespaces=nsmap).text),
-            diameter=BatchableNumber.fromElement(e.find('diameter', namespaces=nsmap)),
-            minDiameter=BatchableNumber.fromElement(e.find('minDiameter', namespaces=nsmap)),
-            maxDiameter=BatchableNumber.fromElement(e.find('maxDiameter', namespaces=nsmap)),
-            meanDiameter=BatchableNumber.fromElement(e.find('meanDiameter', namespaces=nsmap)),
-            spreadParameter=BatchableNumber.fromElement(e.find('spreadParameter', namespaces=nsmap)),
-            stdDeviation=BatchableNumber.fromElement(e.find('stdDeviation', namespaces=nsmap)))
+            diameter=PFloat.fromElement(e.find('diameter', namespaces=nsmap)),
+            minDiameter=PFloat.fromElement(e.find('minDiameter', namespaces=nsmap)),
+            maxDiameter=PFloat.fromElement(e.find('maxDiameter', namespaces=nsmap)),
+            meanDiameter=PFloat.fromElement(e.find('meanDiameter', namespaces=nsmap)),
+            spreadParameter=PFloat.fromElement(e.find('spreadParameter', namespaces=nsmap)),
+            stdDeviation=PFloat.fromElement(e.find('stdDeviation', namespaces=nsmap)))
 
     def toElement(self, tag: str):
         return E(tag,

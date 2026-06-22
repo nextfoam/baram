@@ -102,6 +102,16 @@ class FvSolution(DictionaryFile):
                     'minIter': 1,
                     'maxIter': 10,
                 },
+                '"(cellDisplacement|cellDisplacementFinal)"': {
+                    'solver': 'GAMG',
+                    'tolerance': '1e-5',
+                    'relTol': '0',
+                    'smoother': 'GaussSeidel',
+                    'cacheAgglomeration': 'true',
+                    'nCellsInCoarsestLevel': '10',
+                    'agglomerator': 'faceAreaPair',
+                    'mergeLevels': '1',
+                },
                 '"(p|pcorr)"': (p := self._constructSolversP()),
                 '"(p|pcorr)Final"': p,
                 'p_rgh': (p_rgh := {
@@ -129,7 +139,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'rhoFinal': rho,
-                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi{scalarFieldNames})"': (others := {
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi|gammaInt|ReThetat{scalarFieldNames})"': (others := {
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
                     'tolerance': '1e-16',
@@ -137,7 +147,7 @@ class FvSolution(DictionaryFile):
                     'minIter': '1',
                     'maxIter': '5',
                 }),
-                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi{scalarFieldNames})Final"': others,
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi|gammaInt|ReThetat{scalarFieldNames})Final"': others,
                 'age': {  # no "ageFinal" because "age" supports only steady case
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
@@ -165,7 +175,7 @@ class FvSolution(DictionaryFile):
                     'p_rgh': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/pressure/absolute'),
                     'U': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
                     'h': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
-                    '"(k|epsilon|omega|nuTilda)"':
+                    '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)"':
                         self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/absolute'),
                     # For multiphase model
                     '"alpha.*"': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/volumeFraction/absolute'),
@@ -187,6 +197,7 @@ class FvSolution(DictionaryFile):
                 # only in single region case
                 'nOuterCorrectors':
                     self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
+                'moveMeshOuterCorrectors': 'yes',
                 'nAlphaSpreadIter': 0,
                 'nAlphaSweepIter': 0,
                 'maxCo': self._db.getValue('/runCalculation/runConditions/maxCourantNumber'),
@@ -221,7 +232,7 @@ class FvSolution(DictionaryFile):
                         'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
                         'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/relative'),
                     },
-                    '"(k|epsilon|omega|nuTilda)"': {
+                    '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)"': {
                         'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/absolute'),
                         'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/relative'),
                     },
@@ -254,9 +265,9 @@ class FvSolution(DictionaryFile):
                     'h': 1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energy'),
                     'hFinal':
                         1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energyFinal'),
-                    '"(k|epsilon|omega|nuTilda)"':
+                    '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)"':
                         self._db.getValue(underRelaxaitionFactorsXPath + '/turbulence'),
-                    '"(k|epsilon|omega|nuTilda)Final"':
+                    '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)Final"':
                         self._db.getValue(underRelaxaitionFactorsXPath + '/turbulenceFinal'),
                     **{
                         specie: self._db.getValue(underRelaxaitionFactorsXPath + '/species')
@@ -392,7 +403,7 @@ class FvSolution(DictionaryFile):
                     'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
                     'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/relative'),
                 },
-                '"(k|epsilon|omega|nuTilda)"': {
+                '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)"': {
                     'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/absolute'),
                     'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/relative'),
                 }
@@ -407,7 +418,7 @@ class FvSolution(DictionaryFile):
                 'rho': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/density/absolute'),
                 'rhoU': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
                 'rhoE': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
-                '"(k|epsilon|omega|nuTilda)"':
+                '"(k|epsilon|omega|nuTilda|gammaInt|ReThetat)"':
                     self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/absolute'),
             }
         }

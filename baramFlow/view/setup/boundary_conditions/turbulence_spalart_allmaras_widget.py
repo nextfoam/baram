@@ -53,6 +53,9 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
 
         return True
 
+    def data(self):
+        return None
+
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)
 

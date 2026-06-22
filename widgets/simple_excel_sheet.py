@@ -30,6 +30,7 @@ class SimpleExcelSheet(QTableWidget):
     MINIMUM_ROW_COUNT = 50
     ROWS_TO_ADD_ON_SCROLL = 5
     BUFFER_BLANK_ROWS = 3  # Keep at least this many blank rows at the end.
+    MAX_ROW_COUNT = 10_000
 
     SELECTION_BORDER_COLOR = QColor(33, 115, 70)
     SELECTION_BORDER_WIDTH = 2
@@ -47,7 +48,7 @@ class SimpleExcelSheet(QTableWidget):
         if readOnly:
             self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
-        rowCount = max(len(data), self.MINIMUM_ROW_COUNT)
+        rowCount = min(max(len(data), self.MINIMUM_ROW_COUNT), self.MAX_ROW_COUNT)
         colCount = len(labels)
 
         self.setRowCount(rowCount)
@@ -250,8 +251,8 @@ class SimpleExcelSheet(QTableWidget):
         self._trimExcessBlankRows()
 
     def _addMoreRows(self):
-        count = self.rowCount()
-        self.setRowCount(count + self.ROWS_TO_ADD_ON_SCROLL)
+        count = min(self.rowCount() + self.ROWS_TO_ADD_ON_SCROLL, self.MAX_ROW_COUNT)
+        self.setRowCount(count)
 
     def _isRowBlank(self, row_index):
         for col in range(self.columnCount()):
@@ -340,6 +341,9 @@ class SimpleExcelSheet(QTableWidget):
         # Get the top-left corner of the selection
         topRow = min(selectedRange.topRow() for selectedRange in ranges)
         leftCol = min(selectedRange.leftColumn() for selectedRange in ranges)
+
+        newRowCount = min(topRow + 1 + len(rowsToPaste) + self.BUFFER_BLANK_ROWS, self.MAX_ROW_COUNT)
+        self.setRowCount(newRowCount)
 
         for rowIndex, rowData in enumerate(rowsToPaste):
             for colIndex, cellData in enumerate(rowData):

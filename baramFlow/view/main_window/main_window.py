@@ -18,11 +18,8 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import QCoreApplication, Qt, QEvent, QTimer
 
-from baramFlow.base import expert_mode
-from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
-from baramFlow.view.results.graphics.graphic_dock import GraphicDock
+from analytics import Analytics
+from app_properties import flowAppProperties
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility, openTerminal
@@ -33,8 +30,12 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
+from baramFlow.base import expert_mode
+from baramFlow.base.cache_manager import CacheManager
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.base.model.model import ModelManager
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
@@ -47,6 +48,7 @@ from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.cell_zones_to_regions import CellZonesToRegions
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
 from baramFlow.solver_status import SolverStatus
@@ -63,6 +65,7 @@ from baramFlow.view.setup.materials.material_page import MaterialPage
 from baramFlow.view.setup.models.models_page import ModelsPage
 from baramFlow.view.setup.cell_zone_conditions.cell_zone_conditions_page import CellZoneConditionsPage
 from baramFlow.view.setup.boundary_conditions.boundary_conditions_page import BoundaryConditionsPage
+from baramFlow.view.setup.dynamic_mesh.dynamic_mesh_page import DynamicMeshPage
 from baramFlow.view.setup.reference_values.reference_values_page import ReferenceValuesPage
 from baramFlow.view.solution.numerical_conditions.numerical_conditions_page import NumericalConditionsPage
 from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
@@ -70,6 +73,7 @@ from baramFlow.view.solution.initialization.initialization_page import Initializ
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
 from baramFlow.view.solution.run.pod_rom_page import PODROMPage
+from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from baramFlow.view.results.graphics.graphics_page import GraphicsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
@@ -126,7 +130,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
 
-        self.setWindowIcon(app.properties.icon())
+        self.setWindowIcon(flowAppProperties.icon())
 
         self._project = Project.instance()
         self._caseManager = CaseManager()
@@ -161,6 +165,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             MenuItem.MENU_SETUP_MODELS.value: MenuPage(ModelsPage),
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value: MenuPage(CellZoneConditionsPage),
             MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value: MenuPage(BoundaryConditionsPage),
+            MenuItem.MENU_SETUP_DYNAMIC_MESH.value: MenuPage(DynamicMeshPage),
             MenuItem.MENU_SETUP_REFERENCE_VALUES.value: MenuPage(ReferenceValuesPage),
 
             MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value: MenuPage(NumericalConditionsPage),
@@ -180,6 +185,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._closeState = CloseState.NONE
 
         self._backgroundTasks = set()
+
+        # OEM variants with analytics disabled don't need this entry.
+        self._ui.actionPrivacySettings.setVisible(Analytics().configured)
 
         self._setupShortcuts()
 
@@ -279,6 +287,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
         self._ui.actionAbout.triggered.connect(self._showAboutDialog)
         self._ui.actionTutorials.triggered.connect(self._openTutorials)
+        self._ui.actionPrivacySettings.triggered.connect(self._openPrivacySettings)
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
@@ -315,7 +324,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
 
         self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
-                                        Path(AppSettings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+                                        Path(AppSettings.getRecentLocation()).resolve(), flowAppProperties.projectSuffix)
         self._dialog.pathSelected.connect(self._saveAsDirectorySelected)
         self._dialog.open()
 
@@ -573,7 +582,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
             if previousPage.widget and previousPage.widget == self._contentView.currentPage():
-                if not await previousPage.widget.save() or not previousPage.widget.checkToQuit():
+                if not await previousPage.widget.save() or not await previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
 
@@ -607,6 +616,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             MenuItem.MENU_SETUP_MODELS.value,
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
             MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+            MenuItem.MENU_SETUP_DYNAMIC_MESH.value,
             MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value,
             MenuItem.MENU_SOLUTION_MONITORS.value,
             MenuItem.MENU_SOLUTION_INITIALIZATION.value,
@@ -643,27 +653,41 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._caseManager.load(LiveCase())
 
         if self._caseManager.isRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
+            menu = MenuItem.MENU_SOLUTION_RUN.value
             self._chartDock.raise_()
         else:
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
+            menu = MenuItem.MENU_SETUP_GENERAL.value
             self._renderingDock.raise_()
+
+        # Select the initial menu without emitting currentMenuChanged. Going
+        # through _changeForm here would schedule a second asyncSlot task that
+        # tries to save the previous page while _projectOpened is still running,
+        # re-entering the event loop and raising "Cannot enter into task ...".
+        wasBlocked = self._navigatorView.blockSignals(True)
+        try:
+            self._navigatorView.setCurrentMenu(menu)
+        finally:
+            self._navigatorView.blockSignals(wasBlocked)
+        self._loadForm(menu)
 
         progressDialog = ProgressDialog(self, self.tr('Case Loading'))
         progressDialog.open()
+        CacheManager.load()
 
         db = coredb.CoreDB()
         if db.hasMesh():
-            ScaffoldsDB().load()
-            await GraphicsDB().load()
-
             # Workaround to give some time for QT to set up timer or event loop.
             # This workaround is not necessary on Windows because BARAM for Windows
             #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
             await asyncio.sleep(0.1)
 
             async with OpenFOAMReader() as reader:
+                reader.readerProgressEvent.connect(lambda progress: progressDialog.setLabelText(self.tr('Loading Case: ') + str(progress) +'%'))
                 await reader.setupReader()
+                reader.readerProgressEvent.disconnect()
+
+            ScaffoldsDB().load()
+            await GraphicsDB().load()
 
             loader = PolyMeshLoader()
             loader.progress.connect(progressDialog.setLabelText)
@@ -696,9 +720,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):
         if name:
-            self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
+            self.setWindowTitle(f'{flowAppProperties.fullName} - {name} ({self._project.path})')
         else:
-            self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
+            self.setWindowTitle(f'{flowAppProperties.fullName} - {self._project.path}')
 
     def _changeScale(self):
         self._dialog = SettingScalingDialog(self)
@@ -982,3 +1006,6 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     def _retranslateUi(self):
         if self._actionTerminal is not None:
             self._actionTerminal.setText(QCoreApplication.translate("MainWindow", u"&Terminal", None))
+
+    def _openPrivacySettings(self):
+        Analytics().editConsent(parent=self)

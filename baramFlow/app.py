@@ -26,19 +26,13 @@ class App(QObject):
         self._internalMeshActors = None
         self._translator = None
 
-        self._properties = None
         self._plug = None
 
         self._qApplication: Optional[QApplication] = None
 
     def setupApplication(self, properties):
-        self._properties = properties
         AppSettings.setup(properties.name)
         relation.registerObservers()
-
-    @property
-    def properties(self):
-        return self._properties
 
     @property
     def window(self):
@@ -46,6 +40,9 @@ class App(QObject):
 
     @property
     def renderingView(self):
+        if self._window is None:
+            return None
+
         return self._window.renderingView()
 
     @property

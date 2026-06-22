@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from baramFlow.base.base import SpatialScalarList, TemporalScalarList
@@ -22,20 +22,19 @@ class TemperatureTemporalDistributionSpecification(Enum):
 
 @dataclass
 class TemperatureTemporalDistribution:
-    specification: TemperatureTemporalDistributionSpecification
-    POLYNOMIAL = 'polynomial'
-    piecewiseLinear: TemporalScalarList = None
-    polynomial: str = None  # inputNumberListType in baram.cfd.xsd
+    specification: TemperatureTemporalDistributionSpecification = TemperatureTemporalDistributionSpecification.PIECEWISE_LINEAR
+    piecewiseLinear: TemporalScalarList                         = field(default_factory=TemporalScalarList.default)
+    polynomial: str                                             = '0'   # inputNumberListType in baram.cfd.xsd
 
 
 @dataclass
 class BoundaryTemperature:
-    profile: TemperatureProfile
-    constant: str = None
-    spatialDistribution: SpatialScalarList = None
-    temporalDistribution: TemperatureTemporalDistribution = None
+    profile: TemperatureProfile                             = TemperatureProfile.CONSTANT
+    constant: str                                           = '300'
+    spatialDistribution: SpatialScalarList                  = field(default_factory=SpatialScalarList.default)
+    temporalDistribution: TemperatureTemporalDistribution   = field(default_factory=TemperatureTemporalDistribution)
 
-    def updateIn(self, db, bcid):
+    def applyToDB(self, db, bcid):
         xpath = BoundaryDB.getXPath(bcid) + '/temperature'
         element = db.getElement(xpath)
 

@@ -5,9 +5,9 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QWizardPage, QVBoxLayout, QLineEdit
 
+from app_properties import flowAppProperties
 from widgets.new_project_widget import NewProjectWidget
 
-from baramFlow.app import app
 from baramFlow.coredb.app_settings import AppSettings
 
 
@@ -22,7 +22,7 @@ class WorkspacePage(QWizardPage):
 
         if path is None:
             self._widget = NewProjectWidget(self, Path(AppSettings.getRecentLocation()).resolve(),
-                                            app.properties.projectSuffix)
+                                            flowAppProperties.projectSuffix)
         else:
             self._widget = NewProjectWidget(self)
             self._widget.setFixedProjectPath(path)

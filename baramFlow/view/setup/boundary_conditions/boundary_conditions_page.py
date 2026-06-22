@@ -5,8 +5,6 @@ import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
-from baramFlow.base.model.DPM_model import DPMModelManager
-from baramFlow.openfoam import parallel
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.app import app
@@ -15,6 +13,8 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, GeometricalType
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
+from baramFlow.openfoam import parallel
+from baramFlow.services.boundary.boundary_service import BoundaryService
 from baramFlow.view.widgets.content_page import ContentPage
 from .ABL_inlet_dialog import ABLInletDialog
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
@@ -22,6 +22,7 @@ from .boundary_type_picker import BoundaryTypePicker
 from .boundary_widget import BoundaryWidget
 from .copy_dialog import CopyDialog
 from .cyclic_dialog import CyclicDialog
+from .cyclicACMI_dialog import CyclicACMIDialog
 from .exhaust_fan_dialog import ExhaustFanDialog
 from .fan_dialog import FanDialog
 from .farfield_riemann_dialog import FarfieldRiemannDialog
@@ -69,6 +70,7 @@ DIALOGS = {
     BoundaryType.INTERFACE: InterfaceDialog,
     BoundaryType.EMPTY: None,
     BoundaryType.CYCLIC: CyclicDialog,
+    BoundaryType.CYCLIC_ACMI: CyclicACMIDialog,
     BoundaryType.WEDGE: None,
 }
 
@@ -79,8 +81,8 @@ class BoundaryItem(QTreeWidgetItem):
 
         self._widget = widget
 
-        self.setFlags(self.flags() | Qt.ItemIsUserCheckable)
-        self.setCheckState(0, Qt.Checked)
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        self.setCheckState(0, Qt.CheckState.Checked)
 
         self.treeWidget().setItemWidget(self, 1, widget)
 
@@ -100,7 +102,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui = Ui_BoundaryConditionsPage()
         self._ui.setupUi(self)
 
-        self._boundaries = {}
+        self._boundaries: dict[str: BoundaryItem] = {}
 
         self._dialog = None
         self._typePicker = None
@@ -123,7 +125,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
-        self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
+        self._ui.boundaries.currentItemChanged.connect(self._onSelectedBoundaryChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
 
@@ -153,13 +155,13 @@ class BoundaryConditionsPage(ContentPage):
             self._meshUpdated()
 
     def _updateCopyEnabled(self):
-        self._ui.copy.setEnabled(not CaseManager().isActive())
+        self._ui.copy.setEnabled(not CaseManager().isActive() and self._ui.boundaries.currentItem() is not None)
 
     def _updateEditEnabled(self):
         item = self._ui.boundaries.currentItem()
         index = self._ui.boundaries.indexOfTopLevelItem(item)
 
-        if index == -1:  # Not Top level item
+        if index == -1 and item is not None:  # Not Top level item
             bctype = item.bctype()
             if bctype and DIALOGS[bctype]:
                 self._ui.edit.setEnabled(True)
@@ -189,7 +191,7 @@ class BoundaryConditionsPage(ContentPage):
         for bcid, bcname, bctype in boundaries:
             widget = BoundaryWidget(rname, bcid, bcname, BoundaryType(bctype))
             widget.rightClicked.connect(self._showTypePicker)
-            self._boundaries[bcid] = BoundaryItem(parent, widget)
+            self._boundaries[str(bcid)] = BoundaryItem(parent, widget)
 
     def _itemChanged(self, item, column):
         bcid = item.type()
@@ -205,27 +207,17 @@ class BoundaryConditionsPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _changeBoundaryType(self, bcid, bctype: BoundaryType):
-        db = coredb.CoreDB()
-        currentType = BoundaryDB.getBoundaryType(bcid)
-        if currentType != bctype:
-            xpath = BoundaryDB.getXPath(bcid)
-            db.setValue(xpath + '/physicalType', bctype.value)
+        oldType = BoundaryService.getBoundary(bcid).bctype
+        if oldType != bctype:
+            BoundaryService.updateBoundaryType(bcid, bctype)
+
+            boundary = BoundaryService.getBoundary(bcid).boundary
             self._boundaries[bcid].reloadType()
             self._updateEditEnabled()
 
-            cpid = db.getValue(xpath + '/coupledBoundary')
-            if cpid != '0':
-                if (BoundaryDB.needsCoupledBoundary(bctype)
-                        and BoundaryDB.getBoundaryType(cpid) == currentType
-                        and bcid == int(db.getValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary'))):
-                    db.setValue(BoundaryDB.getXPath(cpid) + '/physicalType', bctype.value)
-                    self._boundaries[int(cpid)].reloadType()
-                else:
-                    db.setValue(xpath + '/coupledBoundary', '0')
-                    db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
-                    cpid = '0'
-
-            if cpid == '0'and BoundaryDB.needsCoupledBoundary(bctype):
+            if boundary.coupledBoundary != '0':
+                self._boundaries[boundary.coupledBoundary].reloadType()
+            elif BoundaryDB.needsCoupledBoundary(bctype):
                 if parallel.getNP() > 1 and BoundaryDB.getGeometryType(bctype) in [GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI]:
                     message = self.tr('1. This boundary type requires a coupled boundary. It is configured in the next dialog.\n\n' \
                                       '2. The current decomposed mesh could potentially be incompatible with this boundary type change.' \
@@ -235,18 +227,15 @@ class BoundaryConditionsPage(ContentPage):
 
                 await AsyncMessageBox().information(self, self.tr('Warning for ')+BoundaryDB.dbBoundaryTypeToText(bctype), message)
 
-            interactionType = DPMModelManager.getDefaultPatchInteractionType(bctype)
-            db.setValue(xpath + '/patchInteraction/type', interactionType.value)
-
             self._edit()
 
-    def _boundaryTypeChanged(self, bcid):
-        self._boundaries[bcid].reloadType()
+    def _onCouplingBoundaryEdited(self):
+        self._boundaries[self._dialog.coupleBoundary()].reloadType()
 
     @qasync.asyncSlot()
     async def _copy(self):
         if item := self._ui.boundaries.currentItem():
-            bcid = item.type()
+            bcid = str(item.type())
             bctype = self._boundaries[bcid].bctype()
             if BoundaryDB.needsCoupledBoundary(bctype):
                 await AsyncMessageBox().information(
@@ -264,31 +253,34 @@ class BoundaryConditionsPage(ContentPage):
 
     def _edit(self):
         if item := self._ui.boundaries.currentItem():
-            bcid = item.type()
+            bcid = str(item.type())
             if bcid:
                 bctype = self._boundaries[bcid].bctype()
                 dialogClass = DIALOGS[bctype]
                 if dialogClass:
                     self._dialog = dialogClass(self, str(bcid))
                     if BoundaryDB.needsCoupledBoundary(bctype):
-                        self._dialog.boundaryTypeChanged.connect(self._boundaryTypeChanged)
+                        self._dialog.accepted.connect(self._onCouplingBoundaryEdited)
                     self._dialog.open()
 
     def _showTypePicker(self, bcid, point):
         self._typePicker = BoundaryTypePicker(self)
         self._typePicker.picked.connect(self._changeBoundaryType)
-        self._typePicker.open(bcid, point)
+        self._typePicker.open(str(bcid), point)
 
-    def _currentBoundaryChanged(self, current):
+    def _onSelectedBoundaryChanged(self, current):
         self._updateEditEnabled()
-        app.meshModel().setCurrentId(current.type())
+        self._updateCopyEnabled()
+
+        if self._ui.boundaries.currentItem() is not None:
+            app.meshModel().setCurrentId(current.type())
 
     def _selectPickedBoundary(self):
         if app.meshModel().currentId():
-            self._ui.boundaries.setCurrentItem(self._boundaries[app.meshModel().currentId()])
+            self._ui.boundaries.setCurrentItem(self._boundaries[str(app.meshModel().currentId())])
         else:
-            self._ui.boundaries.clearSelection()
+            self._ui.boundaries.setCurrentItem(None)
 
     def _refresh(self, boundaries):
         for bcid in boundaries:
-            self._boundaries[bcid].reloadType()
+            self._boundaries[str(bcid)].reloadType()

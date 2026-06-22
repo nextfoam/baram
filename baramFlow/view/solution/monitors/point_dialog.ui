@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>374</width>
-    <height>398</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="FloatEdit" name="writeInterval">
+          <widget class="QLineEdit" name="writeInterval">
            <property name="text">
             <string/>
            </property>
@@ -114,7 +114,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="FloatEdit" name="coordinateX"/>
+          <widget class="PFloatLineEdit" name="coordinateX"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_4">
@@ -124,7 +124,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="FloatEdit" name="coordinateY"/>
+          <widget class="PFloatLineEdit" name="coordinateY"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_5">
@@ -134,7 +134,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="FloatEdit" name="coordinateZ"/>
+          <widget class="PFloatLineEdit" name="coordinateZ"/>
          </item>
         </layout>
        </widget>
@@ -190,7 +190,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -226,11 +226,6 @@
    <header>widgets.typed_edit</header>
   </customwidget>
   <customwidget>
-   <class>FloatEdit</class>
-   <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
-  </customwidget>
-  <customwidget>
    <class>PythonComboBox</class>
    <extends>QComboBox</extends>
    <header location="global">widgets.python_combo_box</header>
@@ -239,6 +234,11 @@
    <class>VectorComponentComboBox</class>
    <extends>QComboBox</extends>
    <header>baramFlow.view.widgets.vector_component_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

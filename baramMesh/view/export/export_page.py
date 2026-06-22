@@ -7,6 +7,8 @@ import sys
 
 import qasync
 
+from app_properties import meshAppProperties
+from libbaram.app_path import APP_PATH
 from libbaram.openfoam.constants import Directory
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.process import ProcessError
@@ -38,6 +40,8 @@ class ExportPage(StepPage):
         super().__init__(ui, ui.exportPage)
 
         self._dialog = None
+
+        self._ui.export_.setText(self.tr('Export as {} project').format(meshAppProperties.flowAppName))
 
         self._connectSignalsSlots()
 
@@ -221,7 +225,11 @@ class ExportPage(StepPage):
 
             if self._dialog.isRunBaramFlowChecked():
                 progressDialog.close()
-                subprocess.Popen([sys.executable, '-m', 'baramFlow.main', path])
+
+                if getattr(sys, 'frozen', False):
+                    subprocess.Popen([APP_PATH / meshAppProperties.flowExecutable, path])
+                else:
+                    subprocess.Popen([sys.executable, '-m', 'baramFlow.main', path])
             else:
                 progressDialog.finish(self.tr('Export completed'))
         except ProcessError as e:

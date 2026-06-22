@@ -2,19 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from uuid import UUID, uuid4
+from uuid import UUID
 
-import pandas as pd
 from PySide6.QtCore import Qt
 
+from baramFlow.base.file_data_manager import TableDataForFileDB
 from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
-from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.base.base import TrackedData
+from baramFlow.base.boundary.boundary_patch import FanUpdate
+from baramFlow.services.boundary.boundary_service import BoundaryService
+from baramFlow.base.boundary.fan import Fan
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from .fan_dialog_ui import Ui_FanDialog
@@ -30,13 +31,14 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._ui = Ui_FanDialog()
         self._ui.setupUi(self)
 
+        self._coupleNameDisplay = self._ui.coupledBoundary
+
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._coupledBoundary = None
 
         self._fanCurveName: UUID
         self._fanCurve = TrackedData()
 
-        self._boundarySelector = None
+        self._coupleNameDisplay = self._ui.coupledBoundary
         self._dialog = None
 
         self._connectSignalsSlots()
@@ -47,14 +49,15 @@ class FanDialog(CoupledBoundaryConditionDialog):
         event.ignore()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
+            self._ui.cancel.click()
             event.ignore()
         else:
             super().keyPressEvent(event)
 
     def _connectSignalsSlots(self):
         self._ui.editFanCurve.clicked.connect(self._editFanCurve)
-        self._ui.coupledBoundarySelect.clicked.connect(self._selectCoupledBoundary)
+        self._ui.coupledBoundarySelect.clicked.connect(self._openCoupledBoundarySelector)
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self._reject)
 
@@ -63,10 +66,11 @@ class FanDialog(CoupledBoundaryConditionDialog):
 
         self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
         self._fanCurveName = UUID(db.getValue(self._xpath + '/fanCurveName'))
+        self._ui.reverseFanDirection.setChecked(db.getBool(self._xpath + '/fan/reverseDirection'))
 
     @qasync.asyncSlot()
     async def _accept(self):
-        if not self._coupledBoundary:
+        if self._coupledBoundary == '0':
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
@@ -74,24 +78,17 @@ class FanDialog(CoupledBoundaryConditionDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Edit Fan Curve'))
             return
 
+        data = FanUpdate(
+            fan=Fan(reverseDirection=self._ui.reverseFanDirection.isChecked(),
+                    fanCurve=TableDataForFileDB(data=self._fanCurve.data()) if self._fanCurve.isModified() else None),
+            coupledBoundary=self._coupledBoundary)
+
         try:
-            with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
+            BoundaryService.updateBoundaryCondition(self._bcid, data)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
 
-                if self._fanCurve.isModified():
-                    self._fanCurveName = uuid4()
-
-                    self._writeConditions(db, self._xpath)
-                    self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary))
-
-                super().accept()
-        except ValueException as ve:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
-
-        Project.instance().fileDB().putDataFrame(uuidToNnstr(self._fanCurveName), pd.DataFrame(self._fanCurve.data()))
-
-        if coupleTypeChanged:
-            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+        super().accept()
 
     @qasync.asyncSlot()
     async def _reject(self):
@@ -113,24 +110,18 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _fanCurveAccepted(self):
         self._fanCurve.setData(self._dialog.getData())
 
-    def _selectCoupledBoundary(self):
-        if not self._boundarySelector:
-            self._boundarySelector = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                                    BoundaryDB.getBoundarySelectorItemsForCoupling(self._bcid))
-            self._boundarySelector.accepted.connect(self._coupledBoundaryAccepted)
-
-        self._boundarySelector.open()
-
-    def _coupledBoundaryAccepted(self):
-        self._setCoupledBoundary(str(self._boundarySelector.selectedItem()))
-
     def _setCoupledBoundary(self, bcid):
-        if bcid != '0':
-            self._coupledBoundary = str(bcid)
-            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryName(bcid))
+        super()._setCoupledBoundary(bcid)
+
+        if self._coupledBoundary == '0':
+            self._ui.zoneAverageDirectionX.clear()
+            self._ui.zoneAverageDirectionY.clear()
+            self._ui.zoneAverageDirectionZ.clear()
         else:
-            self._coupledBoundary = 0
-            self._ui.coupledBoundary.setText('')
+            zoneAverageDirection = BoundaryService.getZoneAverageDirectionForFan(self._bcid, self._coupledBoundary)
+            self._ui.zoneAverageDirectionX.setText(str(zoneAverageDirection[0]))
+            self._ui.zoneAverageDirectionY.setText(str(zoneAverageDirection[1]))
+            self._ui.zoneAverageDirectionZ.setText(str(zoneAverageDirection[2]))
 
     def _writeConditions(self, db, xpath):
         db.setValue(xpath + '/fanCurveName', str(self._fanCurveName), self.tr("Fan Curve Name"))

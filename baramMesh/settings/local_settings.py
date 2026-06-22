@@ -45,11 +45,16 @@ class LocalSettings:
         return None
 
     def parallelEnvironment(self):
-        type_ = self.get(LocalSettingKey.PARALLEL_TYPE)
+        ptypeStr = self.get(LocalSettingKey.PARALLEL_TYPE, ParallelType.LOCAL_MACHINE)
+        # ptypeSte can be 0, '0', or 'LOCAL_MACHINE' historically
+        try:
+            parallelType = ParallelType(int(ptypeStr))
+        except ValueError:
+            parallelType = ParallelType[ptypeStr]
 
         return ParallelEnvironment(
             self.get(LocalSettingKey.PARALLEL_NP, 1),
-            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
+            parallelType,
             self.get(LocalSettingKey.PARALLEL_HOSTS, '')
         )
 
@@ -95,7 +100,7 @@ class LocalSettings:
 
     def _create(self):
         environment = appSettings.getParallenEnvironment()
-        
+
         self._settings = {
             LocalSettingKey.PARALLEL_NP.value:      environment.np(),
             LocalSettingKey.PARALLEL_TYPE.value:    environment.type().name,

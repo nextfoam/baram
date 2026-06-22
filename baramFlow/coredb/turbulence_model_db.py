@@ -15,19 +15,21 @@ class ITurbulenceModelObserver(QObject):
 
 
 class TurbulenceModel(IndexedEnum):
-    INVISCID = 'inviscid'
-    LAMINAR = 'laminar'
-    SPALART_ALLMARAS = 'spalartAllmaras'
-    K_EPSILON = 'k-epsilon'
-    K_OMEGA = 'k-omega'
-    DES = 'des'
-    LES = 'les'
+    INVISCID            = 'inviscid'
+    LAMINAR             = 'laminar'
+    SPALART_ALLMARAS    = 'spalartAllmaras'
+    K_EPSILON           = 'k-epsilon'
+    TRANSITION_SST      = 'transitionSST'
+    K_OMEGA             = 'k-omega'
+    DES                 = 'des'
+    LES                 = 'les'
 
 
 TurbulenceRasModels = {
     TurbulenceModel.SPALART_ALLMARAS,
     TurbulenceModel.K_EPSILON,
-    TurbulenceModel.K_OMEGA
+    TurbulenceModel.K_OMEGA,
+    TurbulenceModel.TRANSITION_SST
 }
 
 

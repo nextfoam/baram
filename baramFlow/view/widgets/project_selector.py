@@ -4,6 +4,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 
+from app_properties import flowAppProperties
 from libbaram.utils import getFit
 
 from baramFlow.app import app
@@ -24,8 +25,8 @@ class ProjectSelector(QDialog):
         self._ui = Ui_ProjectSelector()
         self._ui.setupUi(self)
 
-        self.setWindowIcon(app.properties.icon())
-        self.setWindowTitle(f'{app.properties.fullName} Start')
+        self.setWindowIcon(flowAppProperties.icon())
+        self.setWindowTitle(f'{flowAppProperties.fullName} Start')
 
         self._dialog = None
         self._projectDirectory = None
@@ -87,11 +88,11 @@ class ProjectSelector(QDialog):
         msgBox = QMessageBox()
         msgBox.setWindowTitle(self.tr("Remove from list"))
         msgBox.setText(self.tr(f"Do you want to remove selected path from list?\n{path}"))
-        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Yes)
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
+        msgBox.setDefaultButton(QMessageBox.StandardButton.Yes)
 
         result = msgBox.exec()
-        if result == QMessageBox.Yes:
+        if result == QMessageBox.StandardButton.Yes:
             self._ui.recentCases.takeItem(selectedPos)
             # del self.pathItem[selectedPos]
             AppSettings.removeProject(selectedPos)

@@ -7,9 +7,9 @@ from PySide6.QtWidgets import QDialog, QHeaderView, QTableWidgetItem
 import qasync
 
 from baramFlow.base.material.database import materialsBase
-from baramFlow.base.material.material import DensitySpecification, MaterialType, Phase, SpecificHeatSpecification, TransportSpecification
+from baramFlow.base.material.constants import DensitySpecification, SpecificHeatSpecification, TransportSpecification
+from baramFlow.base.material.constants import MaterialType, Phase
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.setup.materials.thermos_dialog_ui import Ui_ThermosDialog
 
 

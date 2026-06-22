@@ -6,7 +6,6 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
-from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
@@ -21,12 +20,14 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
+from baramFlow.openfoam.boundary_conditions.gamma_int import GammaInt
+from baramFlow.openfoam.boundary_conditions.pointDisplacement import PointDisplacement
+from baramFlow.openfoam.boundary_conditions.re_thetat import ReThetat
+from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from baramFlow.openfoam.constant.g import G
-from baramFlow.openfoam.constant.kinematic_cloud_properties import KinematicCloudProperties
 from baramFlow.openfoam.constant.MRF_properties import MRFProperties
 from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
-from baramFlow.openfoam.constant.reacting_cloud1_properties import ReactingCloud1Properties
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from baramFlow.openfoam.constant.transport_properties import TransportProperties
@@ -64,7 +65,7 @@ class CaseGenerator(QObject):
         self._errors = None
         self._cm = None
         self._canceled: bool = False
-        self._files = None
+        self._files = []
 
     def getErrors(self):
         return self._errors
@@ -144,10 +145,17 @@ class CaseGenerator(QObject):
             boundaries = self._db.getBoundaryConditions(rname)
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
+
                 if BoundaryDB.needsCoupledBoundary(BoundaryType(bctype)) and self._db.getValue(xpath + '/coupledBoundary') == '0':
                     errors += QCoreApplication.translate(
                         'CaseGenerator',
                         f'{BoundaryDB.dbBoundaryTypeToText(BoundaryType(bctype))} boundary "{bcname}" needs a coupled boundary.\n')
+
+                if BoundaryType(bctype) == BoundaryType.CYCLIC_ACMI:
+                    if self._db.getValue(xpath + '/fallbackBoundary') == '0':
+                        errors += QCoreApplication.translate(
+                            'CaseGenerator',
+                            f'{BoundaryDB.dbBoundaryTypeToText(BoundaryType(bctype))} boundary "{bcname}" needs a fallback boundary.\n')
 
         return errors
 
@@ -162,11 +170,15 @@ class CaseGenerator(QObject):
         self._files.append(Epsilon(region, time, processorNo))
         self._files.append(Omega(region, time, processorNo))
         self._files.append(NuTilda(region, time, processorNo))
+        self._files.append(GammaInt(region, time, processorNo))
+        self._files.append(ReThetat(region, time, processorNo))
 
         self._files.append(P(region, time, processorNo, 'p_rgh'))
         self._files.append(P(region, time, processorNo, 'p'))
         self._files.append(U(region, time, processorNo))
         self._files.append(T(region, time, processorNo))
+
+        self._files.append(PointDisplacement(region, time, processorNo))
 
         if ModelsDB.isMultiphaseModelOn():
             for mid in region.secondaryMaterials:
@@ -213,11 +225,9 @@ class CaseGenerator(QObject):
         if boundaryConditionsPath.is_dir() and any(boundaryConditionsPath.iterdir()):
             hasInitiailied = True
 
-        errors = await asyncio.to_thread(self._generateFiles)
+        await asyncio.to_thread(self._generateFiles)
         if self._canceled:
             raise CanceledException
-        if errors:
-            raise RuntimeError(self.tr('Case generating fail. - ') + errors)
 
         if nProcessorFolders > 1:
             self.progress.emit(self.tr('Decomposing Field Data...'))
