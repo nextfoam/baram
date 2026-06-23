@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QVBoxLayout
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QVBoxLayout, QMenu, QMessageBox
 
 from baramMesh.app import app
 from baramMesh.view.step_page import StepPage
-from baramMesh.db.configurations_schema import CFDType
+from baramMesh.db.configurations_schema import CFDType, GeometryType, Shape
 from .region_form import RegionForm
 from .region_card import RegionCard
+from .region_point_finder import getVolumePolyData, findInteriorPoint
+from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
 
 class RegionPage(StepPage):
@@ -97,12 +100,14 @@ class RegionPage(StepPage):
 
     def _enableStep(self):
         self._ui.regionAdd.setEnabled(True)
+        self._ui.regionMenuButton.setEnabled(True)
 
         for card in self._regions.values():
             card.setEnabled(True)
 
     def _disableStep(self):
         self._ui.regionAdd.setEnabled(False)
+        self._ui.regionMenuButton.setEnabled(False)
 
         for card in self._regions.values():
             card.setEnabled(False)
@@ -117,6 +122,8 @@ class RegionPage(StepPage):
     def _connectSignalsSlots(self):
         self._ui.regionArea.verticalScrollBar().rangeChanged.connect(self._focus)
         self._ui.regionAdd.clicked.connect(self._showFormForAdding)
+        self._ui.regionMenuButton.clicked.connect(self._showRegionMenu)
+
         self._form.regionAdded.connect(self._add)
         self._form.regionEdited.connect(self._update)
         self._form.canceled.connect(self._formCanceled)
@@ -208,3 +215,128 @@ class RegionPage(StepPage):
     def _focus(self):
         if self._focusing.isVisible():
             self._ui.regionArea.ensureWidgetVisible(self._focusing)
+
+    def _showRegionMenu(self):
+        menu = QMenu(self._widget)
+
+        batchAction = QAction(self.tr('Batch Add from Volumes'), menu)
+        batchAction.triggered.connect(self._autoAddRegions)
+        menu.addAction(batchAction)
+
+        btn = self._ui.regionMenuButton
+        menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
+
+    def _autoAddRegions(self):
+        if self._form.isVisible():
+            QMessageBox.information(
+                self._widget,
+                self.tr('Region Form In Progress'),
+                self.tr('Please finish adding or editing the current region first, '
+                        'or click Cancel, before using Batch Add from Volumes.')
+            )
+            return
+
+        geometries = app.db.getElements('geometry')
+
+        if not geometries:
+            QMessageBox.information(
+                self._widget, 
+                self.tr('No Geometries'),
+                self.tr('No geometries available. Please add geometries in the Geometry step first.')
+            )
+            return
+
+        items = []
+        for gId, geometry in geometries.items():
+            name = geometry.value('name')
+            gType = geometry.value('gType')
+
+            if gType == GeometryType.VOLUME.value:
+                items.append(SelectorItem(
+                    label=f"{name} (Volume)",
+                    text=name,
+                    value=gId,
+                    removable=True
+                ))
+
+        if not items:
+            QMessageBox.information(
+                self._widget,
+                self.tr('No Valid Geometries'),
+                self.tr('No valid geometries found. Only volumes and closed surfaces can be used for auto region creation.')
+            )
+            return
+
+        dialog = MultiSelectorDialog(
+            self._widget,
+            self.tr('Select Geometries for Auto Region Creation'),
+            items,
+            []
+        )
+
+        dialog.itemsSelected.connect(self._createRegionsFromGeometries)
+        dialog.exec()
+
+    def _createRegionsFromGeometries(self, selectedItems):
+        if not selectedItems:
+            return
+
+        geometryManager = app.window.geometryManager
+        geometries = app.db.getElements('geometry')
+
+        created_count = 0
+        skipped_count = 0
+        skipped_names = []
+
+        for gId, label in selectedItems:
+            geometry = geometries.get(gId)
+            if not geometry:
+                continue
+
+            name = geometry.value('name')
+            gType = geometry.value('gType')
+
+            try:
+                polyData = getVolumePolyData(gId, geometryManager, geometries)
+                point = findInteriorPoint(polyData)
+
+                if point is None:
+                    skipped_count += 1
+                    skipped_names.append(name)
+                    continue
+
+                self._createRegion(name, point)
+                created_count += 1
+
+            except Exception as e:
+                skipped_count += 1
+                skipped_names.append(name)
+                print(f"Error creating region for {name}: {e}")
+
+        message = self.tr(f'Successfully created {created_count} region(s).')
+        if skipped_count > 0:
+            message += self.tr(f'\n\nSkipped {skipped_count} geometry(ies):')
+            for name in skipped_names:
+                message += f'\n  - {name}'
+            message += self.tr('\n\n(Surfaces must be closed to create regions automatically)')
+
+        QMessageBox.information(self._widget, self.tr('Auto Region Creation'), message)
+
+    def _createRegion(self, baseName, point):
+        db = app.db.checkout()
+
+        regionName = f"{baseName}_Region"
+        seq = db.getUniqueSeq('region', 'name', regionName, '')
+        uniqueName = regionName + seq
+
+        element = db.newElement('region')
+        element.setValue('name', uniqueName)
+        element.setValue('type', 'fluid')  # Default to fluid
+        element.setValue('point/x', '{:.6g}'.format(point[0]))
+        element.setValue('point/y', '{:.6g}'.format(point[1]))
+        element.setValue('point/z', '{:.6g}'.format(point[2]))
+
+        regionId = db.addElement('region', element)
+        app.db.commit(db)
+
+        self._add(regionId)
