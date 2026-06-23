@@ -9,10 +9,13 @@ from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 from widgets.rendering.point_widget import PointWidget
+from widgets.selector_dialog import SelectorDialog, SelectorItem as SingleSelectorItem
+from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import RegionType
+from baramMesh.db.configurations_schema import RegionType, GeometryType
 from .region_form_ui import Ui_RegionForm
+from .region_point_finder import getVolumePolyData, findInteriorPoint
 
 
 class RegionForm(QWidget):
@@ -94,6 +97,7 @@ class RegionForm(QWidget):
         self._pointWidget.pointMoved.connect(self._setPoint)
 
         self._ui.name.textChanged.connect(self._validate)
+        self._ui.selectFromVolume.clicked.connect(self._selectFromVolume)
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.cancel)
 
@@ -116,6 +120,94 @@ class RegionForm(QWidget):
 
     def _validate(self):
         self._ui.ok.setEnabled(self._ui.name.text().strip() != '')
+
+    def _selectFromVolume(self):
+        geometries = app.db.getElements('geometry')
+        volumes = {
+            gId: g for gId, g in geometries.items()
+            if g.value('gType') == GeometryType.VOLUME.value
+        }
+
+        if not volumes:
+            QMessageBox.information(
+                self,
+                self.tr('No Volumes'),
+                self.tr('No volume geometries are available.\n'
+                        'Please add volume geometries in the Geometry step first.')
+            )
+            return
+
+        # --- Step 1: select target volume (single select) ---
+        targetItems = [
+            SingleSelectorItem(label=g.value('name'), text=g.value('name'), data=gId)
+            for gId, g in volumes.items()
+        ]
+
+        targetDialog = SelectorDialog(
+            self,
+            self.tr('Select Target Volume'),
+            self.tr('Select the volume that will contain the region point:'),
+            targetItems
+        )
+
+        if targetDialog.exec() != SelectorDialog.Accepted:
+            return
+
+        targetId = targetDialog.selectedItem()
+
+        # --- Step 2: select exclusion volumes (multi select) ---
+        excludeItems = [
+            SelectorItem(label=g.value('name'), text=g.value('name'), value=gId)
+            for gId, g in volumes.items()
+            if gId != targetId
+        ]
+
+        excludeIds = []
+        if excludeItems:
+            excludeDialog = MultiSelectorDialog(
+                self,
+                self.tr('Select Volumes to Exclude'),
+                excludeItems,
+                []
+            )
+
+            excludeDialog.itemsSelected.connect(lambda items: excludeIds.extend(v for v, _ in items))
+
+            if excludeDialog.exec() != MultiSelectorDialog.Accepted:
+                return
+
+        # --- Step 3: resolve polyDatas and find interior point ---
+        geometryManager = app.window.geometryManager
+
+        targetPolyData = getVolumePolyData(targetId, geometryManager, geometries)
+        if targetPolyData is None:
+            QMessageBox.warning(
+                self,
+                self.tr('Geometry Error'),
+                self.tr('Could not retrieve surface data for the selected volume.')
+            )
+            return
+
+        exclusionPolyDatas = []
+        for exId in excludeIds:
+            exPoly = getVolumePolyData(exId, geometryManager, geometries)
+            if exPoly is not None:
+                exclusionPolyDatas.append(exPoly)
+
+        point = findInteriorPoint(targetPolyData, exclusionPolyDatas)
+
+        if point is None:
+            QMessageBox.warning(
+                self,
+                self.tr('Point Not Found'),
+                self.tr('Could not find a valid interior point for the selected volume '
+                        'with the given exclusion constraints.\n'
+                        'Try reducing the number of excluded volumes or enter coordinates manually.')
+            )
+            return
+
+        self._setPoint(point)
+        self._movePointWidget()
 
     @qasync.asyncSlot()
     async def _accept(self):

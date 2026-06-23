@@ -90,7 +90,7 @@ class InitializationPage(ContentPage):
                 if patch is not None:
                     data.append(widget.data())
 
-            RegionService.updateInitialization(data)
+            RegionService.updateInitialization(data, writer)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return False

@@ -63,13 +63,7 @@ class ContactAnglesWidget(QWidget):
 
     def row(self, index):
         mid1, mid2, name1, name2, editors = self._rows[index]
-        return mid1, mid2, name1, name2, [str(e.pFloat()) for e in editors]
-
-    def validate(self):
-        for i in range(self.count()):
-            _, _, _, _, editors = self._rows[i]
-            for j in range(len(editors)):
-                editors[j].validate(self._names[j])
+        return mid1, mid2, name1, name2, [str(editors[i].pFloat(self._names[i])) for i in range(len(editors))]
 
 class WallDialog(ResizableDialog):
     RELATIVE_XPATH = '/wall'
@@ -178,15 +172,11 @@ class WallDialog(ResizableDialog):
                         db.setValue(xpath + '/wallAdhesions/limit', contactAngleLimit.value)
 
                     if contactAngleModel == ContactAngleModel.CONSTANT:
-                        self._constantContactAngles.validate()
-
                         for i in range(self._constantContactAngles.count()):
                             mid1, mid2, name1, name2, [ca] = self._constantContactAngles.row(i)
                             caxpath = f'{xpath}/wallAdhesions/wallAdhesion[mid="{mid1}"][mid="{mid2}"]'
                             db.setValue(caxpath + '/contactAngle', ca)
                     elif contactAngleModel == ContactAngleModel.DYNAMIC:
-                        self._dynamicContactAngles.validate()
-
                         for i in range(self._dynamicContactAngles.count()):
                             mid1, mid2, name1, name2, [ca1, ca2, ca3, scale] = self._dynamicContactAngles.row(i)
                             caxpath = f'{xpath}/wallAdhesions/wallAdhesion[mid="{mid1}"][mid="{mid2}"]'

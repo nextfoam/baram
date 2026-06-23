@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from libbaram.pfloat import PFloat
 
@@ -21,11 +21,11 @@ class ABLFlowDirection:
 class PasquillStability:
     disabled: bool
     stabilityClass: str             = None
-    latitude: PFloat                = None
-    surfaceHeatFlux: PFloat         = None
-    referenceDensity: PFloat        = None
-    referenceSpecificHeat: PFloat   = None
-    referenceTemperature: PFloat    = None
+    latitude: PFloat                = field(default_factory=lambda: PFloat('37'))
+    surfaceHeatFlux: PFloat         = field(default_factory=lambda: PFloat('0'))
+    referenceDensity: PFloat        = field(default_factory=lambda: PFloat('1.225'))
+    referenceSpecificHeat: PFloat   = field(default_factory=lambda: PFloat('1006.0'))
+    referenceTemperature: PFloat    = field(default_factory=lambda: PFloat('298.15'))
 
     def toElement(self):
         if self.disabled:
@@ -33,11 +33,11 @@ class PasquillStability:
 
         return E('pasquillStability',
                  E('stabilityClass',        self.stabilityClass),
-                 E('latitude',              str(self.latitude)),
-                 E('surfaceHeatFlux',       str(self.surfaceHeatFlux)),
-                 E('referenceDensity',      str(self.referenceDensity)),
-                 E('referenceSpecificHeat', str(self.referenceSpecificHeat)),
-                 E('referenceTemperature',  str(self.referenceTemperature)),
+                 self.latitude.toElement('latitude'),
+                 self.surfaceHeatFlux.toElement('surfaceHeatFlux'),
+                 self.referenceDensity.toElement('referenceDensity'),
+                 self.referenceSpecificHeat.toElement('referenceSpecificHeat'),
+                 self.referenceTemperature.toElement('referenceTemperature'),
                  disabled=self.disabled)
 
 

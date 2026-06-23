@@ -7,7 +7,7 @@ from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
-from baramFlow.base.boundary.boundary_patch import FarFieldRiemannPatch
+from baramFlow.base.boundary.boundary_patch import FarFieldRiemannUpdate
 from baramFlow.base.boundary.free_stream import FarFieldRiemann, FlowDirection
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -56,15 +56,15 @@ class FarfieldRiemannDialog(ResizableDialog):
                 flowDirection.liftDirection = Vector(x=PFloat(self._ui.liftDirectionX.text(), self.tr('Lift Direction')),
                                                      y=PFloat(self._ui.liftDirectionY.text(), self.tr('Lift Direction')),
                                                      z=PFloat(self._ui.liftDirectionZ.text(), self.tr('Lift Direction')))
-                flowDirection.angleOfAttack = str(PFloat(self._ui.AoA.text(), self.tr('Angle of Attack')))
-                flowDirection.angleOfSideslip = str(PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip')))
+                flowDirection.angleOfAttack = PFloat(self._ui.AoA.text(), self.tr('Angle of Attack'))
+                flowDirection.angleOfSideslip = PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip'))
 
 
             writer = CoreDBWriter()
             if not self._turbulenceWidget.appendToWriter(writer):
                 return
 
-            data = FarFieldRiemannPatch(
+            data = FarFieldRiemannUpdate(
                 farFieldRiemann=FarFieldRiemann(
                     flowDirection=flowDirection,
                     machNumber=str(PFloat(self._ui.machNumber.text(), self.tr('Mach Number'))),

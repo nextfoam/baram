@@ -5,7 +5,7 @@ import qasync
 
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import FlowRateOutletPatch
+from baramFlow.base.boundary.boundary_patch import FlowRateOutletUpdate
 from baramFlow.base.boundary.flow_rate_port import FlowRateSpecification, BoundaryFlowRate
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -42,7 +42,7 @@ class FlowRateOutletDialog(ResizableDialog):
             elif specification == FlowRateSpecification.MASS_FLOW_RATE:
                 flowRate.massFlowRate = self._ui.massFlowRate.pFloat(self.tr('Mass Flow Rate'))
 
-            data = FlowRateOutletPatch(flowRate=flowRate)
+            data = FlowRateOutletUpdate(flowRate=flowRate)
 
             BoundaryService.updateBoundaryCondition(self._bcid, data)
         except ValueError as e:

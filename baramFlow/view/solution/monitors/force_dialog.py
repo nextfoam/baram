@@ -21,11 +21,6 @@ from .force_dialog_ui import Ui_ForceDialog
 
 class ForceDialog(QDialog):
     def __init__(self, parent, uuid=None):
-        """Constructs force monitor setup dialog.
-
-        Args:
-            uuid: Force Monitor ID. If None, create a new monitor.
-        """
         super().__init__(parent)
         self._ui = Ui_ForceDialog()
         self._ui.setupUi(self)

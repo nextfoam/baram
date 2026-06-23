@@ -17,6 +17,7 @@ from baramFlow.openfoam.function_objects.surface_field_value import SurfaceRepor
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.solver_field import getSolverComponentName, getSolverFieldName
 
+
 FORCE_MONITORS_XPATH   = '/monitors/forces'
 POINT_MONITORS_XPATH   = '/monitors/points'
 SURFACE_MONITORS_XPATH = '/monitors/surfaces'
@@ -162,15 +163,15 @@ class ForceDirection:
             specificationMethod=DirectionSpecificationMethod(e.find('specificationMethod', namespaces=nsmap).text),
             dragDirection=Vector.fromElement(e.find('dragDirection', namespaces=nsmap)),
             liftDirection=Vector.fromElement(e.find('liftDirection', namespaces=nsmap)),
-            angleOfAttack=PFloat(e.find('angleOfAttack', namespaces=nsmap).text),
-            angleOfSideslip=PFloat(e.find('angleOfSideslip', namespaces=nsmap).text))
+            angleOfAttack=PFloat.fromElement(e.find('angleOfAttack', namespaces=nsmap)),
+            angleOfSideslip=PFloat.fromElement(e.find('angleOfSideslip', namespaces=nsmap)))
 
     def toElement(self):
         return E('forceDirection',  E.specificationMethod(self.specificationMethod.value),
-                                    self.dragDirection.toElement('dragDirection'),
-                                    self.liftDirection.toElement('liftDirection'),
-                                    E.angleOfAttack(str(self.angleOfAttack)),
-                                    E.angleOfSideslip(str(self.angleOfSideslip)))
+                 self.dragDirection.toElement('dragDirection'),
+                 self.liftDirection.toElement('liftDirection'),
+                 self.angleOfAttack.toElement('angleOfAttack'),
+                 self.angleOfSideslip.toElement('angleOfSideslip'))
 
 
 @dataclass
@@ -408,8 +409,8 @@ class MonitorManager:
                                   data.forceDirection.liftDirection.toElement('liftDirection'))
 
                 if data.forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-                    db.setValue(xpath + '/forceDirection/angleOfSideslip', data.forceDirection.angleOfSideslip)
-                    db.setValue(xpath + '/forceDirection/angleOfAttack', data.forceDirection.angleOfAttack)
+                    db.setValue(xpath + '/forceDirection/angleOfSideslip', str(data.forceDirection.angleOfSideslip))
+                    db.setValue(xpath + '/forceDirection/angleOfAttack', str(data.forceDirection.angleOfAttack))
 
                 db.replaceElement(xpath + '/centerOfRotation', data.centerOfRotation.toElement('centerOfRotation'))
                 db.setValue(xpath + '/region', data.region)

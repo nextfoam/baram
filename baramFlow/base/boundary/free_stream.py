@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from libbaram.pfloat import PFloat
 
 from baramFlow.base.base import DirectionSpecificationMethod
 from baramFlow.base.base import Vector
@@ -16,8 +18,8 @@ class FlowDirection:
     flowDirection: Vector   = None
     dragDirection: Vector   = None
     liftDirection: Vector   = None
-    angleOfAttack: str      = None
-    angleOfSideslip: str    = None
+    angleOfAttack: PFloat   = field(default_factory=lambda: PFloat('0'))
+    angleOfSideslip: PFloat = field(default_factory=lambda: PFloat('0'))
 
     def applyToDBByPath(self, db: _CoreDB, parentPath: str):
         element = db.getElement(parentPath + '/flowDirection')
@@ -30,8 +32,10 @@ class FlowDirection:
                             self.dragDirection.toElement('dragDirection'))
             element.replace(element.find('liftDirection', namespaces=nsmap),
                             self.liftDirection.toElement('liftDirection'))
-            element.find('angleOfAttack', namespaces=nsmap).text = self.angleOfAttack
-            element.find('angleOfSideslip', namespaces=nsmap).text = self.angleOfSideslip
+            element.replace(element.find('angleOfAttack', namespaces=nsmap),
+                            self.angleOfAttack.toElement('angleOfAttack'))
+            element.replace(element.find('angleOfSideslip', namespaces=nsmap),
+                            self.angleOfSideslip.toElement('angleOfSideslip'))
 
 
 @dataclass
