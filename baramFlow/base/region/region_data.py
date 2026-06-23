@@ -62,7 +62,7 @@ class CellZoneModel:
         return self.configurations.name if self.rname == '' else f'{self.rname}:{self.configurations.name}'
 
     def setID(self, czid: str):
-        assert self.configurations.czid is None
+        assert self.configurations.czid == ''
         self.configurations.czid = czid
 
     def isRegion(self):

@@ -35,7 +35,7 @@ class VariableSourceTerm:
     constant: PFloat                    = field(default_factory=lambda: PFloat('0'))
     piecewiseLinear: TemporalScalarList = field(default_factory=TemporalScalarList.default)
     polynomial: NumberList              = field(default_factory=NumberList.zeros)
-    disabled: bool                     = True
+    disabled: bool                      = True
 
     @staticmethod
     def fromElement(e: Element):
@@ -55,6 +55,7 @@ class VariableSourceTerm:
                  self.piecewiseLinear.toElement('piecewiseLinear'),
                  self.polynomial.toElement('polynomial'),
                  disabled=self.disabled)
+
 
 @dataclass
 class ConstantSourceTerm:
@@ -78,14 +79,14 @@ class ConstantSourceTerm:
 
 @dataclass
 class SourceTerms:
-    mass: VariableSourceTerm
-    materials: dict[str, VariableSourceTerm]
-    energy: VariableSourceTerm
-    turbulentKineticEnergy: ConstantSourceTerm
-    turbulentDissipationRate: ConstantSourceTerm
-    specificDissipationRate: ConstantSourceTerm
-    modifiedTurbulentViscosity: ConstantSourceTerm
-    userDefinedScalars: dict[str, VariableSourceTerm]
+    mass: VariableSourceTerm                            = field(default_factory=VariableSourceTerm)
+    materials: dict[str, VariableSourceTerm]            = field(default_factory=dict)
+    energy: VariableSourceTerm                          = field(default_factory=VariableSourceTerm)
+    turbulentKineticEnergy: ConstantSourceTerm          = field(default_factory=ConstantSourceTerm)
+    turbulentDissipationRate: ConstantSourceTerm        = field(default_factory=ConstantSourceTerm)
+    specificDissipationRate: ConstantSourceTerm         = field(default_factory=ConstantSourceTerm)
+    modifiedTurbulentViscosity: ConstantSourceTerm      = field(default_factory=ConstantSourceTerm)
+    userDefinedScalars: dict[str, VariableSourceTerm]   = field(default_factory=ConstantSourceTerm)
 
     @staticmethod
     def fromElement(e: Element):
@@ -129,11 +130,11 @@ class SourceTerms:
                  scalars)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CellZoneData:
-    czid: str                   = None
-    name: str                   = None
-    rname: str                  = None
+    czid: str   = ''
+    name: str
+    rname: str  = ''
 
     sourceTerms: SourceTerms    = field(default_factory=SourceTerms)
 
