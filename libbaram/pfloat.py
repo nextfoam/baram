@@ -47,14 +47,14 @@ class PFloat():
             self._resolvedText = self._text
 
         if value < low:
-            raise ValueError(f"{name} {QApplication.translate('PFloat', 'is less than ')} {low}")
+            raise ValueError(QApplication.translate('PFloat', '{0} is less than {1}.').format(name, low))
         elif value == low and not lowInclusive:
-            raise ValueError(f"{name} {QApplication.translate('PFloat', 'should be greater than ')} {low}")
+            raise ValueError(QApplication.translate('PFloat', '{0} should be greater than {1}.').format(name, low))
 
         if value > high:
-            raise ValueError(f"{name} {QApplication.translate('PFloat', 'is greater than ')} {high}")
+            raise ValueError(QApplication.translate('PFloat', '{0} is greater than {1}.').format(name, high))
         elif value == high and not highInclusive:
-            raise ValueError(f"{name} {QApplication.translate('PFloat', 'should be less than ')} {high}")
+            raise ValueError(QApplication.translate('PFloat', '{0} should be less than {1}').format(name, high))
 
         self._value = value
 
@@ -105,3 +105,8 @@ class PFloat():
 
         return self._value <= other
 
+    def __eq__(self, other):
+        if isinstance(other, PFloat):
+            return self._text == other._text
+
+        return self._value == other

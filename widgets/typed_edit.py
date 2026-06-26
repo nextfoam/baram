@@ -37,3 +37,33 @@ class IntEdit(QLineEdit):
         super().__init__(*args, **kwargs)
         self.setValidator(QIntValidator())
 
+        self._name: str = ''
+        self._low: int | None = None
+        self._high: int | None = None
+        self._lowInclusive: bool = True
+        self._highInclusive: bool = True
+
+    def setValidationRule(self, name: str = '',
+                          low: int = None, high: int = None, lowInclusive:bool  = True, highInclusive:bool = True):
+        self._name = name
+        self._low = low
+        self._high = high
+        self._lowInclusive = lowInclusive
+        self._highInclusive = highInclusive
+
+    def text(self):
+        value = int(super().text())
+
+        if self._low is not None:
+            if value < self._low:
+                raise ValueError(self.tr('{0} is less than {1}.').format(self._name, self._low))
+            elif value == self._low and not self._lowInclusive:
+                raise ValueError(self.tr('{0} should be greater than {1}.').format(self._name, self._low))
+
+        if self._high is not None:
+            if value > self._high:
+                raise ValueError(self.tr('{0} is greater than {1}.').format(self._name, self._high))
+            elif value == self._high and not self._highInclusive:
+                raise ValueError(self.tr('{0} should be less than {1}').format(self._name, self._high))
+
+        return super().text()

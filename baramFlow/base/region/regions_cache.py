@@ -44,6 +44,8 @@ class Regions:
         return self._cellZones
 
     def load(self, e: Element):
+        self.clear()
+
         for r in e.findall('region', namespaces=nsmap):
             region = RegionModel.fromElement(r)
             self._regions[region.name] = region

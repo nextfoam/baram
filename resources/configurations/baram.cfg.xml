@@ -262,6 +262,7 @@
         <useMomentumPredictor>true</useMomentumPredictor>
         <discretizationSchemes>
             <time>firstOrderImplicit</time>
+            <crankNicolsonBlendingFactor>0.9</crankNicolsonBlendingFactor>
             <momentum>secondOrderUpwind</momentum>
             <energy>secondOrderUpwind</energy>
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>

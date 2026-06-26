@@ -691,7 +691,7 @@ class _CoreDB(object):
         parent = oldElement.getparent()
         parent.replace(oldElement, element)
 
-        self._configCount += 1
+        self.increaseConfigCount()
 
     def clearElement(self, xpath):
         element = self._xmlTree.find(xpath, namespaces=nsmap)

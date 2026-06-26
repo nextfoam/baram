@@ -1520,6 +1520,17 @@ def _version_12(root: etree.Element, path):
             pointMotionType.text = 'fixed'
 
 
+def _version_13(root: etree.Element, path):
+    logger.debug('  Upgrading to v14')
+
+    # root.set('version', '14')
+
+    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
+        if p.find('crankNicolsonBlendingFactor', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "crankNicolsonBlendingFactor" to {p}')
+            p.insert(1, E('crankNicolsonBlendingFactor', '0.9'))
+
+
 _fTable = [
     None,
     _version_1,
@@ -1533,7 +1544,8 @@ _fTable = [
     _version_9,
     _version_10,
     _version_11,
-    _version_12
+    _version_12,
+    _version_13
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

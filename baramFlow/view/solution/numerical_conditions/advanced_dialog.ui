@@ -43,7 +43,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="minimumStaticTemperature"/>
+          <widget class="PFloatLineEdit" name="minimumStaticTemperature"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_2">
@@ -53,7 +53,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="maximumStaticTemperature"/>
+          <widget class="PFloatLineEdit" name="maximumStaticTemperature"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_3">
@@ -63,7 +63,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="maximumViscosityRatio"/>
+          <widget class="PFloatLineEdit" name="maximumViscosityRatio"/>
          </item>
         </layout>
        </widget>
@@ -251,6 +251,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PFloatLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.pfloat_line_edit</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

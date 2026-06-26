@@ -43,7 +43,7 @@ class RotationalConstraintType(Enum):
 
 @dataclass
 class RigidBodyMotion:
-    mass: PFloat = PFloat('0')
+    mass: PFloat = dataClassField(default_factory=lambda: PFloat('0'))
 
     centerOfMass: Vector = dataClassField(default_factory=Vector.zero)
     centerOfRotation: Vector = dataClassField(default_factory=Vector.zero)
