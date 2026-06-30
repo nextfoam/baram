@@ -10,7 +10,7 @@ import qasync
 from baramFlow.base.base import NumberList
 from baramFlow.base.constants import Function1Type
 from baramFlow.base.material.database import materialsBase
-from baramFlow.base.material.constants import Phase, MaterialType
+from baramFlow.base.material.constants import Phase, MaterialType, NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS
 from baramFlow.base.material.constants import SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.base.material.material import Material
 from baramFlow.base.material.transport import Transport
@@ -76,6 +76,8 @@ class MaterialDialog(ResizableDialog):
 
         layout.setRowVisible(self._ui.absorptionCoefficient, False)  # hide until Radiation is implemented
         layout.setRowVisible(self._ui.emissivity, False)  # hide until Radiation is implemented
+
+        layout.setRowVisible(self._ui.virialCoeff, False)
 
         self._ui.specificHeatGroup.setVisible(energyOn)
 
@@ -292,8 +294,10 @@ class MaterialDialog(ResizableDialog):
                     data.transport.nonNewtonianPowerLaw = self._transport.nonNewtonianPowerLaw
 
             if ModelsDB.isEnergyModelOn():
-                if transportSpec == TransportSpecification.CONSTANT:
-                    data.transport.thermalConductivity = self._ui.thermalConductivityConstant.pFloat(self.tr('Thermal Conductivity Value'))
+                if (transportSpec == TransportSpecification.CONSTANT
+                        or transportSpec in NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS):
+                    data.transport.thermalConductivity = (
+                        self._ui.thermalConductivityConstant.pFloat(self.tr('Thermal Conductivity Value')))
                 elif transportSpec == TransportSpecification.POLYNOMIAL:
                     if self._transport.polynomial.thermalConductivity.isEmpty():
                         await AsyncMessageBox().information(self, self.tr('Input Error'),

@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baramFlow.base.base import Function1Scalar
+from baramFlow.base.material.material import Material
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import DPMParticleType
 from baramFlow.openfoam.dictionary_helper import DictionaryHelper
-from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+from baramFlow.services.material.material_service import MaterialService
 
 from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT, MaterialType, Phase
 from baramFlow.base.material.constants import DensitySpecification, SpecificHeatSpecification, TransportSpecification
@@ -94,11 +97,12 @@ def _constructFluid(rname: str):
     mid = RegionDB.getMaterial(rname)
     materialType = MaterialDB.getType(mid)
     path = MaterialDB.getXPath(mid)
+    material = MaterialService.getMaterial(mid)
 
     tModel = TurbulenceModelsDB.getModel()
-    transportSpec = TransportSpecification(db.getValue(path + '/transport/specification'))
-    specificHeatSpec = SpecificHeatSpecification(db.getValue(path + '/specificHeat/specification'))
-    densitySpec = DensitySpecification(db.getValue(path + '/density/specification'))
+    transportSpec = material.transport.specification
+    specificHeatSpec = material.specificHeat.specification
+    densitySpec = material.density.specification
 
     thermo = {
         'type': 'heRhoThermo',
@@ -125,13 +129,14 @@ def _constructFluid(rname: str):
             'inertSpecie': MaterialDB.getName(db.getValue(path + '/mixture/primarySpecie'))
         }
 
-        for specie, name in MaterialDB.getSpecies(mid).items():
-            spath = MaterialDB.getXPath(specie)
+        for sid, name in MaterialDB.getSpecies(mid).items():
+            spath = MaterialDB.getXPath(sid)
+            specie = MaterialService.getMaterial(sid)
 
             data['species'].append(name)
             data[name] = {
                 'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, spath),
-                'transport': _mixtureTransport(tModel, transportSpec, db, spath),
+                'transport': _mixtureTransport(tModel, specie),
                 'specie': _mixtureSpecie(db, spath)
             }
             if eos := _mixtureEquationOfState(densitySpec, db, spath):
@@ -142,7 +147,7 @@ def _constructFluid(rname: str):
     elif materialType == MaterialType.NONMIXTURE:
         mix = {
             'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
-            'transport': _mixtureTransport(tModel, transportSpec, db, path),
+            'transport': _mixtureTransport(tModel, material),
             'specie': _mixtureSpecie(db, path)
         }
         if eos := _mixtureEquationOfState(densitySpec, db, path):
@@ -237,7 +242,7 @@ def _mixtureThermodynamics(specificHeatSpec, db, path):
     return data
 
 
-def _mixtureTransport(tModel, transportSpec, db, path):
+def _mixtureTransport(tModel: TurbulenceModel, material: Material):
     if tModel == TurbulenceModel.INVISCID:
         mu = 0.0
         pr = 0.7
@@ -247,13 +252,15 @@ def _mixtureTransport(tModel, transportSpec, db, path):
             'Pr': str(pr)
         }
 
-    if transportSpec == TransportSpecification.CONSTANT:
-        mu = float(db.getValue(path + '/transport/viscosity'))
-        kk = float(db.getValue(path + '/transport/thermalConductivity'))
+    transport = material.transport
+    cp = float(material.specificHeat.constant)
+    kk = float(material.transport.thermalConductivity)
+
+    if transport.specification == TransportSpecification.CONSTANT:
+        mu = float(material.transport.viscosity)
         if mu == 0.0:
             pr = 0.7
         else:
-            cp = float(db.getValue(path + '/specificHeat/constant'))
             pr = cp * mu / kk
 
         return {
@@ -261,13 +268,13 @@ def _mixtureTransport(tModel, transportSpec, db, path):
             'Pr': str(pr)
         }
 
-    elif transportSpec == TransportSpecification.POLYNOMIAL:
+    elif transport.specification == TransportSpecification.POLYNOMIAL:
         muCoeffs: list[float] = [0] * 8  # To make sure that muCoeffs has length of 8
-        for i, n in enumerate(db.getValue(path + '/transport/polynomial/viscosity').split()):
+        for i, n in enumerate(material.transport.polynomial.viscosity.values):
             muCoeffs[i] = float(n)
 
         kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
-        for i, n in enumerate(db.getValue(path + '/transport/polynomial/thermalConductivity').split()):
+        for i, n in enumerate(material.transport.polynomial.thermalConductivity.values):
             kkCoeffs[i] = float(n)
 
         return {
@@ -275,41 +282,29 @@ def _mixtureTransport(tModel, transportSpec, db, path):
             'kappaCoeffs<8>': kkCoeffs
         }
 
-    elif transportSpec == TransportSpecification.SUTHERLAND:
-        as_ = db.getValue(path + '/transport/sutherland/coefficient')
-        ts  = db.getValue(path + '/transport/sutherland/temperature')
+    elif transport.specification == TransportSpecification.SUTHERLAND:
+        sutherland = material.transport.sutherland
 
         return {
-            'As': as_,
-            'Ts': ts
+            'As': sutherland.coefficient,
+            'Ts': sutherland.temperature
         }
 
-    rho = float(db.getValue(path + '/density/constant'))
+    # Non=Newtonian Fluid
+    rho = float(material.density.constant)
+    if transport.specification == TransportSpecification.CROSS_POWER_LAW:
+        mu = rho * float(transport.crossPowerLaw.zeroShearViscosity),
+    elif transport.specification == TransportSpecification.HERSCHEL_BULKLEY:
+        mu = rho * float(transport.herschelBulkley.zeroShearViscosity)
+    elif transport.specification == TransportSpecification.BIRD_CARREAU:
+        mu = rho * float(transport.birdCarreau.zeroShearViscosity)
+    elif transport.specification == TransportSpecification.POWER_LAW:
+        mu = rho * float(transport.nonNewtonianPowerLaw.consistencyIndex)
 
-    if transportSpec == TransportSpecification.CROSS_POWER_LAW:
-        return {
-            'mu': rho * float(db.getValue(path + '/transport/cross/zeroShearViscosity')),
-            'Pr': 0.7
-        }
-
-    if transportSpec == TransportSpecification.HERSCHEL_BULKLEY:
-        return {
-            'mu': rho * float(db.getValue(path + '/transport/herschelBulkley/zeroShearViscosity')),
-            'Pr': 0.7
-        }
-
-    if transportSpec == TransportSpecification.BIRD_CARREAU:
-        return {
-            'mu': rho * float(db.getValue(path + '/transport/carreau/zeroShearViscosity')),
-            'Pr': 0.7
-        }
-
-    if transportSpec == TransportSpecification.POWER_LAW:
-        return {
-            'mu': rho * float(db.getValue(path + '/transport/nonNewtonianPowerLaw/consistencyIndex')),
-            'Pr': 0.7
-        }
-
+    return {
+        'mu': mu,
+        'Pr': cp * mu / kk
+    }
 
 def _mixtureSpecie(db, path):
     mw = db.getValue(path + '/molecularWeight')
