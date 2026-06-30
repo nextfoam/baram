@@ -86,7 +86,7 @@ class SourceTerms:
     turbulentDissipationRate: ConstantSourceTerm        = field(default_factory=ConstantSourceTerm)
     specificDissipationRate: ConstantSourceTerm         = field(default_factory=ConstantSourceTerm)
     modifiedTurbulentViscosity: ConstantSourceTerm      = field(default_factory=ConstantSourceTerm)
-    userDefinedScalars: dict[str, VariableSourceTerm]   = field(default_factory=ConstantSourceTerm)
+    userDefinedScalars: dict[str, VariableSourceTerm]   = field(default_factory=dict)
 
     @staticmethod
     def fromElement(e: Element):
