@@ -79,6 +79,7 @@ class Graphic:
     customRangeMin: str = '0.0'
     customRangeMax: str = '0.0'
     clipToRange: bool = False
+    labelFormat: str = '%-#6.5g'
     useCustomColorScheme: bool = False
     colorScheme: ColormapScheme = ColormapScheme.BlueToRedRainbow
     customMinColor: QColor = dataClassField(default_factory=lambda: QColor.fromString('#000000'))
@@ -130,6 +131,7 @@ class Graphic:
         customRangeMin = e.find('customRangeMin', namespaces=nsmap).text
         customRangeMax = e.find('customRangeMax', namespaces=nsmap).text
         clipToRange = True if e.find('clipToRange', namespaces=nsmap).text == 'true' else False
+        labelFormat = e.find('labelFormat', namespaces=nsmap).text
         useCustomColorScheme = True if e.find('useCustomColorScheme', namespaces=nsmap).text == 'true' else False
         colorScheme = ColormapScheme(e.find('colorScheme', namespaces=nsmap).text)
         customMinColor = QColor.fromString(e.find('customMinColor', namespaces=nsmap).text)
@@ -171,6 +173,7 @@ class Graphic:
                           customRangeMin=customRangeMin,
                           customRangeMax=customRangeMax,
                           clipToRange=clipToRange,
+                          labelFormat=labelFormat,
                           useCustomColorScheme=useCustomColorScheme,
                           colorScheme=colorScheme,
                           customMinColor=customMinColor,
@@ -214,6 +217,7 @@ class Graphic:
                  E('customRangeMin', self.customRangeMin),
                  E('customRangeMax', self.customRangeMax),
                  E('clipToRange', self.clipToRange),
+                 E('labelFormat', self.labelFormat),
                  E('useCustomColorScheme', self.useCustomColorScheme),
                  E('colorScheme', self.colorScheme.value),
                  E('customMinColor', self.customMinColor.name()),

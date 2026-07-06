@@ -63,6 +63,10 @@ class ColormapDialog(ResizableDialog):
 
         self._ui.clipToRange.setChecked(graphic.clipToRange)
 
+        self._ui.labelFormat.setText(graphic.labelFormat)
+        self._ui.labelFormat.setValidator(QRegularExpressionValidator(QRegularExpression(r"^%[-+ #0]*\d*(?:\.\d*)?[feEgG]$")))
+
+
         self._setPresetColorScheme(graphic.colorScheme)
         self._presetColorScheme = graphic.colorScheme
 
@@ -108,6 +112,7 @@ class ColormapDialog(ResizableDialog):
         self._graphic.customRangeMin = self._ui.customRangeMin.text()
         self._graphic.customRangeMax = self._ui.customRangeMax.text()
         self._graphic.clipToRange = True if self._ui.clipToRange.isChecked() else False
+        self._graphic.labelFormat = self._ui.labelFormat.text()
         self._graphic.useCustomColorScheme = True if self._ui.useCustomColorScheme.isChecked() else False
         self._graphic.colorScheme = self._presetColorScheme
         self._graphic.customMinColor = self._customMinColor
@@ -145,6 +150,11 @@ class ColormapDialog(ResizableDialog):
         if numberOfLevels > 256:
             await AsyncMessageBox().critical(self, self.tr('Input Error'),
                                                 self.tr('Number of levels should be less than 257'))
+            return False
+
+        if not self._ui.labelFormat.hasAcceptableInput():
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Label Format is not a valid format (e.g. %-#6.5g).'))
             return False
 
         return True

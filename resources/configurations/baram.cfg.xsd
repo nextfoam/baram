@@ -3562,6 +3562,7 @@
                                         <xs:element name="customRangeMin" type="xs:double" default="0"/>
                                         <xs:element name="customRangeMax" type="xs:double" default="0"/>
                                         <xs:element name="clipToRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="labelFormat" type="xs:string" default="%-#6.5g"/>
                                         <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
                                         <xs:element name="colorScheme" type="xs:string" default="Blue to Red Rainbow"/>
                                         <xs:element name="customMinColor" type="xs:string" default="#000000"/>

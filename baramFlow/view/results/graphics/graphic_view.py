@@ -87,7 +87,7 @@ class VisualReportView(RenderingView):
         actor.UnconstrainedFontSizeOn()
 
         actor.SetTitle(graphic.fieldDisplayName)
-        actor.SetLabelFormat('%-#6.5g')  # VTK default is "%-#6.3g". Now change the number of significant digits to "5"
+        actor.SetLabelFormat(graphic.labelFormat)
 
         titleTextProp: vtkTextProperty = actor.GetTitleTextProperty()
         titleTextProp.SetFontFamily(VTK_FONT_FILE)
@@ -167,6 +167,7 @@ class VisualReportView(RenderingView):
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
+        actor.SetLabelFormat(graphic.labelFormat)
         actor.SetMaximumNumberOfColors(levels)
 
         if graphic.field.type == FieldType.VECTOR:
