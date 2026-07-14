@@ -5,6 +5,7 @@
 
 import math
 import platform
+from enum import Enum, auto
 from typing import Optional
 
 # noinspection PyUnresolvedReferences
@@ -38,6 +39,11 @@ colors = vtkNamedColors()
 
 RENDER_DELAY_TIME = 200
 REPAINT_SUPPRESS_TIME = 100
+
+
+class InteractionMode(Enum):
+    NORMAL = auto()
+    ROTATION_CENTER = auto()
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -199,12 +205,12 @@ class RenderingWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._widget)
 
-        self._originalMouseObserver = MouseHandler(self._style)
-        self._mouseObserver = self._originalMouseObserver
+        self._defaultHandler = MouseHandler(self._style)
+        self._handlers = {InteractionMode.NORMAL: self._defaultHandler}
+        self._mode = InteractionMode.NORMAL
+        self._activeHandler = self._defaultHandler
 
-        self._mouseObserver.mouseClicked.connect(self._mouseClicked)
-
-        self._originalMouseObserver.cellSelectionRequested.connect(self._onCellSelectionRequested)
+        self._wireHandlerSignals(self._defaultHandler)
 
         # To pick actors
         self._style.AddObserver(vtkCommand.LeftButtonPressEvent, self._leftButtonPressEvent)
@@ -382,11 +388,27 @@ class RenderingWidget(QWidget):
     def background2(self):
         return self._renderer.GetBackground2()
 
-    def setMouseHandler(self, observer):
-        self._mouseObserver = observer
+    def registerMouseHandler(self, mode: InteractionMode, handler):
+        self._handlers[mode] = handler
+        self._wireHandlerSignals(handler)
 
-    def resetMouseHandler(self):
-        self._mouseObserver = self._originalMouseObserver
+    def setInteractionMode(self, mode: InteractionMode):
+        if mode == self._mode:
+            return
+        if mode not in self._handlers:
+            raise ValueError(f'No handler registered for {mode}')
+        self._mode = mode
+        self._activeHandler = self._handlers[mode]
+
+    def resetInteractionMode(self):
+        self.setInteractionMode(InteractionMode.NORMAL)
+
+    def interactionMode(self) -> InteractionMode:
+        return self._mode
+
+    def _wireHandlerSignals(self, handler):
+        handler.mouseClicked.connect(self._mouseClicked)
+        handler.cellSelectionRequested.connect(self._onCellSelectionRequested)
 
     def _showCubeAxes(self):
         if self._cubeAxesActor is not None:
@@ -453,16 +475,16 @@ class RenderingWidget(QWidget):
     #         self._originActor.SetTotalLength(length, length, length)
 
     def _leftButtonPressEvent(self, obj, event):
-        self._mouseObserver.leftButtonPressed(obj, event)
+        self._activeHandler.leftButtonPressed(obj, event)
 
     def _leftButtonReleaseEvent(self, obj, event):
-        self._mouseObserver.leftButtonReleased(obj, event)
+        self._activeHandler.leftButtonReleased(obj, event)
 
     def rightButtonReleaseEvent(self):
         self._style.GetInteractor().InvokeEvent(vtkCommand.RightButtonReleaseEvent)
 
     def _mouseMoveEvent(self, obj, event):
-        self._mouseObserver.mouseMoved(obj, event)
+        self._activeHandler.mouseMoved(obj, event)
 
     def _mouseClicked(self, x, y, controlKeyPressed):
         self.actorPicked.emit(self.pickActor(x, y), controlKeyPressed)

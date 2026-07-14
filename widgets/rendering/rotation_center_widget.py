@@ -7,7 +7,7 @@ from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkLineSource
 from vtkmodules.vtkRenderingCore import vtkPropPicker, vtkActor, vtkDataSetMapper, vtkPolyDataMapper
 
-from widgets.rendering.rendering_widget import MouseHandler, RenderingWidget
+from widgets.rendering.rendering_widget import InteractionMode, MouseHandler, RenderingWidget
 
 
 class RotationMouseHandler(MouseHandler):
@@ -140,13 +140,14 @@ class RotationCenterWidget:
         self._actors = RotationCenterActors()
 
         self._mouseHandler.centerChanged.connect(self._setCenter)
+        view.registerMouseHandler(InteractionMode.ROTATION_CENTER, self._mouseHandler)
 
     def on(self):
-        self._view.setMouseHandler(self._mouseHandler)
+        self._view.setInteractionMode(InteractionMode.ROTATION_CENTER)
         self._showCenter()
 
     def off(self):
-        self._view.resetMouseHandler()
+        self._view.resetInteractionMode()
         for actor in self._actors.actors():
             self._view.renderer().RemoveActor(actor)
         self._view.refresh()
