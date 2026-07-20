@@ -45,7 +45,7 @@ class RenderingTool:
         self._ui.renderingView.setEnabled(False)
 
     def clear(self):
-        self._ui.axis.setChecked(False)
+        self._ui.axis.setChecked(True)
         self._ui.cubeAxis.setChecked(False)
 
     def _setRulerVisible(self, checked):

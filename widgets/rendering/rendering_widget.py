@@ -169,7 +169,6 @@ class RenderingWidget(QWidget):
 
         self._dialog: Optional[QFileDialog] = None
 
-        self._originAxes: Optional[vtkOrientationMarkerWidget] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._actorPicker = vtkPropPicker()
@@ -190,6 +189,11 @@ class RenderingWidget(QWidget):
 
         self._widget.Initialize()
         self._widget.Start()
+
+        self._originAxes = vtkOrientationMarkerWidget()
+        self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._originAxes.SetOrientationMarker(vtkAxesActor())
+        self._originAxes.SetInteractor(self._widget)
 
         self._renderer.GradientBackgroundOn()
         self._renderer.SetBackground(0.82, 0.82, 0.82)
@@ -447,17 +451,10 @@ class RenderingWidget(QWidget):
             self._cubeAxesActor = None
 
     def _showOriginAxes(self):
-        if self._originAxes is None:
-            self._originAxes = vtkOrientationMarkerWidget()
-            self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
-            self._originAxes.SetOrientationMarker(vtkAxesActor())
-            self._originAxes.SetInteractor(self._widget)
-
         self._originAxes.EnabledOn()
 
     def _hideOriginAxes(self):
-        if self._originAxes is not None:
-            self._originAxes.EnabledOff()
+        self._originAxes.EnabledOff()
 
     # def _resizeOriginAxis(self):
     #     if self._originActor:

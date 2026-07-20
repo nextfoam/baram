@@ -55,6 +55,8 @@ class RenderingView(QWidget):
         # but to call my own method
         RenderingView._connectSignalsSlots(self)
 
+        self._ui.axis.setChecked(True)
+        
     def view(self):
         return self._view
 
