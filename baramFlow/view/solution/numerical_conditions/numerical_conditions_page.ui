@@ -52,7 +52,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-782</y>
+        <y>0</y>
         <width>338</width>
         <height>1456</height>
        </rect>
@@ -93,7 +93,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="pressureVelocityCouplingScheme"/>
+           <widget class="PythonComboBox" name="pressureVelocityCouplingScheme"/>
           </item>
          </layout>
         </widget>
@@ -121,7 +121,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="formulation"/>
+           <widget class="PythonComboBox" name="formulation"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_6">
@@ -131,7 +131,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="fluxType"/>
+           <widget class="PythonComboBox" name="fluxType"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_10">
@@ -183,7 +183,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTime"/>
+           <widget class="PythonComboBox" name="discretizationSchemeTime"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="discretizationSchemesMomentumLabel">
@@ -193,7 +193,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="discretizationSchemeMomentum"/>
+           <widget class="PythonComboBox" name="discretizationSchemeMomentum"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_19">
@@ -203,7 +203,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="discretizationSchemeEnergy"/>
+           <widget class="PythonComboBox" name="discretizationSchemeEnergy"/>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_22">
@@ -213,7 +213,7 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTurbulence"/>
+           <widget class="PythonComboBox" name="discretizationSchemeTurbulence"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_3">
@@ -223,7 +223,7 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QComboBox" name="discretizationSchemeVolumeFraction"/>
+           <widget class="PythonComboBox" name="discretizationSchemeVolumeFraction"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_4">
@@ -233,7 +233,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="discretizationSchemePressure">
+           <widget class="PythonComboBox" name="discretizationSchemePressure">
             <property name="minimumSize">
              <size>
               <width>220</width>
@@ -253,7 +253,7 @@
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="QComboBox" name="discretizationSchemeScalar"/>
+           <widget class="PythonComboBox" name="discretizationSchemeScalar"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel" name="label_37">
@@ -263,7 +263,7 @@
            </widget>
           </item>
           <item row="8" column="1">
-           <widget class="QComboBox" name="discretizationSchemeSpecies"/>
+           <widget class="PythonComboBox" name="discretizationSchemeSpecies"/>
           </item>
           <item row="1" column="1">
            <widget class="PFloatLineEdit" name="crankNicolsonBlendingFactor">
@@ -782,6 +782,11 @@
    <class>IntEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <tabstops>

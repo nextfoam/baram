@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QComboBox
 
 
@@ -31,3 +32,6 @@ class PythonComboBox(QComboBox):
             self.setCurrentIndex(index)
         else:
             self.setCurrentIndex(0)
+
+    def wheelEvent(self, e: QWheelEvent):
+        e.ignore()
