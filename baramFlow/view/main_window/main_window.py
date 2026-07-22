@@ -260,7 +260,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._ui.actionLanguage.setShortcut('Ctrl+L')
 
     def _connectSignalsSlots(self):
-        self._ui.actionSave.triggered.connect(self._save)
+        self._ui.actionSave.triggered.connect(self._saveSlot)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionOpenFoam.triggered.connect(self._importOpenFOAMMesh)
         self._ui.actionMultiplePolyMesh.triggered.connect(self._importMultiplePolyMesh)
@@ -313,6 +313,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
+    async def _saveSlot(self):
+        await self._save()
+
     async def _save(self):
         if await self._saveCurrentPage():
             self._project.save()
@@ -845,7 +848,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
                     cellZones = CellZonesToRegions().loadCellZones()
                     if len(cellZones) > 1 or 'solid' in cellZones.values():
                         self._dialog = FluentRegionsDialog(self, cellZones)
-                        self._dialog.accepted.connect(lambda: self._cellZonesToRegions(meshManager))
+                        self._dialog.accepted.connect(lambda: self._cellZonesToRegionsSlot(meshManager))
                         self._dialog.rejected.connect(meshManager.cancel)
                         self._dialog.open()
                     else:
@@ -867,6 +870,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
 
     @qasync.asyncSlot()
+    async def _cellZonesToRegionsSlot(self, meshManager):
+        await self._cellZonesToRegions(meshManager)
+
     async def _cellZonesToRegions(self, meshManager):
         progressDialog = ProgressDialog(self, self.tr('Mesh Converting'))
         progressDialog.setLabelText(self.tr('Converting the mesh'))

@@ -65,7 +65,6 @@ class InitializationPage(ContentPage):
             self._ui.tabWidget.removeTab(0)
             widget.close()
 
-    @qasync.asyncSlot()
     async def save(self):
         #
         # Validation check for parameters

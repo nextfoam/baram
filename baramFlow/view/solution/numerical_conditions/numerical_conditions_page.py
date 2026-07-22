@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
-
 from widgets.async_message_box import AsyncMessageBox
 
 import baramFlow.openfoam.solver
@@ -295,7 +293,6 @@ class NumericalConditionsPage(ContentPage):
 
         self._onFluxTypeChanged()
 
-    @qasync.asyncSlot()
     async def save(self):
         loaded = NumericalService.getConditions()
 

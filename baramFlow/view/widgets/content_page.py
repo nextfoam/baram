@@ -11,6 +11,9 @@ class ContentPage(QWidget):
         super().__init__(parent)
 
     @qasync.asyncSlot()
+    async def saveSlot(self):
+        return await self.save()
+
     async def save(self):
         return True
 

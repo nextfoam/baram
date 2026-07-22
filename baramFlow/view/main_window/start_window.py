@@ -36,7 +36,7 @@ class Baram(QObject):
         self._applicationLock = None
 
         app.restarted.connect(self._restart)
-        app.projectCreated.connect(self._openProject)
+        app.projectCreated.connect(self._openProjectSlot)
 
     async def start(self, path=None):
         vtk_threads.vtkThreadLock = asyncio.Lock()
@@ -54,7 +54,7 @@ class Baram(QObject):
         self._projectSelector = ProjectSelector()
         self._projectSelector.finished.connect(self._projectSelectorClosed, type=Qt.ConnectionType.QueuedConnection)
         self._projectSelector.actionNewSelected.connect(self._createProject)
-        self._projectSelector.projectSelected.connect(self._projectSelected)
+        self._projectSelector.projectSelected.connect(self._projectSelectedSlot)
         self._projectSelector.open()
 
     def _projectSelectorClosed(self, result):
@@ -74,6 +74,9 @@ class Baram(QObject):
 
     # A BaramFlow project or an exported BaramMesh project directory is selected.
     @qasync.asyncSlot()
+    async def _projectSelectedSlot(self, directory):
+        await self._projectSelected(directory)
+
     async def _projectSelected(self, directory):
         path = Path(directory)
         if not FileDB.exists(path) and isBaramProject(path):
@@ -83,6 +86,9 @@ class Baram(QObject):
             await self._openProject(path, ProjectOpenType.EXISTING)
 
     @qasync.asyncSlot()
+    async def _openProjectSlot(self, path, openType):
+        await self._openProject(path, openType)
+
     async def _openProject(self, path, openType):
         openedProject = None
 

@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
         snappyHexMesh.snappyStarted.connect(self._disableMenubar)
         snappyHexMesh.snappyStopped.connect(self._enableMenubar)
 
-        self._closeTriggered.connect(self._closeProject)
+        self._closeTriggered.connect(self._closeProjectSlot)
 
     def _setRenderingEnabled(self, enabled):
         self._displayControl.setEnabled(enabled)
@@ -372,6 +372,9 @@ class MainWindow(QMainWindow):
         self._ui.menuParallel.setEnabled(True)
 
     @qasync.asyncSlot()
+    async def _closeProjectSlot(self, toQuit=False):
+        return await self._closeProject(toQuit)
+
     async def _closeProject(self, toQuit=False):
         if app.project is None:
             return True

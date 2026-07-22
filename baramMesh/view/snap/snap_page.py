@@ -246,7 +246,6 @@ class SnapPage(StepPage):
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
 
-    @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
 

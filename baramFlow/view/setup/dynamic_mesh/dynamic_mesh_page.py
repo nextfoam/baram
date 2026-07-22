@@ -85,7 +85,6 @@ class DynamicMeshPage(ContentPage):
 
         return super().showEvent(ev)
 
-    @qasync.asyncSlot()
     async def save(self):
         if self._dynamicMesh.motionType == MotionType.RIGID_BODY_DYNAMICS:
             try:

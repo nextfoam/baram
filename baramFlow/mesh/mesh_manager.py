@@ -3,7 +3,6 @@
 
 import asyncio
 import logging
-import qasync
 import shutil
 
 from enum import Enum, auto
@@ -53,7 +52,6 @@ class MeshManager(QObject):
 
         self._process = None
 
-    @qasync.asyncSlot()
     async def scale(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
         cm = RunParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
@@ -70,7 +68,6 @@ class MeshManager(QObject):
 
         return result
 
-    @qasync.asyncSlot()
     async def translate(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
         cm = RunParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
@@ -87,7 +84,6 @@ class MeshManager(QObject):
 
         return result
 
-    @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
         caseRoot = FileSystem.caseRoot()
         cm = RunParallelUtility('transformPoints', '-allRegions',

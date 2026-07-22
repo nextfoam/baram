@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
-
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.case_manager import CaseManager
@@ -24,7 +22,6 @@ class ReferenceValuesPage(ContentPage):
         self._updateEnabled()
         self._load()
 
-    @qasync.asyncSlot()
     async def save(self):
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
 
