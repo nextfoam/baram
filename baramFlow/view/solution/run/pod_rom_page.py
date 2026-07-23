@@ -211,9 +211,9 @@ class PODROMPage(ContentPage):
             activeNames = [p for p, v in self._paramActive.items() if v]
             self._project.fileDB().putText("ROMparams", "\n".join(activeNames))
             self.loadSnapshotCases(overwriteSlider=True)
-            progressDialog.finish(self.tr('ROM build finished'))
+            await progressDialog.finish(self.tr('ROM build finished'))
         except Exception as e:
-            progressDialog.finish(self.tr('ROM build error : ') + str(e))
+            await progressDialog.finish(self.tr('ROM build error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
 
@@ -376,9 +376,9 @@ class PODROMPage(ContentPage):
             await self._caseManager.podRunReconstruct(caseName, listSnapshotCase, paramsActive)
             await self._caseManager.podSaveToBatchCase(caseName)
             await self._caseManager.podAddToBatchList(caseName, paramsToReconstruct)
-            progressDialog.finish(self.tr('Reconstruction Finished'))
+            await progressDialog.finish(self.tr('Reconstruction Finished'))
         except Exception as e:
-            progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
+            await progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
 

@@ -85,8 +85,8 @@ class CollateralFieldsReportDialog(QDialog):
             rc = await calculateCollateralField(fields, [FileSystem.latestTime()])
 
         if rc != 0:
-            self._progressDialog.finish(self.tr('Computing failed'))
+            await self._progressDialog.finish(self.tr('Computing failed'))
         elif GeneralDB.isTimeTransient():
-            self._progressDialog.finish(self.tr('Collateral Fields hava been written into time folders!'))
+            await self._progressDialog.finish(self.tr('Collateral Fields hava been written into time folders!'))
         else:
-            self._progressDialog.finish(self.tr('Collateral Fields hava been written into the last time folder!'))
+            await self._progressDialog.finish(self.tr('Collateral Fields hava been written into the last time folder!'))

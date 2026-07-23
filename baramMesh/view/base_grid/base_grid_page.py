@@ -199,7 +199,7 @@ class BaseGridPage(StepPage):
         result = await cm.wait()
 
         if result != 0:
-            progressDialog.finish(self.tr('Mesh Generation Failed.'))
+            await progressDialog.finish(self.tr('Mesh Generation Failed.'))
             self.clearResult()
             return
 

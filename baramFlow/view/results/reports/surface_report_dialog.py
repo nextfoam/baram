@@ -27,7 +27,6 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict
 from baramFlow.openfoam.function_objects.components import foComponentsReport
 from baramFlow.openfoam.function_objects.mag import foMagReport
-from baramFlow.openfoam.function_objects.read_fields import foReadFieldsReport
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueReport
 from baramFlow.openfoam.post_processing.post_file_reader import readPostFile
 from baramFlow.openfoam.solver import findSolver
@@ -164,7 +163,7 @@ class SurfaceReportDialog(QDialog):
         foDict.fullPath().unlink()
 
         if rc != 0:
-            progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -174,7 +173,7 @@ class SurfaceReportDialog(QDialog):
         foFiles:  list[Path] = list(foPath.glob('**/surfaceFieldValue.dat'))
 
         if len(foFiles) < 1:
-            progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -185,7 +184,7 @@ class SurfaceReportDialog(QDialog):
 
         utils.rmtree(foPath)
 
-        progressDialog.finish(self.tr('Calculation Completed'))
+        await progressDialog.finish(self.tr('Calculation Completed'))
 
         self._ui.compute.setEnabled(True)
 

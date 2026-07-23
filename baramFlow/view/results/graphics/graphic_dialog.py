@@ -14,8 +14,7 @@ from baramFlow.base.graphic.graphic import Graphic, StreamlineType
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver_field import getAvailableFields, getSolverFieldName
+from baramFlow.openfoam.solver_field import getAvailableFields
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from baramFlow.libbaram.collateral_fields import calculateCollateralField
@@ -126,7 +125,7 @@ class GraphicDialog(QDialog):
             rc = await calculateCollateralField([field], [time])
 
             if rc != 0:
-                progressDialog.abort(self.tr('Calculation failed'))
+                await progressDialog.abort(self.tr('Calculation failed'))
                 self._ui.update.setEnabled(True)
                 return
 

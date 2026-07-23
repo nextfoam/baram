@@ -231,9 +231,9 @@ class ExportPage(StepPage):
                 else:
                     subprocess.Popen([sys.executable, '-m', 'baramFlow.main', path])
             else:
-                progressDialog.finish(self.tr('Export completed'))
+                await progressDialog.finish(self.tr('Export completed'))
         except ProcessError as e:
             self.clearResult()
-            progressDialog.finish(self.tr('Export failed. [') + str(e.returncode) + ']')
+            await progressDialog.finish(self.tr('Export failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()

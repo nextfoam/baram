@@ -12,7 +12,6 @@ from PySide6.QtWidgets import QDialog
 from baramFlow.base.constants import VectorComponent, FieldType
 from baramFlow.base.field import CollateralField, SpecieField, UserScalarField, Field
 from baramFlow.libbaram.collateral_fields import collateralFieldDict
-from baramFlow.openfoam.function_objects.read_fields import foReadFieldsReport
 from baramFlow.openfoam.solver_field import getSolverFieldName, getSolverComponentName
 from libbaram import utils
 from libbaram.mesh import Bounds
@@ -214,7 +213,7 @@ class PointReportDialog(QDialog):
         foDict.fullPath().unlink()
 
         if rc != 0:
-            progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -224,7 +223,7 @@ class PointReportDialog(QDialog):
         foFiles:  list[Path] = list(foPath.glob(f'**/{reportFieldName}'))
 
         if len(foFiles) < 1:
-            progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
 
@@ -236,6 +235,6 @@ class PointReportDialog(QDialog):
 
         utils.rmtree(foPath)
 
-        progressDialog.finish(self.tr('Calculation Completed'))
+        await progressDialog.finish(self.tr('Calculation Completed'))
 
         self._ui.compute.setEnabled(True)

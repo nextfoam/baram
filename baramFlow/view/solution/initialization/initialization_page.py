@@ -153,16 +153,16 @@ class InitializationPage(ContentPage):
 
             try:
                 await CaseManager().initialize()
-                progressDialog.finish(self.tr('Initialization Completed'))
+                await progressDialog.finish(self.tr('Initialization Completed'))
                 self._dbConfigCount = coredb.CoreDB().configCount
             except PermissionError:
-                progressDialog.finish('Permission error')
+                await progressDialog.finish('Permission error')
             except SolverNotFound as e:
-                progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+                await progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             except CanceledException:
-                progressDialog.finish(self.tr('Calculation cancelled'))
+                await progressDialog.finish(self.tr('Calculation cancelled'))
             except RuntimeError as r:
-                progressDialog.finish(str(r))
+                await progressDialog.finish(str(r))
             finally:
                 CaseManager().progress.disconnect(progressDialog.setLabelText)
 

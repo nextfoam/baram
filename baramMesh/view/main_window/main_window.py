@@ -421,7 +421,7 @@ class MainWindow(QMainWindow):
             await redistributionTask.redistribute(numCores)
 
         app.project.setParallelEnvironment(environment)
-        progressDialog.finish('Parallel Environment was Applied.')
+        await progressDialog.finish('Parallel Environment was Applied.')
 
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):
