@@ -81,14 +81,12 @@ class RenderingTool:
 
         return dialog
 
-    def _setBackground1(self, color):
-        r, g, b, a = color.getRgbF()
-        self._view.setBackground1(r, g, b)
+    def _setBackground1(self, color: QColor):
+        self._view.setBackground1(color)
         self._updateBGButtonStyle(self._ui.bg1, color)
 
     def _setBackground2(self, color):
-        r, g, b, a = color.getRgbF()
-        self._view.setBackground2(r, g, b)
+        self._view.setBackground2(color)
         self._updateBGButtonStyle(self._ui.bg2, color)
 
     def _updateBGButtonStyle(self, button, color):

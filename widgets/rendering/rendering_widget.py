@@ -3,7 +3,6 @@
 
 # A simple script to demonstrate the vtkCutter function
 
-import math
 import platform
 from enum import Enum, auto
 from typing import Optional
@@ -13,7 +12,7 @@ import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from PySide6.QtCore import QTimer, Qt, Signal, QObject
-from PySide6.QtGui import QMouseEvent
+from PySide6.QtGui import QMouseEvent, QColor
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -91,7 +90,7 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._Iren.InvokeEvent(vtkCommand.LeftButtonDoubleClickEvent, None)
         elif self._ActiveButton == Qt.MouseButton.RightButton:
             self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
-        elif self._ActiveButton == Qt.MiddleButton:
+        elif self._ActiveButton == Qt.MouseButton.MiddleButton:
             self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
 
 
@@ -380,10 +379,12 @@ class RenderingWidget(QWidget):
     def getBounds(self):
         return self._renderer.ComputeVisiblePropBounds()
 
-    def setBackground1(self, r, g, b):
+    def setBackground1(self, color: QColor):
+        r, g, b, a = color.getRgbF()
         self._renderer.SetBackground(r, g, b)
 
-    def setBackground2(self, r, g, b):
+    def setBackground2(self, color: QColor):
+        r, g, b, a = color.getRgbF()
         self._renderer.SetBackground2(r, g, b)
 
     def background1(self):

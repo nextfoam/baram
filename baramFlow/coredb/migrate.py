@@ -1536,6 +1536,12 @@ def _version_13(root: etree.Element, path):
             clipToRange = p.find('clipToRange', namespaces=_nsmap)
             clipToRange.addnext(E('labelFormat', '%-#6.5g'))
 
+        if p.find('rendering', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "rendering" to {p}')
+            p.append(E('rendering',
+                       E('background1', '4291940817'),
+                       E('background2', '4281875796')))
+
 
 _fTable = [
     None,

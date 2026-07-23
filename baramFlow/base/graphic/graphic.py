@@ -102,6 +102,9 @@ class Graphic:
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
 
+    background1: QColor = dataClassField(default_factory=lambda: QColor.fromRgbF(0.82, 0.82, 0.82))
+    background2: QColor = dataClassField(default_factory=lambda: QColor.fromRgbF(0.22, 0.24, 0.33))
+
     def __post_init__(self):
         self.instanceUpdated = AsyncSignal(UUID)
         self.displayItemAdded = AsyncSignal(UUID)
@@ -160,6 +163,10 @@ class Graphic:
             item = DisplayItem.fromElement(displayItemElement)
             displayItems[item.scaffoldUuid] = item
 
+        rendering = e.find('rendering', namespaces=nsmap)
+        background1 = QColor(int(rendering.find('background1', namespaces=nsmap).text))
+        background2 = QColor(int(rendering.find('background2', namespaces=nsmap).text))
+
         graphic = Graphic(uuid=uuid,
                           name=name,
                           field=field,
@@ -190,7 +197,9 @@ class Graphic:
                           accuracyControl=accuracyControl,
                           tolerance=tolerance,
                           streamlineType=streamlineType,
-                          lineWidth=lineWidth)
+                          lineWidth=lineWidth,
+                          background1=background1,
+                          background2=background2)
 
         for item in displayItems.values():
             item.instanceUpdated.asyncConnect(graphic._displayItemUpdated)
@@ -235,7 +244,10 @@ class Graphic:
                  E('tolerance', self.tolerance),
                  E('streamlineType', self.streamlineType.value),
                  E('lineWidth', self.lineWidth),
-                 displayItemsElement)
+                 displayItemsElement,
+                 E('rendering',
+                   E('background1', str(self.background1.rgb())),
+                   E('background2', str(self.background2.rgb()))))
 
     def xpath(self):
         return f'/graphic[uuid="{str(self.uuid)}"]'
@@ -319,4 +331,12 @@ class Graphic:
         await self.displayItemRemoving.emit(scaffoldUuid)
         del self.displayItems[scaffoldUuid]
         await self.displayItemRemoved.emit(scaffoldUuid)
+        self.saveToCoreDB()
+
+    def updateBackground1(self, color: QColor):
+        self.background1 = color
+        self.saveToCoreDB()
+
+    def updateBackground2(self, color: QColor):
+        self.background2 = color
         self.saveToCoreDB()

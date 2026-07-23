@@ -3624,6 +3624,14 @@
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
+                                        <xs:element name="rendering">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="background1" type="xs:integer" default="4291940817"/>
+                                                    <xs:element name="background2" type="xs:integer" default="4281875796"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

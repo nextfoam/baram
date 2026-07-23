@@ -3,7 +3,7 @@
 
 from uuid import UUID, uuid4
 
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QColor
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QColorDialog, QHeaderView, QMenu, QWidget
@@ -81,6 +81,9 @@ class VisualReportView(RenderingView):
 
         self._colormap = ScalarBarWidget(self, graphic, self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
+
+        self._view.setBackground1(QColor(graphic.background1))
+        self._view.setBackground2(QColor(graphic.background2))
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetLookupTable(self._lookupTable)
@@ -563,4 +566,12 @@ class VisualReportView(RenderingView):
     def _openDisplayItemDialog(self):
         self._displayItemDialog.setDisplayControl(self._selectedControls[0])  # this is for only one item
         self._displayItemDialog.open()
+
+    def _setBackground1(self, color: QColor):
+        super()._setBackground1(color)
+        self._graphic.updateBackground1(color)
+
+    def _setBackground2(self, color: QColor):
+        super()._setBackground2(color)
+        self._graphic.updateBackground2(color)
 
