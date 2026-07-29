@@ -64,7 +64,7 @@ class RegionService:
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 newCellZones = set(vtkMesh[rname]['zones']['cellZones'].keys())
             else:
-                newCellZones = {}
+                newCellZones = set()
 
             if set(region.getCellZoneNames(includeEntireZone=False)) != newCellZones:
                 return False
