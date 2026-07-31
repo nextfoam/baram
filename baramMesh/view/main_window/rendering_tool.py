@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QColorDialog
 
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from widgets.rendering.rendering_widget import RenderingWidget
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
@@ -76,8 +77,8 @@ class RenderingTool:
     def _newBGColorDialog(self):
         dialog = QColorDialog(app.window)
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-        dialog.setCustomColor(0, QColor(56, 61, 84))
-        dialog.setCustomColor(1, QColor(209, 209, 209))
+        dialog.setCustomColor(0, QColor.fromString(NFM_DARK_SLATE_GRAY))
+        dialog.setCustomColor(1, QColor.fromString(NFM_LIGHT_GRAY))
 
         return dialog
 

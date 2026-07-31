@@ -29,6 +29,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkLightKit, vtkProp, vtkPolyDataMapper,
 )
 
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from libbaram.vtk_threads import isRenderingHold
 
 from resources import resource
@@ -195,8 +196,8 @@ class RenderingWidget(QWidget):
         self._originAxes.SetInteractor(self._widget)
 
         self._renderer.GradientBackgroundOn()
-        self._renderer.SetBackground(0.82, 0.82, 0.82)
-        self._renderer.SetBackground2(0.22, 0.24, 0.33)
+        self.setBackground1(QColor.fromString(NFM_LIGHT_GRAY))
+        self.setBackground2(QColor.fromString(NFM_DARK_SLATE_GRAY))
 
         self._lightKit = vtkLightKit()
         self._lightKit.AddLightsToRenderer(self._renderer)

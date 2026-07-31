@@ -21,6 +21,7 @@ from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.async_signal import AsyncSignal
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from libbaram.openfoam.polymesh import addCoordinateVector, collectInternalMesh
 
 
@@ -102,8 +103,8 @@ class Graphic:
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
 
-    background1: QColor = dataClassField(default_factory=lambda: QColor.fromRgbF(0.82, 0.82, 0.82))
-    background2: QColor = dataClassField(default_factory=lambda: QColor.fromRgbF(0.22, 0.24, 0.33))
+    background1: QColor = dataClassField(default_factory=lambda: QColor.fromString(NFM_LIGHT_GRAY))
+    background2: QColor = dataClassField(default_factory=lambda: QColor.fromString(NFM_DARK_SLATE_GRAY))
 
     def __post_init__(self):
         self.instanceUpdated = AsyncSignal(UUID)
@@ -164,8 +165,8 @@ class Graphic:
             displayItems[item.scaffoldUuid] = item
 
         rendering = e.find('rendering', namespaces=nsmap)
-        background1 = QColor(int(rendering.find('background1', namespaces=nsmap).text))
-        background2 = QColor(int(rendering.find('background2', namespaces=nsmap).text))
+        background1 = QColor.fromString(rendering.find('background1', namespaces=nsmap).text)
+        background2 = QColor.fromString(rendering.find('background2', namespaces=nsmap).text)
 
         graphic = Graphic(uuid=uuid,
                           name=name,
@@ -246,8 +247,8 @@ class Graphic:
                  E('lineWidth', self.lineWidth),
                  displayItemsElement,
                  E('rendering',
-                   E('background1', str(self.background1.rgb())),
-                   E('background2', str(self.background2.rgb()))))
+                   E('background1', self.background1.name()),
+                   E('background2', self.background2.name())))
 
     def xpath(self):
         return f'/graphic[uuid="{str(self.uuid)}"]'

@@ -6,6 +6,7 @@ import subprocess
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.mesh.mesh_model import DisplayMode
 from baramFlow.openfoam.file_system import FileSystem
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 from widgets.themed_icon import load_themed_icon
@@ -56,7 +57,7 @@ class RenderingView(QWidget):
         RenderingView._connectSignalsSlots(self)
 
         self._ui.axis.setChecked(True)
-        
+
     def view(self):
         return self._view
 
@@ -131,8 +132,8 @@ class RenderingView(QWidget):
     def _newBGColorDialog(self):
         dialog = QColorDialog(self)
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-        dialog.setCustomColor(0, QColor(56, 61, 84))
-        dialog.setCustomColor(1, QColor(209, 209, 209))
+        dialog.setCustomColor(0, QColor.fromString(NFM_DARK_SLATE_GRAY))
+        dialog.setCustomColor(1, QColor.fromString(NFM_LIGHT_GRAY))
 
         return dialog
 

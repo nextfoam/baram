@@ -1539,8 +1539,8 @@ def _version_13(root: etree.Element, path):
         if p.find('rendering', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "rendering" to {p}')
             p.append(E('rendering',
-                       E('background1', '4291940817'),
-                       E('background2', '4281875796')))
+                       E('background1', '#d1d1d1'),
+                       E('background2', '#383d54')))
 
 
 _fTable = [
