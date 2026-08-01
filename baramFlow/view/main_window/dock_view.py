@@ -20,7 +20,7 @@ class DockView(QWidget):
         self._menu = menu
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.setContentsMargins(QMargins(8, 0, 0, 0))
         layout.addWidget(self._dockManager)
 
     def close(self):

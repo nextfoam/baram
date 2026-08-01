@@ -45,7 +45,14 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <property name="childrenCollapsible">
-       <bool>false</bool>
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QSplitter::handle { background-color: transparent; }
+QSplitter::handle:hover { background-color: palette(highlight); }</string>
+      </property>
+      <property name="handleWidth">
+       <number>4</number>
       </property>
       <widget class="QTreeWidget" name="navigatorView">
        <property name="sizePolicy">
@@ -59,6 +66,9 @@
          <width>200</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QTreeWidget#navigatorView { padding-right: 8px; }</string>
        </property>
        <attribute name="headerVisible">
         <bool>false</bool>

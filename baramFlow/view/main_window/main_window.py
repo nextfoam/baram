@@ -200,6 +200,12 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
+        self._ui.splitter.setCollapsible(2, False)
+
+        # QSplitterHandle does not enable hover tracking by default, so the
+        # "QSplitter::handle:hover" style rule never triggers without this.
+        for index in range(1, self._ui.splitter.count()):
+            self._ui.splitter.handle(index).setAttribute(Qt.WidgetAttribute.WA_Hover)
 
         self._docks: dict[UUID, GraphicDock] = {}
 
