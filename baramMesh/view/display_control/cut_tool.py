@@ -9,7 +9,7 @@ from vtkmodules.vtkCommonDataModel import vtkPlane
 from widgets.enum_button_group import EnumButtonGroup
 
 from baramMesh.app import app
-from baramMesh.rendering.plane_widget import PlaneWidget
+from widgets.rendering.plane_widget import PlaneWidget
 
 
 class CutType(Enum):

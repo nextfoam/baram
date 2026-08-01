@@ -17,21 +17,21 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkTextProperty
 from baramFlow.app import app
 
 from baramFlow.base.constants import FieldType, VectorComponent
-from baramFlow.base.graphic.color_scheme import getColorTable
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from baramFlow.view.results.graphics.colormap_dialog import ColormapDialog
 from baramFlow.view.results.graphics.display_control_panel_ui import Ui_DisplayControlPanel
-from baramFlow.view.results.graphics.opacity_dialog import OpacityDialog
 from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
-from baramFlow.view.results.graphics.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
 
 from resources import resource
 
+from widgets.opacity_dialog import OpacityDialog
 from widgets.overlay_frame import OverlayFrame
+from widgets.rendering.color_scheme import getColorTable
+from widgets.rendering.scalar_bar_widget import ScalarBarWidget
 
 from baramFlow.view.results.graphics.display_control import ColorMode, DisplayMode, DisplayControl, Column
 from widgets.progress_dialog import ProgressDialog
@@ -44,14 +44,6 @@ VTK_ORIENT_VERTICAL   = 1
 class VisualReportView(RenderingView):
     def __init__(self, parent: QWidget, graphic: Graphic):
         super().__init__(parent)
-
-        # To Remove RenderingMode tool menu, which is not used in Visual Report
-        layout = self._ui.renderingMode.parentWidget().layout()
-        layout.removeWidget(self._ui.renderingMode)
-
-        # Remove the combobox for "Rendering Mode"
-        self._ui.renderingMode.setParent(None)  # type: ignore
-        self._ui.renderingMode = None           # type: ignore
 
         self._dialog = None
 
@@ -79,7 +71,7 @@ class VisualReportView(RenderingView):
         self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
         self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
-        self._colormap = ScalarBarWidget(self, graphic, self._colormapDoubleClicked)
+        self._colormap = ScalarBarWidget(self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
 
         self._view.setBackground1(QColor(graphic.background1))
@@ -142,6 +134,9 @@ class VisualReportView(RenderingView):
         self._graphic.instanceUpdated.asyncConnect(self._reportUpdated)
         self._graphic.displayItemAdded.asyncConnect(self._displayItemAdded)
         self._graphic.displayItemRemoving.asyncConnect(self._displayItemRemoving)
+
+        self._toolbar.background1Changed.connect(self._graphic.updateBackground1)
+        self._toolbar.background2Changed.connect(self._graphic.updateBackground2)
 
     def _disconnectSignalsSlots(self):
         ScaffoldsDB().scaffoldUpdated.disconnect(self._scaffoldUpdated)
@@ -566,12 +561,4 @@ class VisualReportView(RenderingView):
     def _openDisplayItemDialog(self):
         self._displayItemDialog.setDisplayControl(self._selectedControls[0])  # this is for only one item
         self._displayItemDialog.open()
-
-    def _setBackground1(self, color: QColor):
-        super()._setBackground1(color)
-        self._graphic.updateBackground1(color)
-
-    def _setBackground2(self, color: QColor):
-        super()._setBackground2(color)
-        self._graphic.updateBackground2(color)
 

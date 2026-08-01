@@ -277,38 +277,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="renderingMode">
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToContents</enum>
-           </property>
-           <item>
-            <property name="text">
-             <string>Feature Edges</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Points</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Surface</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Surface With Edges</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Wireframe</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>

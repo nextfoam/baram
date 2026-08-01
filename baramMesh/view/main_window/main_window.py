@@ -35,7 +35,6 @@ from baramMesh.view.widgets.language_dialog import LanugageDialog
 from baramMesh.view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
 from baramMesh.view.menu.help.about_dialog import AboutDialog
 from baramMesh.view.geometry.geometry_manager import GeometryManager
-from widgets.themed_icon import load_themed_icon
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
 from .rendering_tool import RenderingTool
@@ -53,15 +52,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-
-        self._ui.axis.setIcon(load_themed_icon(':/graphicsIcons/originAxes'))
-        self._ui.cubeAxis.setIcon(load_themed_icon(':/graphicsIcons/ruler.svg'))
-        self._ui.ruler.setIcon(load_themed_icon(':/graphicsIcons/distance.svg'))
-        self._ui.perspective.setIcon(load_themed_icon(':/graphicsIcons/2d-label-icon.svg'))
-        self._ui.fit.setIcon(load_themed_icon(':/icons/expand.svg'))
-        self._ui.alignAxis.setIcon(load_themed_icon(':/graphicsIcons/alignAxis.svg'))
-        self._ui.rotate.setIcon(load_themed_icon(':/icons/reload.svg'))
-        self._ui.rotationCenter.setIcon(load_themed_icon(':/graphicsIcons/rotationCenter'))
 
         self._ui.renderingSplitter.setStretchFactor(0, 0)
         self._ui.renderingSplitter.setStretchFactor(1, 1)

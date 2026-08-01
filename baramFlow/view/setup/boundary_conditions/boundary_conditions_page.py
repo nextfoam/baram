@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QTreeWidgetItem
 
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, GeometricalType
@@ -81,9 +80,6 @@ class BoundaryItem(QTreeWidgetItem):
 
         self._widget = widget
 
-        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        self.setCheckState(0, Qt.CheckState.Checked)
-
         self.treeWidget().setItemWidget(self, 1, widget)
 
     def __lt__(self, other):
@@ -124,7 +120,6 @@ class BoundaryConditionsPage(ContentPage):
     def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
-        self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.boundaries.currentItemChanged.connect(self._onSelectedBoundaryChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
@@ -150,10 +145,6 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.expandAll()
         self._ui.boundaries.resizeColumnToContents(0)
 
-        if app.meshModel():
-            self._selectPickedBoundary()
-            self._meshUpdated()
-
     def _updateCopyEnabled(self):
         self._ui.copy.setEnabled(not CaseManager().isActive() and self._ui.boundaries.currentItem() is not None)
 
@@ -168,9 +159,6 @@ class BoundaryConditionsPage(ContentPage):
                 return
 
         self._ui.edit.setEnabled(False)
-
-    def _meshUpdated(self):
-        app.meshModel().currentActorChanged.connect(self._selectPickedBoundary)
 
     def _filterChanged(self):
         filterText = self._ui.filter.text().lower()
@@ -192,14 +180,6 @@ class BoundaryConditionsPage(ContentPage):
             widget = BoundaryWidget(rname, bcid, bcname, BoundaryType(bctype))
             widget.rightClicked.connect(self._showTypePicker)
             self._boundaries[str(bcid)] = BoundaryItem(parent, widget)
-
-    def _itemChanged(self, item, column):
-        bcid = item.type()
-        if bcid:
-            if item.checkState(column) == Qt.CheckState.Checked:
-                app.meshModel().showActor(bcid)
-            else:
-                app.meshModel().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
         if column:
@@ -271,15 +251,6 @@ class BoundaryConditionsPage(ContentPage):
     def _onSelectedBoundaryChanged(self, current):
         self._updateEditEnabled()
         self._updateCopyEnabled()
-
-        if self._ui.boundaries.currentItem() is not None:
-            app.meshModel().setCurrentId(current.type())
-
-    def _selectPickedBoundary(self):
-        if app.meshModel().currentId():
-            self._ui.boundaries.setCurrentItem(self._boundaries[str(app.meshModel().currentId())])
-        else:
-            self._ui.boundaries.setCurrentItem(None)
 
     def _refresh(self, boundaries):
         for bcid in boundaries:

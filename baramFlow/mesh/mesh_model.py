@@ -5,8 +5,7 @@ from enum import Enum, auto
 import re
 from io import StringIO
 
-from PySide6.QtCore import QObject, Signal
-from vtkmodules.vtkCommonColor import vtkNamedColors
+from PySide6.QtCore import QObject
 from vtkmodules.vtkCommonCore import VTK_POLY_DATA
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges, vtkPolyDataNormals
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
@@ -26,7 +25,6 @@ from libbaram.run import RunParallelUtility
 
 class DisplayMode(Enum):
     DISPLAY_MODE_FEATURE        = 0
-    DISPLAY_MODE_POINTS         = auto()
     DISPLAY_MODE_SURFACE        = auto()
     DISPLAY_MODE_SURFACE_EDGE   = auto()
     DISPLAY_MODE_WIREFRAME      = auto()
@@ -62,59 +60,9 @@ def getFeatureActor(dataset):
     return actor
 
 
-_applyDisplayMode = {
-    DisplayMode.DISPLAY_MODE_POINTS         : lambda actor: _applyPointsMode(actor),
-    DisplayMode.DISPLAY_MODE_WIREFRAME      : lambda actor: _applyWireframeMode(actor),
-    DisplayMode.DISPLAY_MODE_SURFACE        : lambda actor: _applySurfaceMode(actor),
-    DisplayMode.DISPLAY_MODE_SURFACE_EDGE   : lambda actor: _applySurfaceEdgeMode(actor),
-    DisplayMode.DISPLAY_MODE_FEATURE        : lambda actor: _applyFeatureMode(actor)
-}
-
-
-def _applyPointsMode(actor):
-    actor.GetProperty().SetPointSize(3)
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
-    actor.GetProperty().SetRepresentationToPoints()
-
-
-def _applyWireframeMode(actor):
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
-    actor.GetProperty().SetLineWidth(1.0)
-    actor.GetProperty().SetRepresentationToWireframe()
-
-
-def _applySurfaceMode(actor):
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
-    actor.GetProperty().SetRepresentationToSurface()
-    actor.GetProperty().EdgeVisibilityOff()
-
-
-def _applySurfaceEdgeMode(actor):
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
-    actor.GetProperty().SetRepresentationToSurface()
-    actor.GetProperty().EdgeVisibilityOn()
-    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
-    actor.GetProperty().SetLineWidth(1.0)
-
-
-def _applyFeatureMode(actor):
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
-    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('WhiteSmoke'))
-    actor.GetProperty().SetLineWidth(1.0)
-
-
-def _applyHighlight(actor):
-    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('White'))
-    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
-    actor.GetProperty().EdgeVisibilityOn()
-    actor.GetProperty().SetRepresentationToSurface()
-    actor.GetProperty().SetLineWidth(2)
-
-
 class ActorInfo:
     def __init__(self, dataSet):
         self._visibility = True
-        self._selected = False
         self._dataSet = dataSet
         self._face = None
         self._feature = None
@@ -163,6 +111,7 @@ class ActorInfo:
 
             return  result.GetCellData().GetArray("Normals").GetTuple3(0)
 
+
 class RenderingModel(QObject):
     def __init__(self):
         super().__init__()
@@ -175,15 +124,10 @@ class RenderingModel(QObject):
 
 
 class MeshModel(RenderingModel):
-    currentActorChanged = Signal()
-
     def __init__(self):
         super().__init__()
 
         self._actorInfos = {}
-        self._currentId = None
-        self._featureMode = False
-        self._hasFeatures = True
         self._bounds = None
         self._activation = False
 
@@ -191,31 +135,10 @@ class MeshModel(RenderingModel):
         self._smallestCellVolume = None
         self._largestCellVolume = None
 
-        self._connectSignalsSlots()
-
     def activate(self):
         if not self._activation and self._view:
-            renderingMode = self._view.renderingMode()
-            self._featureMode = renderingMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures
-            for actorInfo in self._actorInfos.values():
-                if actorInfo.visibility:
-                    actor = actorInfo.actor(self._featureMode)
-                    _applyDisplayMode[renderingMode](actor)
-                    self._view.addActor(actor)
-
             self._view.fitCamera()
             self._activation = True
-
-    def deactivate(self):
-        if self._view is None:
-            return
-
-        for actorInfo in self._actorInfos.values():
-            if actorInfo.visibility:
-                self._view.removeActor(actorInfo.actor(self._featureMode))
-
-        self._view.refresh()
-        self._activation = False
 
     def setActorInfo(self, id_, actorInfo):
         self._actorInfos[id_] = actorInfo
@@ -225,42 +148,6 @@ class MeshModel(RenderingModel):
             return self._actorInfos[id_]
 
         return None
-
-    def currentId(self):
-        return self._currentId
-
-    def currentActor(self):
-        if self._currentId:
-            actorInfo = self._actorInfos[self._currentId]
-            return actorInfo.feature if self._featureMode else actorInfo.face
-
-        return None
-
-    def showActor(self, id_):
-        if not self._actorInfos[id_].visibility:
-            actor = self._actorInfos[id_].actor(self._featureMode)
-            self._view.addActor(actor)
-            self._applyDisplayMode(actor)
-            self._actorInfos[id_].visibility = True
-            self._view.refresh()
-
-    def hideActor(self, id_):
-        if self._actorInfos[id_].visibility:
-            self._view.removeActor(self._actorInfos[id_].actor(self._featureMode))
-            self._actorInfos[id_].visibility = False
-            self._view.refresh()
-
-    def setCurrentId(self, id_):
-        self._highlightActor(id_)
-        self._currentId = id_
-
-    def showCulling(self):
-        for a in self._actorInfos.values():
-            a.actor(self._featureMode).GetProperty().FrontfaceCullingOn()
-
-    def hideCulling(self):
-        for a in self._actorInfos.values():
-            a.actor(self._featureMode).GetProperty().FrontfaceCullingOff()
 
     async def getBounds(self):
         if not self._bounds:
@@ -292,59 +179,6 @@ class MeshModel(RenderingModel):
             await self._checkMesh()
 
         return self._largestCellVolume
-
-    def _connectSignalsSlots(self):
-        self._view.renderingModeChanged.connect(self._changeRenderingMode)
-        self._view.actorPicked.connect(self._actorPicked)
-
-    def _changeRenderingMode(self, displayMode):
-        if displayMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures:
-            self._featureMode = True
-            for a in self._actorInfos.values():
-                if a.visibility:
-                    self._view.removeActor(a.face)
-                    self._view.addActor(a.feature)
-                self._applyDisplayMode(a.feature)
-        else:
-            featureModeChanged = self._featureMode
-            self._featureMode = False
-            for a in self._actorInfos.values():
-                if a.visibility:
-                    if featureModeChanged:
-                        self._view.removeActor(a.feature)
-                        self._view.addActor(a.face)
-                    self._applyDisplayMode(a.face)
-
-        self._view.refresh()
-
-    def _findActorInfo(self, actor):
-        for id_ in self._actorInfos:
-            if self._actorInfos[id_].actor(self._featureMode) == actor:
-                return id_
-
-        return None
-
-    def _highlightActor(self, id_):
-        # Reset properties of unselected actors
-        if currentActor := self.currentActor():
-            _applyDisplayMode[self._view.renderingMode()](currentActor)
-
-        actor = None
-        if id_:
-            _applyHighlight(self._actorInfos[id_].actor(self._featureMode))
-
-        if actor != currentActor:
-            self._view.refresh()
-
-    def _applyDisplayMode(self, actor):
-        if actor == self.currentActor():
-            _applyHighlight(actor)
-        else:
-            _applyDisplayMode[self._view.renderingMode()](actor)
-
-    def _actorPicked(self, actor):
-        self.setCurrentId(self._findActorInfo(actor))
-        self.currentActorChanged.emit()
 
     async def _checkMesh(self):
         def _stdout(output):
@@ -405,5 +239,3 @@ class MeshModel(RenderingModel):
                 cm.cancel()
             else:
                 raise CanceledException
-
-

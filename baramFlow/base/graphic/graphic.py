@@ -17,12 +17,12 @@ from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import E, nsmap
-from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.async_signal import AsyncSignal
 from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from libbaram.openfoam.polymesh import addCoordinateVector, collectInternalMesh
+from widgets.rendering.color_scheme import ColormapScheme
 
 
 class StreamlineIntegratorType(Enum):

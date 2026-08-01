@@ -13,7 +13,7 @@ from baramMesh.rendering.actor_info import DisplayMode, Properties
 from widgets.rendering.rendering_widget import RenderingWidget
 from .mesh_quality_info import MeshQualityInfo
 
-from .opacity_dialog import OpacityDialog
+from widgets.opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
 from .cut_tool import CutTool, CutType
 

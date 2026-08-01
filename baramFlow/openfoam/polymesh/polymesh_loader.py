@@ -332,9 +332,11 @@ class PolyMeshLoader(QObject):
         meshModel = MeshModel()
         cellZones = {}
         internalMeshes = {}
+        boundaryInfos = []
         for rname in db.getRegions():
-            for bcid, bcname, _ in db.getBoundaryConditions(rname):
+            for bcid, bcname, bctype in db.getBoundaryConditions(rname):
                 meshModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
+                boundaryInfos.append((bcid, rname, bcname, BoundaryType(bctype)))
 
             for czid, czname in db.getCellZones(rname):
                 if not CellZoneDB.isRegion(czname):
@@ -342,7 +344,7 @@ class PolyMeshLoader(QObject):
 
             internalMeshes[rname] = vtkMesh[rname]['internalMesh']
 
-        app.updateMeshModel(meshModel, cellZones, internalMeshes)
+        app.updateMeshModel(meshModel, cellZones, internalMeshes, boundaryInfos)
 
         ScaffoldsDB().rematchBoundaries()
 

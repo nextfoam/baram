@@ -8,12 +8,11 @@ import qasync
 
 from baramFlow.base.constants import FieldType
 from baramFlow.base.field import VECTOR_COMPONENT_TEXTS
-from baramFlow.base.graphic.color_scheme import ColorbarWidget, ColormapScheme
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
-from baramFlow.base.graphic.color_scheme import colormapName
+from widgets.rendering.color_scheme import ColorbarWidget, ColormapScheme, colormapName
 from .colormap_scheme_dialog import ColormapSchemeDialog
 from .colormap_dialog_ui import Ui_ColormapDialog
 
