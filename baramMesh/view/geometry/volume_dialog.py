@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 import qasync
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
@@ -208,9 +210,11 @@ class VolumeDialog(QDialog):
                 self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
             return
 
-        if name.find(' ') > -1:
+        if re.fullmatch(r'^\w+$', name, flags=re.ASCII) is None:
             await AsyncMessageBox().information(
-                self, self.tr('Input Error'), self.tr('Geometry name cannot contain spaces'))
+                self, self.tr('Input Error'),
+                self.tr('Name contains invalid characters. '
+                        'Only letters, numbers, and underscores (_) are allowed.'))
             return
 
         if app.db.getKeys('geometry', lambda i, e: e['name'] == name and i != self._gId):

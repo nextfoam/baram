@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 import qasync
 from PySide6.QtWidgets import QDialog
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -79,6 +81,13 @@ class SurfaceDialog(QDialog):
                 if name in RESERVED_NAMES:
                     await AsyncMessageBox().information(
                         self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
+                    return
+
+                if re.fullmatch(r'^\w+$', name, flags=re.ASCII) is None:
+                    await AsyncMessageBox().information(
+                        self, self.tr('Input Error'),
+                        self.tr('Name contains invalid characters. '
+                                'Only letters, numbers, and underscores (_) are allowed.'))
                     return
 
                 if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0]):
