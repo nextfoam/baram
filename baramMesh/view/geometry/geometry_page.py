@@ -94,13 +94,19 @@ class GeometryPage(StepPage):
     def retranslate(self):
         self._list.retranslate()
 
+    def openRenameDialog(self):
+        self._dialog = SurfacesRenameDialog(self._widget,
+                                            [(item.gId(), item.geometry().value('name')) for item in self._list.selectedItems()])
+        self._dialog.accepted.connect(lambda: self._updateSurfaces(self._dialog.gIds()))
+        self._dialog.open()
+
     def _connectSignalsSlots(self):
         self._ui.geometryList.customContextMenuRequested.connect(self._executeContextMenu)
         self._list.selectedItemsChanged.connect(self._selectedItemsChanged)
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
         self._menu.editActionTriggered.connect(self._openEditDialog)
-        self._menu.renameActionTriggered.connect(self._openRenameDialog)
+        self._menu.renameActionTriggered.connect(self.openRenameDialog)
         self._menu.removeActionTriggered.connect(self._removeGeometry)
 
     def _executeContextMenu(self, pos):
@@ -170,12 +176,6 @@ class GeometryPage(StepPage):
             self._dialog.finished.connect(self._restoreActors)
             self._dialog.accepted.connect(lambda: self._updateSurfaces(self._dialog.gIds()))
             self._dialog.open()
-
-    def _openRenameDialog(self):
-        self._dialog = SurfacesRenameDialog(self._widget,
-                                            [(item.gId(), item.geometry().value('name')) for item in self._list.selectedItems()])
-        self._dialog.accepted.connect(lambda: self._updateSurfaces(self._dialog.gIds()))
-        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _removeGeometry(self):

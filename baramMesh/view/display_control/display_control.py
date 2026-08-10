@@ -3,9 +3,9 @@
 
 from typing import Optional
 
-from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtCore import QObject, Signal, Qt, QPoint
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView, QInputDialog
+from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView, QTreeWidget
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import Step
@@ -33,7 +33,9 @@ class ContextMenu(QMenu):
 
     splitActionTriggered = Signal()
 
-    def __init__(self, parent):
+    renameTriggered = Signal()
+
+    def __init__(self, parent: QTreeWidget):
         super().__init__(parent)
 
         self._opacityDialog = OpacityDialog(app.window)
@@ -59,6 +61,9 @@ class ContextMenu(QMenu):
         self.addSeparator()
         self._splitAction = self.addAction(self.tr('Split Surface'), lambda: self.splitActionTriggered.emit())
 
+        self.addSeparator()
+        self._renameAction = self.addAction(self.tr('Rename'), lambda: self.renameTriggered.emit())
+
         self._wireFrameDisplayAction.setCheckable(True)
         self._surfaceDisplayAction.setCheckable(True)
         self._surfaceEdgeDisplayAction.setCheckable(True)
@@ -66,7 +71,7 @@ class ContextMenu(QMenu):
 
         self._connectSignalsSlots()
 
-    def execute(self, pos, properties: Properties, hasPendingSplit: bool = False):
+    def execute(self, pos: QPoint, properties: Properties, geometryEditable: bool, hasPendingSplit: bool = False):
         self._properties = properties
 
         self._showAction.setVisible(not properties.visibility)
@@ -77,6 +82,8 @@ class ContextMenu(QMenu):
         self._noCutAction.setChecked(properties.cutEnabled is False)
 
         self._splitAction.setVisible(hasPendingSplit)
+
+        self._renameAction.setVisible(geometryEditable)
 
         self.exec(pos)
 
@@ -103,6 +110,8 @@ class DisplayControl(QObject):
 
     splitRequested = Signal(str, list)   # (actorId, selectedCellIds)
 
+    renameTriggered = Signal()
+
     SPLIT_ANGLE_THRESHOLD = 30.0
 
     def __init__(self, ui):
@@ -120,6 +129,8 @@ class DisplayControl(QObject):
         self._selectedItems: list[DisplayItem] = []
 
         self._pendingSplit: Optional[dict] = None
+
+        self._geometryEditable: bool = True
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
 
@@ -177,12 +188,14 @@ class DisplayControl(QObject):
     def fitView(self):
         self._view.fitCamera()
 
-    def openedStepChanged(self, step):
-        if step >= Step.BASE_GRID.value:
+    def handleWorkingStepChanged(self, step: Step):
+        if step >= Step.BASE_GRID:
             if not self._cutTool.isVisible():
                 self._cutTool.show()
         else:
             self._cutTool.hide()
+
+        self._geometryEditable = (step == Step.GEOMETRY)
 
     def currentStepChanged(self, step):
         if step >= Step.CASTELLATION.value:
@@ -237,6 +250,7 @@ class DisplayControl(QObject):
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
         self._menu.noCutActionTriggered.connect(self._applyCutOption)
+        self._menu.renameTriggered.connect(self.renameTriggered)
 
         self._view.cellSelected.connect(self._onCellSelected)
         self._menu.splitActionTriggered.connect(self._onSplitTriggered)
@@ -247,7 +261,7 @@ class DisplayControl(QObject):
             return
 
         hasPendingSplit = self._isPendingSplitForSelection()
-        self._menu.execute(pos, properties, hasPendingSplit)
+        self._menu.execute(pos, properties, self._geometryEditable, hasPendingSplit)
         self._view.rightButtonReleaseEvent()
 
     def _showContextMenu(self, pos):

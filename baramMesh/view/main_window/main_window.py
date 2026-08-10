@@ -26,6 +26,7 @@ from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDial
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
+from baramMesh.db.configurations_schema import Step
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from baramMesh.view.display_control.display_control import DisplayControl
@@ -189,8 +190,10 @@ class MainWindow(QMainWindow):
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
 
-        self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
+        self._stepManager.workingStepChanged.connect(self._displayControl.handleWorkingStepChanged)
         self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
+
+        self._displayControl.renameTriggered.connect(self._stepManager.page(Step.GEOMETRY).openRenameDialog)
 
         snappyHexMesh.snappyStarted.connect(self._disableMenubar)
         snappyHexMesh.snappyStopped.connect(self._enableMenubar)

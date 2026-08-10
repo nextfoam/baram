@@ -3,15 +3,16 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QObject, Signal
-
 import qasync
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QStackedWidget
 
-from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from libbaram.utils import rmtree
+from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import Step
+from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from baramMesh.view.step_page import StepPage
 from baramMesh.view.geometry.geometry_page import GeometryPage
 from baramMesh.view.base_grid.base_grid_page import BaseGridPage
@@ -19,8 +20,9 @@ from baramMesh.view.castellation.castellation_page import CastellationPage
 from baramMesh.view.snap.snap_page import SnapPage
 from baramMesh.view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
 from baramMesh.view.export.export_page import ExportPage
+from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
+from baramMesh.view.main_window.naviagtion_view import NavigationView
 from baramMesh.view.region.region_page import RegionPage
-from widgets.async_message_box import AsyncMessageBox
 
 
 class ButtonID(Enum):
@@ -81,18 +83,17 @@ class StepManager(QObject):
     displayStepChanged = Signal(Step)
     workingStepChanged = Signal(Step)
 
-    def __init__(self, navigation, ui):
+    def __init__(self, navigation: NavigationView, ui: Ui_MainWindow):
         super().__init__()
 
-        self._navigation = navigation
-        self._workingStep = Step.NONE
-        self._contentStack = ui.content
-        self._buttons = StepControlButtons(ui)
-        self._contentPages = {}
+        self._navigation: NavigationView = navigation
+        self._workingStep: Step = Step.NONE
+        self._contentStack: QStackedWidget = ui.content
+        self._buttons: StepControlButtons = StepControlButtons(ui)
 
-        self._batchRunning = False
+        self._batchRunning: bool = False
 
-        self._pages = {
+        self._pages: dict[Step, StepPage] = {
             Step.NONE: StepPage(ui, None),
             Step.GEOMETRY: GeometryPage(ui),
             Step.REGION: RegionPage(ui),
@@ -115,7 +116,7 @@ class StepManager(QObject):
         step = Step.GEOMETRY
         while step < savedStep and self._pages[step].isNextStepAvailable():
             self._navigation.enableStep(step)
-            step += 1
+            step = step.next()
 
         for s in range(step + 1, Step.LAST_STEP + 1):
             self._navigation.disableStep(s)
@@ -135,13 +136,17 @@ class StepManager(QObject):
     def currentPage(self):
         return self._pages[self._navigation.currentStep()]
 
+    def page(self, step: Step):
+        return self._pages[step]
+
     async def saveCurrentPage(self):
         return await self.currentPage().save()
 
     def openNextStep(self):
         if self._workingStep >= Step.LAST_STEP:
             return
-        self._open(self._workingStep + 1)
+
+        self._open(self._workingStep.next())
 
     def retranslatePages(self):
         for page in self._pages.values():
@@ -167,7 +172,7 @@ class StepManager(QObject):
     def _isWorkingStep(self, step):
         return step == self._workingStep
 
-    def _setWorkingStep(self, step):
+    def _setWorkingStep(self, step: Step):
         self._pages[step].unlock()
         self._navigation.setWorkingStep(step)
         self._workingStep = step
@@ -178,13 +183,13 @@ class StepManager(QObject):
 
         self.workingStepChanged.emit(step)
 
-    def _open(self, step):
+    def _open(self, step: Step):
         self._pages[step].open()
         self._navigation.setCurrentStep(step)
         self._setWorkingStep(step)
 
     @qasync.asyncSlot()
-    async def _moveToStep(self, step, prev):
+    async def _moveToStep(self, step: Step, prev: Step):
         if step == prev:
             return
 

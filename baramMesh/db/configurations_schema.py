@@ -24,6 +24,9 @@ class Step(IntEnum):
 
     LAST_STEP = EXPORT
 
+    def next(self):
+        return Step(self + 1)
+
 
 class GeometryType(Enum):
     SURFACE = 'surface'
