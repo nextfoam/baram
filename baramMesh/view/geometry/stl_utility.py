@@ -7,8 +7,8 @@ from pathlib import Path
 
 from vtkmodules.vtkCommonCore import vtkIdTypeArray, vtkIdList, vtkIntArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray, vtkCell, vtkLine, vtkDataObject
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkIdFilter, vtkFeatureEdges, \
-    vtkPolyDataEdgeConnectivityFilter, vtkThreshold, vtkCleanPolyData
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkIdFilter, vtkFeatureEdges, vtkOrientPolyData
+from vtkmodules.vtkFiltersCore import vtkPolyDataEdgeConnectivityFilter, vtkThreshold, vtkCleanPolyData
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkFiltersModeling import vtkSelectEnclosedPoints
 from vtkmodules.vtkFiltersVerdict import vtkCellSizeFilter
@@ -228,8 +228,15 @@ class StlImporter:
         cleanFilter.SetInputData(reader.GetOutput())
         cleanFilter.Update()
 
+        orientFilter = vtkOrientPolyData()
+        orientFilter.SetInputData(cleanFilter.GetOutput())
+        orientFilter.ConsistencyOn()
+        orientFilter.AutoOrientNormalsOn()
+        orientFilter.FlipNormalsOff()
+        orientFilter.Update()
+
         cellSizeFilter = vtkCellSizeFilter()
-        cellSizeFilter.SetInputData(cleanFilter.GetOutput())
+        cellSizeFilter.SetInputData(orientFilter.GetOutput())
         cellSizeFilter.Update()
 
         threshold = vtkThreshold()
