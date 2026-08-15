@@ -7,8 +7,6 @@ from PySide6.QtWidgets import QWidget
 
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.openfoam.file_system import FileSystem
-from widgets.async_message_box import AsyncMessageBox
 
 from .graphic_dialog import GraphicDialog
 from .graphic_widget_ui import Ui_GraphicWidget
@@ -36,15 +34,7 @@ class GraphicWidget(QWidget):
         self._ui.description.setText(f'Colored by {self._graphic.field.text} at time {self._graphic.time}')
 
     async def edit(self):
-        times = FileSystem.times()
-        if self._graphic.time not in times:
-            if not await AsyncMessageBox().confirm(
-                    self,
-                    self.tr('Warning'),
-                    self.tr('Configured time folder is not in the file system. Time will be reconfigured if you proceed. Proceed?')):
-                return
-
-        self._dialog = GraphicDialog(self, self._graphic, times)
+        self._dialog = GraphicDialog(self, self._graphic)
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 

@@ -31,6 +31,7 @@ from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDial
 
 from baramFlow.app import app
 from baramFlow.base import expert_mode
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.base.model.model import ModelManager
@@ -306,6 +307,8 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
 
+        EventBus().onGraphicsPlaybackChanged.connect(self._graphicsPlaybackChanged)
+
         expert_mode.registerObserver(self)
 
     def _disconnectSignalsSlots(self):
@@ -317,6 +320,14 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         GraphicsDB().reportAdded.disconnect(self._reportAdded)
         GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
         GraphicsDB().removingReport.disconnect(self._reportRemoving)
+
+        EventBus().onGraphicsPlaybackChanged.disconnect(self._graphicsPlaybackChanged)
+
+    def _graphicsPlaybackChanged(self, playing: bool):
+        self._ui.navigatorView.setEnabled(not playing)
+        self._ui.formView.setEnabled(not playing)
+        self._ui.menubar.setEnabled(not playing)
+        self._dockView.setTabSwitchingEnabled(not playing)
 
     @qasync.asyncSlot()
     async def _saveSlot(self):

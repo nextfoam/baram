@@ -52,7 +52,7 @@ class IsoSurfaceDialog(QDialog):
         if isNew:
             self._ui.ok.setText('Create')
 
-        self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
+        self._timeSlider = TimeSlider(self._ui.slider, self._ui.lastTime)
         self._timeSlider.updateTimeValues(times)
         self._timeSlider.setCurrentTime(times[-1])
 

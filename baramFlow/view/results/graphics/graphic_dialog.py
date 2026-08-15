@@ -20,13 +20,12 @@ from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, Se
 from baramFlow.libbaram.collateral_fields import calculateCollateralField
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
-from widgets.time_slider import TimeSlider
 
 from .graphic_dialog_ui import Ui_GraphicDialog
 
 
 class GraphicDialog(QDialog):
-    def __init__(self, parent, graphic: Graphic, times: list[str]):
+    def __init__(self, parent, graphic: Graphic):
         super().__init__(parent)
 
         self._ui = Ui_GraphicDialog()
@@ -38,10 +37,6 @@ class GraphicDialog(QDialog):
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
 
         self._ui.name.setText(graphic.name)
-
-        self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
-        self._timeSlider.updateTimeValues(times)
-        self._timeSlider.setCurrentTime(graphic.time)
 
         self._fields: list[Field] = getAvailableFields(includeCoordinate=True)
         for f in self._fields:
@@ -110,7 +105,7 @@ class GraphicDialog(QDialog):
 
         fieldValueNeedUpdate = False
 
-        time = self._timeSlider.getCurrentTime()
+        time = self._graphic.time
 
         field: Field = self._ui.field.currentData()
         fieldComponent = self._ui.fieldComponent.currentData()
@@ -134,10 +129,6 @@ class GraphicDialog(QDialog):
         progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
 
         self._graphic.name = self._ui.name.text()
-
-        if self._graphic.time != time:
-            self._graphic.time = time
-            fieldValueNeedUpdate = True
 
         if self._graphic.field != field:
             self._graphic.field = field

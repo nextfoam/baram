@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+from typing import Optional
 from uuid import UUID, uuid4
 
 from PySide6.QtGui import QAction, QColor
@@ -15,19 +17,28 @@ from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkTextProperty
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
+from baramFlow.coredb.project import Project
+from baramFlow.solver_status import SolverStatus
 
 from baramFlow.base.constants import FieldType, VectorComponent
+from baramFlow.base.event_bus import EventBus
+from baramFlow.base.field import CollateralField
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.libbaram.collateral_fields import calculateCollateralField
+from baramFlow.openfoam.file_system import FileSystem
 
 from baramFlow.view.results.graphics.colormap_dialog import ColormapDialog
 from baramFlow.view.results.graphics.display_control_panel_ui import Ui_DisplayControlPanel
 from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
+from baramFlow.view.results.graphics.report_time_toolbar import ReportTimeToolbar
 from baramFlow.view.widgets.rendering_view import RenderingView
 
 from resources import resource
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.opacity_dialog import OpacityDialog
 from widgets.overlay_frame import OverlayFrame
 from widgets.rendering.color_scheme import getColorTable
@@ -106,6 +117,24 @@ class VisualReportView(RenderingView):
         self._scaffold2displayControl: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
+        self._playing = False
+        self._stopRequested = False
+        self._globalLocked = False
+        self._closing = False
+        self._activeTask: Optional[asyncio.Task] = None
+
+        self._ui.horizontalLayout.removeItem(self._ui.horizontalSpacer)
+        self._timeToolbar = ReportTimeToolbar()
+        index = self._ui.horizontalLayout.indexOf(self._ui.frame_2)
+        self._ui.horizontalLayout.insertWidget(index, self._timeToolbar, 1)
+        # self._ui.frame is the common ancestor of both this toolbar and self._ui.view
+        # (the 3D view) — the current-time overlay label needs to live there instead
+        # of inside the toolbar itself, or the 3D view would paint over/clip it.
+        self._timeToolbar.setOverlayParent(self._ui.frame)
+        self._timeToolbar.updateTimeValues(FileSystem.times())
+        self._timeToolbar.setCurrentTime(graphic.time)
+        self._updatePlayButtonEnabled()
+
         graphic.rangeMin, graphic.rangeMax = graphic.getValueRange(graphic.useNodeValues, graphic.relevantScaffoldsOnly)
 
         for scaffoldUuid in self._graphic.getScaffolds():
@@ -113,6 +142,8 @@ class VisualReportView(RenderingView):
             displayUuid = self._createDisplayControl(item)
 
             self._scaffold2displayControl[item.scaffoldUuid] = displayUuid
+
+        self._project = Project.instance()
 
         self._view.fitCamera()
 
@@ -138,6 +169,15 @@ class VisualReportView(RenderingView):
         self._toolbar.background1Changed.connect(self._graphic.updateBackground1)
         self._toolbar.background2Changed.connect(self._graphic.updateBackground2)
 
+        self._timeToolbar.timeSelected.connect(self._onTimeSelected)
+        self._timeToolbar.playClicked.connect(self._startPlay)
+        self._timeToolbar.stopClicked.connect(self._requestStop)
+
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
+
+        CaseManager().resultCleared.connect(self._refreshLastTime)
+        EventBus().onGraphicsPlaybackChanged.connect(self._onGlobalPlaybackChanged)
+
     def _disconnectSignalsSlots(self):
         ScaffoldsDB().scaffoldUpdated.disconnect(self._scaffoldUpdated)
 
@@ -145,14 +185,149 @@ class VisualReportView(RenderingView):
         self._graphic.displayItemAdded.disconnect(self._displayItemAdded)
         self._graphic.displayItemRemoving.disconnect(self._displayItemRemoving)
 
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+
+        CaseManager().resultCleared.disconnect(self._refreshLastTime)
+        EventBus().onGraphicsPlaybackChanged.disconnect(self._onGlobalPlaybackChanged)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._overlayFrame.updateGeometry()
 
     def closeEvent(self, event):
+        self._closing = True
+        self._stopRequested = True
+
+        # A play/time-select coroutine can be suspended mid-flight (e.g. awaiting
+        # calculateCollateralField) when the app closes. RenderingView.close(), called
+        # right below via the dock teardown, finalizes the VTK render window
+        # synchronously; if that coroutine were left to resume afterwards it would
+        # call updatePolyMesh() -> Render() on the now-finalized window, which is
+        # what produced the wglMakeCurrent floods. Cancelling stops it at its next
+        # resume point before it can render again.
+        if self._activeTask is not None and not self._activeTask.done():
+            self._activeTask.cancel()
+
         self._disconnectSignalsSlots()
 
         super().closeEvent(event)
+
+    def _refreshLastTime(self):
+        self._timeToolbar.updateTimeValues(FileSystem.times())
+        self._updatePlayButtonEnabled()
+
+    def _solverStatusChanged(self, status, name, liveStatusChanged=False):
+        if status in (SolverStatus.ENDED, SolverStatus.ERROR):
+            self._refreshLastTime()
+
+    def _onGlobalPlaybackChanged(self, playing: bool):
+        if self._playing:
+            return
+
+        self._globalLocked = playing
+        self._timeToolbar.setSliderEnabled(not playing)
+        self._updatePlayButtonEnabled()
+
+    def _updatePlayButtonEnabled(self):
+        self._timeToolbar.setPlayButtonEnabled(not self._globalLocked and self._timeToolbar.hasMoreTimes())
+
+    @qasync.asyncSlot(str)
+    async def _onTimeSelected(self, time: str):
+        if self._playing:
+            return
+
+        if time == self._graphic.time:
+            return
+
+        self._activeTask = asyncio.current_task()
+
+        progressDialog = ProgressDialog(self, self.tr('Graphics Report'), openDelay=500)
+        progressDialog.setLabelText(self.tr('Calculating Collateral Field...'))
+        progressDialog.open()
+
+        if not await self._ensureFieldCalculated(time):
+            if not self._closing:
+                await progressDialog.abort(self.tr('Calculation failed'))
+            else:
+                progressDialog.close()
+            return
+
+        progressDialog.setLabelText(self.tr('Updating Graphics...'))
+
+        await self._changeTime(time)
+
+        progressDialog.close()
+
+        self._updatePlayButtonEnabled()
+
+    def _requestStop(self):
+        self._stopRequested = True
+
+    @qasync.asyncSlot()
+    async def _startPlay(self):
+        if self._playing or self._globalLocked:
+            return
+
+        times = self._timeToolbar.getTimeValues()
+        if self._graphic.time not in times:
+            return
+
+        remaining = times[times.index(self._graphic.time) + 1:]
+        if not remaining:
+            return
+
+        self._activeTask = asyncio.current_task()
+
+        self._playing = True
+        self._stopRequested = False
+        self._timeToolbar.setPlaying(True)
+        self._timeToolbar.setSliderEnabled(False)
+        self._timeToolbar.setBusy(True)
+        EventBus().onGraphicsPlaybackChanged.emit(True)
+
+        try:
+            for time in remaining:
+                if self._stopRequested or self._closing:
+                    break
+
+                if not await self._ensureFieldCalculated(time):
+                    if not self._closing:
+                        await AsyncMessageBox().critical(self, self.tr('Error'),
+                                                         self.tr('Failed to calculate the field at the selected time.'))
+                    break
+
+                await self._changeTime(time)
+
+                if self._closing:
+                    break
+
+                self._timeToolbar.setCurrentTime(time)
+
+                # Workaround to give some time for QT to process events.
+                await asyncio.sleep(0.1)
+
+        finally:
+            self._playing = False
+
+            if not self._closing:
+                self._timeToolbar.setPlaying(False)
+                self._timeToolbar.setSliderEnabled(True)
+                self._timeToolbar.setBusy(False)
+                self._updatePlayButtonEnabled()
+
+            EventBus().onGraphicsPlaybackChanged.emit(False)
+
+    async def _ensureFieldCalculated(self, time: str) -> bool:
+        field = self._graphic.field
+        if not isinstance(field, CollateralField):
+            return True
+
+        rc = await calculateCollateralField([field], [time])
+        return rc == 0
+
+    async def _changeTime(self, time: str):
+        self._graphic.time = time
+        await self._graphic.updatePolyMesh()
 
     def _colormapDoubleClicked(self):
         self._dialog = ColormapDialog(self, self._graphic)

@@ -42,3 +42,4 @@ class EventBus:
 
         self.onSaving = SyncSignal()
         self.onConfigChanged = SyncSignal()
+        self.onGraphicsPlaybackChanged = SyncSignal(bool)  # Graphics Report time-slider playback started/stopped
