@@ -315,7 +315,7 @@ class Project:
 
     @classmethod
     def instance(cls) -> _Project:
-        assert(cls._instance is not None)
+        assert (cls._instance is not None), 'Project instance is not available'
         return cls._instance
 
     @classmethod
