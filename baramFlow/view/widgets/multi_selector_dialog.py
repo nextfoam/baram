@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QDialog, QListWidgetItem
 from PySide6.QtCore import Qt
 
 from .multi_selector_dialog_ui import Ui_MultiSelectorDialog
+from libbaram.sort_utils import naturalKey
 
 
 class ListDataRole(Enum):
@@ -37,7 +38,7 @@ class MultiSelectorDialog(QDialog):
         self._ui.setupUi(self)
 
         self.setWindowTitle(title)
-        for data in items:
+        for data in sorted(items, key=lambda d: naturalKey(d.label)):
             item = QListWidgetItem(data.label)
             item.setData(ListDataRole.USER_DATA.value, data.data)
             item.setData(ListDataRole.FILTERING_TEXT.value, data.text.lower())
