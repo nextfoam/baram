@@ -48,6 +48,12 @@ class FvSolution(DictionaryFile):
 
             return self
 
+        if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/discretizationSchemes/time') == 'secondOrderImplicit':
+            nAlphaSubCycles = 1
+        else:
+            nAlphaSubCycles = self._db.getValue(
+                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/maxIterationsPerTimeStep'),
+
         underRelaxaitionFactorsXPath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors'
 
         # If region name is empty string, the only fvSolution in single region case.
@@ -78,14 +84,12 @@ class FvSolution(DictionaryFile):
             scalarFieldNames = ''
 
         self._data = {
-            # For multiphase model
             'solvers': {
+                # For multiphase model
                 '"alpha.*"': {
                     'nAlphaCorr':
                         self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/numberOfCorrectors'),
-                    'nAlphaSubCycles':
-                        self._db.getValue(
-                            NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/maxIterationsPerTimeStep'),
+                    'nAlphaSubCycles': nAlphaSubCycles,
                     'cAlpha':
                         self._db.getValue(
                             NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/phaseInterfaceCompressionFactor'),
