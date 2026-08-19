@@ -197,7 +197,7 @@ class NumericalConditionsPage(ContentPage):
 
         if compressibleDensity:
             self._ui.pressureVelocity.hide()
-            self._ui.discretizationSchemesMomentumLabel.setPFloat(self.tr('Flow'))
+            self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
             discretizationSchemeTime = (ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT if timeIsTransient 
                                         else ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT)
         else:
@@ -459,6 +459,9 @@ class NumericalConditionsPage(ContentPage):
             self._ui.cutOffMachNumber, fluxType == FluxType.AUSM_UP)
 
     def _handleTimeDiscretizationSchemeChanged(self):
-        self._ui.discretizationSchemes.layout().setRowVisible(
-            self._ui.crankNicolsonBlendingFactor,
-            self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT)
+        if self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT:
+            self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, True)
+            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, False)
+        else:
+            self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, False)
+            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, True)

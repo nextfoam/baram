@@ -153,12 +153,12 @@ class UserDefinedScalarsDialog(QDialog):
                             db.setValue(xpath + '/material', scalar.material)
                             db.setValue(xpath + '/diffusivity/specificationMethod', scalar.specificationMethod.value)
                             if scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:
-                                db.setValue(xpath + '/diffusivity/constant', scalar.constantDiffusivity)
+                                db.setValue(xpath + '/diffusivity/constant', str(scalar.constantDiffusivity))
                             else:
                                 db.setValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient',
-                                            scalar.laminarViscosityCoefficient)
+                                            str(scalar.laminarViscosityCoefficient))
                                 db.setValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient',
-                                            scalar.turbulentViscosityCoefficient)
+                                            str(scalar.turbulentViscosityCoefficient))
 
                     elif not item.isHidden():
                         UserDefinedScalarsDB.addUserDefinedScalar(db, scalar)
