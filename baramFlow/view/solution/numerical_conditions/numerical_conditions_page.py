@@ -197,7 +197,7 @@ class NumericalConditionsPage(ContentPage):
 
         if compressibleDensity:
             self._ui.pressureVelocity.hide()
-            self._ui.discretizationSchemesMomentumLabel.setPFloat(self.tr('Flow'))
+            self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
             discretizationSchemeTime = (ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT if timeIsTransient 
                                         else ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT)
         else:
