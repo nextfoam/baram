@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation, QSize, Signal
+from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation, QSize, Qt, Signal
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtWidgets import QWidget, QFrame, QSizePolicy
 
@@ -11,12 +11,20 @@ from widgets.aspect_ratio_label import AspectRatioLabel
 
 class OverlayFrame(QFrame):
     MARGIN = 0
+    EDGE_GRAB_MARGIN = 6  # width in px of the draggable strip along the right edge
+    MIN_WIDTH = 250
+
     collapsed = Signal(bool)
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
         self.setAutoFillBackground(True)
+        self.setMouseTracking(True)
+
+        self._resizing = False
+        self._resizeStartMouseX = 0
+        self._resizeStartWidth = 0
 
         self._rightArrow = QPixmap(u":/icons/chevron-forward.svg")
         self._leftArrow = QPixmap(u":/icons/chevron-back.svg")
@@ -55,11 +63,24 @@ class OverlayFrame(QFrame):
     def isCollapsed(self) -> bool:
         return self._collapsed
 
-    def updateGeometry(self):
+    def _parentRect(self):
         if hasattr(self.parent(), 'viewport'):
-            parentRect = self.parent().viewport().rect()
+            return self.parent().viewport().rect()
         else:
-            parentRect = self.parent().rect()
+            return self.parent().rect()
+
+    def _maxWidth(self) -> int:
+        parentRect = self._parentRect()
+        if not parentRect:
+            return self.MIN_WIDTH
+
+        return max(self.MIN_WIDTH, parentRect.width() - self._controlHandle.width())
+
+    def _isOnRightEdge(self, pos: QPoint) -> bool:
+        return (not self._collapsed) and ((self.width() - self.EDGE_GRAB_MARGIN) <= pos.x() <= self.width())
+
+    def updateGeometry(self):
+        parentRect = self._parentRect()
 
         if not parentRect:
             return
@@ -78,6 +99,46 @@ class OverlayFrame(QFrame):
             self.updateGeometry()
 
         return super(OverlayFrame, self).showEvent(event)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton and self._isOnRightEdge(event.pos()):
+            self._resizing = True
+            self._resizeStartMouseX = event.globalPos().x()
+            self._resizeStartWidth = self.width()
+            event.accept()
+            return
+
+        return super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._resizing:
+            delta = event.globalPos().x() - self._resizeStartMouseX
+            newWidth = min(max(self._resizeStartWidth + delta, self.MIN_WIDTH), self._maxWidth())
+            self.resize(newWidth, self.height())
+            self.updateGeometry()
+            event.accept()
+            return
+
+        if self._isOnRightEdge(event.pos()):
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
+        else:
+            self.unsetCursor()
+
+        return super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        if self._resizing:
+            self._resizing = False
+            event.accept()
+            return
+
+        return super().mouseReleaseEvent(event)
+
+    def leaveEvent(self, event):
+        if not self._resizing:
+            self.unsetCursor()
+
+        return super().leaveEvent(event)
 
     def _handleClicked(self, ev: QMouseEvent):
         if self._agroup.state() == QAbstractAnimation.Running:
