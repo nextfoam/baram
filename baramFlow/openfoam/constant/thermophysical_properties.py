@@ -286,8 +286,8 @@ def _mixtureTransport(tModel: TurbulenceModel, material: Material):
         sutherland = material.transport.sutherland
 
         return {
-            'As': sutherland.coefficient,
-            'Ts': sutherland.temperature
+            'As': float(sutherland.coefficient),
+            'Ts': float(sutherland.temperature)
         }
 
     # Non=Newtonian Fluid
@@ -542,5 +542,7 @@ class ThermophysicalProperties(DictionaryFile):
                    and energyModelOn
                 else 'false')
         })
+
+        print(self._data)
 
         return self
