@@ -35,8 +35,13 @@ class MeshView(RenderingView):
         self._treeWidget.headerItem().setText(Column.COLOR_COLUMN, '')
 
         self._treeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
-        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+
+        self._treeWidget.header().setSectionsMovable(False)
+
+        self._treeWidget.header().setSectionResizeMode(Column.REGION_COLUMN, QHeaderView.ResizeMode.Interactive)
+        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Interactive)
+        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._treeWidget.header().setSectionResizeMode(Column.COLOR_COLUMN, QHeaderView.ResizeMode.Fixed)
 
         self._menu = QMenu(self._treeWidget)
         self._setUpContextMenu(self._menu)

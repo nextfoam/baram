@@ -79,8 +79,11 @@ class VisualReportView(RenderingView):
 
         self._treeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
 
-        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+        self._treeWidget.header().setSectionsMovable(False)
+
+        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Interactive)
+        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._treeWidget.header().setSectionResizeMode(Column.COLOR_COLUMN, QHeaderView.ResizeMode.Fixed)
 
         self._colormap = ScalarBarWidget(self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
