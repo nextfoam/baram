@@ -459,6 +459,9 @@ class NumericalConditionsPage(ContentPage):
             self._ui.cutOffMachNumber, fluxType == FluxType.AUSM_UP)
 
     def _handleTimeDiscretizationSchemeChanged(self):
-        self._ui.discretizationSchemes.layout().setRowVisible(
-            self._ui.crankNicolsonBlendingFactor,
-            self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT)
+        if self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT:
+            self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, True)
+            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, False)
+        else:
+            self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, False)
+            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, True)
