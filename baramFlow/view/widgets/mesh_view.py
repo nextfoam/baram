@@ -6,6 +6,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QColorDialog, QHeaderView, QMenu, QWidget
 
 from baramFlow.app import app
+from baramFlow.base.event_bus import EventBus
+from baramFlow.coredb.boundary_db import BoundaryType
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.mesh.mesh_model import DisplayMode, MeshModel
 
@@ -108,6 +110,13 @@ class MeshView(RenderingView):
 
         self._opacityDialog.accepted.connect(self._opacityChanged)
         self._colorDialog.accepted.connect(self._colorChanged)
+
+        EventBus().onBoundaryTypeChange.connect(self._onBoundaryTypeChanged)
+
+    def _onBoundaryTypeChanged(self, bcid: str, oldType: BoundaryType, newType: BoundaryType):
+        control = self._controls.get(int(bcid))
+        if control is not None:
+            control.setType(newType)
 
     def _selectedItemsChanged(self):
         for control in self._controls.values():

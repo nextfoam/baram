@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QTreeWidgetItem
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.event_bus import EventBus
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, GeometricalType
@@ -82,14 +83,17 @@ class BoundaryItem(QTreeWidgetItem):
 
         self.treeWidget().setItemWidget(self, 1, widget)
 
+        EventBus().onBoundaryTypeChange.connect(self._onBoundaryTypeChanged, self)
+
     def __lt__(self, other):
         return self._widget.bcname().lower() < other._widget.bcname().lower()
 
     def bctype(self):
         return self._widget.type()
 
-    def reloadType(self):
-        self._widget.setType(BoundaryDB.getBoundaryType(self.type()))
+    def _onBoundaryTypeChanged(self, bcid: str, oldType: BoundaryType, newType: BoundaryType):
+        if bcid == str(self.type()):
+            self._widget.setType(newType)
 
 
 class BoundaryConditionsPage(ContentPage):
@@ -98,7 +102,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui = Ui_BoundaryConditionsPage()
         self._ui.setupUi(self)
 
-        self._boundaries: dict[str: BoundaryItem] = {}
+        self._boundaries: dict[str, BoundaryItem] = {}
 
         self._dialog = None
         self._typePicker = None
@@ -192,12 +196,9 @@ class BoundaryConditionsPage(ContentPage):
             BoundaryService.updateBoundaryType(bcid, bctype)
 
             boundary = BoundaryService.getBoundary(bcid).boundary
-            self._boundaries[bcid].reloadType()
             self._updateEditEnabled()
 
-            if boundary.coupledBoundary != '0':
-                self._boundaries[boundary.coupledBoundary].reloadType()
-            elif BoundaryDB.needsCoupledBoundary(bctype):
+            if boundary.coupledBoundary == '0' and BoundaryDB.needsCoupledBoundary(bctype):
                 if parallel.getNP() > 1 and BoundaryDB.getGeometryType(bctype) in [GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI]:
                     message = self.tr('1. This boundary type requires a coupled boundary. It is configured in the next dialog.\n\n' \
                                       '2. The current decomposed mesh could potentially be incompatible with this boundary type change.' \
@@ -208,9 +209,6 @@ class BoundaryConditionsPage(ContentPage):
                 await AsyncMessageBox().information(self, self.tr('Warning for ')+BoundaryDB.dbBoundaryTypeToText(bctype), message)
 
             self._edit()
-
-    def _onCouplingBoundaryEdited(self):
-        self._boundaries[self._dialog.coupleBoundary()].reloadType()
 
     @qasync.asyncSlot()
     async def _copy(self):
@@ -224,7 +222,6 @@ class BoundaryConditionsPage(ContentPage):
                 return
 
             self._dialog = CopyDialog(self, bcid)
-            self._dialog.boundariesCopied.connect(self._refresh)
             self._dialog.open()
         else:
             await AsyncMessageBox().information(
@@ -239,8 +236,6 @@ class BoundaryConditionsPage(ContentPage):
                 dialogClass = DIALOGS[bctype]
                 if dialogClass:
                     self._dialog = dialogClass(self, str(bcid))
-                    if BoundaryDB.needsCoupledBoundary(bctype):
-                        self._dialog.accepted.connect(self._onCouplingBoundaryEdited)
                     self._dialog.open()
 
     def _showTypePicker(self, bcid, point):
@@ -251,7 +246,3 @@ class BoundaryConditionsPage(ContentPage):
     def _onSelectedBoundaryChanged(self, current):
         self._updateEditEnabled()
         self._updateCopyEnabled()
-
-    def _refresh(self, boundaries):
-        for bcid in boundaries:
-            self._boundaries[str(bcid)].reloadType()

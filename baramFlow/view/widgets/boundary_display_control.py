@@ -89,6 +89,9 @@ class BoundaryDisplayControl(QTreeWidgetItem):
     def did(self) -> int:
         return self._bcid
 
+    def setType(self, bctype: BoundaryType):
+        self.setText(Column.TYPE_COLUMN, BoundaryDB.dbBoundaryTypeToText(bctype))
+
     @property
     def hasFeature(self) -> bool:
         return self._actorInfo.feature is not None

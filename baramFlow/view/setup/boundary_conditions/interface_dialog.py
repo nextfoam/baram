@@ -43,13 +43,10 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
 
         try:
             with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
+                self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
                 self._writeConditions(db, self._xpath + self.RELATIVE_XPATH)
                 self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, True)
-
-                if coupleTypeChanged:
-                    self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
                 super().accept()
         except ValueException as ve:

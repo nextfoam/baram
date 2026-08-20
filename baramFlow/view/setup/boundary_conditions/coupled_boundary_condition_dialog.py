@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import Signal
-
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.services.boundary.boundary_service import BoundaryService
@@ -20,8 +19,6 @@ def changeBoundaryCouple(db, bcid, newCouple):
 
 
 class CoupledBoundaryConditionDialog(ResizableDialog):
-    boundaryTypeChanged = Signal(int)
-
     def __init__(self, parent, bcid):
         super().__init__(parent)
 
@@ -50,8 +47,11 @@ class CoupledBoundaryConditionDialog(ResizableDialog):
         changeBoundaryCouple(db, cpid, self._bcid)
 
         xpath = BoundaryDB.getXPath(cpid)
-        if db.getValue(xpath+'/physicalType') != bctype.value:
+        oldType = BoundaryType(db.getValue(xpath+'/physicalType'))
+        if oldType != bctype:
             db.setValue(xpath+'/physicalType', bctype.value)
+
+            EventBus().onBoundaryTypeChange.emit(cpid, oldType, bctype)
 
             interactionType = DPMModelManager.getDefaultPatchInteractionType(bctype)
             db.setValue(xpath+'/patchInteraction/type', interactionType.value)
