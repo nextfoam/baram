@@ -32,7 +32,7 @@ class ColormapDialog(ResizableDialog):
         self._colorbarLayout.setContentsMargins(0, 0, 0, 0)
 
         self._ui.fieldDisplayName.setText(graphic.fieldDisplayName)
-        self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression(r'(^\p{L}$)|(^\p{L}[\p{L}\p{N}\p{Z}_\(\)]*[\p{L}\p{N}_\)]$)')))
+        # self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression(r'(^\p{L}$)|(^\p{L}[\p{L}\p{N}\p{Z}_\(\)]*[\p{L}\p{N}_\)]$)')))
 
         self._ui.numberOfLevels.setText(str(graphic.numberOfLevels))
         self._ui.numberOfLevels.setValidator(QIntValidator(1, 256))
