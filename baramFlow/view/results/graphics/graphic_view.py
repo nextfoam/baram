@@ -330,6 +330,7 @@ class VisualReportView(RenderingView):
 
     async def _changeTime(self, time: str):
         self._graphic.time = time
+        self._graphic.saveToCoreDB()
         await self._graphic.updatePolyMesh()
 
     def _colormapDoubleClicked(self):
