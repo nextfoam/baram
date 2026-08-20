@@ -64,7 +64,7 @@ class VisualReportView(RenderingView):
         self._overlayFrame = OverlayFrame(self._view)
 
         self._displayControlUi = Ui_DisplayControlPanel()
-        self._displayControlUi.setupUi(self._overlayFrame)
+        self._displayControlUi.setupUi(self._overlayFrame.content())
 
         self._treeWidget = self._displayControlUi.treeWidget
         self._treeWidget.headerItem().setText(Column.NAME_COLUMN, self.tr('Name'))
@@ -195,7 +195,7 @@ class VisualReportView(RenderingView):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._overlayFrame.updateGeometry()
+        self._overlayFrame.reflow()
 
     def closeEvent(self, event):
         self._closing = True
