@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
+
 from widgets.async_message_box import AsyncMessageBox
 
 import baramFlow.openfoam.solver
@@ -123,7 +125,7 @@ class NumericalConditionsPage(ContentPage):
         self._ui.discretizationSchemeVolumeFraction.setEnabled(multiphaseOn and not compressibleDensity)
 
         if ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID:
-            self._handleTimeDiscretizationSchemeChanged()
+            self._updateByTimeDiscretizationSchemeSelection()
         else:
             self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, False)
 
@@ -458,10 +460,24 @@ class NumericalConditionsPage(ContentPage):
         self._ui.densityBasedSolverParametersLayout.setRowVisible(
             self._ui.cutOffMachNumber, fluxType == FluxType.AUSM_UP)
 
-    def _handleTimeDiscretizationSchemeChanged(self):
+    def _updateByTimeDiscretizationSchemeSelection(self):
         if self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT:
             self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, True)
-            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, False)
+            self._ui.multiphaseMaxIterationsPerTimeStep.setEnabled(False)
         else:
             self._ui.discretizationSchemes.layout().setRowVisible(self._ui.crankNicolsonBlendingFactor, False)
-            self._ui.multiphaseSteps.layout().setRowVisible(self._ui.multiphaseMaxIterationsPerTimeStep, True)
+            self._ui.multiphaseMaxIterationsPerTimeStep.setEnabled(True)
+
+    @qasync.asyncSlot()
+    async def _handleTimeDiscretizationSchemeChanged(self):
+        if (self._ui.discretizationSchemeTime.currentData() == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT
+                and int(self._ui.multiphaseMaxIterationsPerTimeStep.text()) != 1):
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), 'To select "Second Order Implicit" Time Discretization,'
+                                              '"Max. Iteration per Time Step" of Multiphase must be 1')
+            self._ui.discretizationSchemeTime.setCurrentIndex(
+                self._ui.discretizationSchemeTime.findData(ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT))
+
+            return
+
+        self._updateByTimeDiscretizationSchemeSelection()

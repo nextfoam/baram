@@ -1530,6 +1530,9 @@ def _version_13(root: etree.Element, path):
             logger.debug(f'    Adding "crankNicolsonBlendingFactor" to {p}')
             p.insert(1, E('crankNicolsonBlendingFactor', '0.9'))
 
+        if p.find('time', namespaces=_nsmap).text == 'secondOrderImplicit':
+            p.getparent().find('multiphase/maxIterationsPerTimeStep', namespaces=_nsmap).text = '1'
+
     for p in root.findall('graphics/graphic', namespaces=_nsmap):
         if p.find('labelFormat', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "labelFormat" to {p}')
