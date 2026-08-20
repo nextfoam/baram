@@ -28,7 +28,7 @@ class MeshView(RenderingView):
         self._overlayFrame = OverlayFrame(self._view)
 
         self._displayControlUi = Ui_BoundaryDisplayControlPanel()
-        self._displayControlUi.setupUi(self._overlayFrame)
+        self._displayControlUi.setupUi(self._overlayFrame.content())
 
         self._treeWidget = self._displayControlUi.treeWidget
         self._treeWidget.headerItem().setText(Column.REGION_COLUMN, self.tr('Region'))
@@ -55,7 +55,7 @@ class MeshView(RenderingView):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._overlayFrame.updateGeometry()
+        self._overlayFrame.reflow()
 
     def rebuildBoundaryDisplayControls(self, meshModel: MeshModel, boundaryInfos):
         for control in self._controls.values():
