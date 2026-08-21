@@ -50,6 +50,9 @@ class TimeSlider(QObject):
             self._slider.setValue(index)
 
     def updateTimeValues(self, timeValues: list[str]):
+        if len(timeValues) == 0:
+            timeValues = ['0']
+            
         if (len(self._timeValues) == len(timeValues)
             and self._timeValues[-1] == timeValues[-1]):
             return
