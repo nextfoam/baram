@@ -123,6 +123,7 @@ class VisualReportView(RenderingView):
         self._playing = False
         self._stopRequested = False
         self._globalLocked = False
+        self._timeChanging = False
         self._closing = False
         self._activeTask: Optional[asyncio.Task] = None
 
@@ -236,39 +237,52 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot(str)
     async def _onTimeSelected(self, time: str):
-        if self._playing:
+        # Clicking (or holding) the slider groove fires one valueChanged per
+        # click regardless of setTracking(False) -- that only suppresses
+        # intermediate events during a handle *drag*. Without this guard,
+        # several quick clicks before the slider below is actually disabled
+        # could each spawn an overlapping _onTimeSelected task, racing on
+        # self._graphic's mesh state and on OpenFOAMReader.
+        if self._playing or self._globalLocked or self._timeChanging:
             return
 
         if time == self._graphic.time:
             return
 
+        self._timeChanging = True
         self._activeTask = asyncio.current_task()
+        self._timeToolbar.setSliderEnabled(False)
+        self._timeToolbar.setPlayButtonEnabled(False)
 
         progressDialog = ProgressDialog(self, self.tr('Graphics Report'), openDelay=500)
         progressDialog.setLabelText(self.tr('Calculating Collateral Field...'))
         progressDialog.open()
 
-        if not await self._ensureFieldCalculated(time):
+        try:
+            if not await self._ensureFieldCalculated(time):
+                if not self._closing:
+                    await progressDialog.abort(self.tr('Calculation failed'))
+                else:
+                    progressDialog.close()
+                return
+
+            progressDialog.setLabelText(self.tr('Updating Graphics...'))
+
+            await self._changeTime(time)
+        finally:
+            progressDialog.close()
+            self._timeChanging = False
+
             if not self._closing:
-                await progressDialog.abort(self.tr('Calculation failed'))
-            else:
-                progressDialog.close()
-            return
-
-        progressDialog.setLabelText(self.tr('Updating Graphics...'))
-
-        await self._changeTime(time)
-
-        progressDialog.close()
-
-        self._updatePlayButtonEnabled()
+                self._timeToolbar.setSliderEnabled(True)
+                self._updatePlayButtonEnabled()
 
     def _requestStop(self):
         self._stopRequested = True
 
     @qasync.asyncSlot()
     async def _startPlay(self):
-        if self._playing or self._globalLocked:
+        if self._playing or self._globalLocked or self._timeChanging:
             return
 
         times = self._timeToolbar.getTimeValues()
