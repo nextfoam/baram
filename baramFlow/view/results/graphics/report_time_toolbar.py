@@ -209,6 +209,5 @@ class ReportTimeToolbar(QWidget):
     def getTimeValues(self) -> list[str]:
         return self._timeSlider.getTimeValues()
 
-    def hasMoreTimes(self) -> bool:
-        timeValues = self.getTimeValues()
-        return bool(timeValues) and self.getCurrentTime() != timeValues[-1]
+    def hasMultipleTimes(self) -> bool:
+        return len(self.getTimeValues()) > 1

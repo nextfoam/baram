@@ -233,7 +233,7 @@ class VisualReportView(RenderingView):
         self._updatePlayButtonEnabled()
 
     def _updatePlayButtonEnabled(self):
-        self._timeToolbar.setPlayButtonEnabled(not self._globalLocked and self._timeToolbar.hasMoreTimes())
+        self._timeToolbar.setPlayButtonEnabled(not self._globalLocked and self._timeToolbar.hasMultipleTimes())
 
     @qasync.asyncSlot(str)
     async def _onTimeSelected(self, time: str):
@@ -286,12 +286,12 @@ class VisualReportView(RenderingView):
             return
 
         times = self._timeToolbar.getTimeValues()
-        if self._graphic.time not in times:
+        if self._graphic.time not in times or len(times) < 2:
             return
 
-        remaining = times[times.index(self._graphic.time) + 1:]
-        if not remaining:
-            return
+        # At the last time step there's nothing left ahead to play, so restart
+        # from the first time step instead of doing nothing.
+        remaining = times[times.index(self._graphic.time) + 1:] or times
 
         self._activeTask = asyncio.current_task()
 
