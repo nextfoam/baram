@@ -188,7 +188,7 @@ class MaterialDB(object):
         return xml.getText(coredb.CoreDB().getElement(MaterialDB.getXPath(mid) + '/specie'), 'mixture')
 
     @classmethod
-    def getMaterials(cls, type_=None) -> list[(str, str, str, str)]:
+    def getMaterials(cls, type_=None) -> list[tuple[str, str, str, str]]:
         """Returns configured materials
 
         Returns configured materials with name, chemicalFormula and phase
