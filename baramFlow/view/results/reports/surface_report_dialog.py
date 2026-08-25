@@ -59,9 +59,9 @@ class SurfaceReportDialog(QDialog):
         self._ui.field.setCurrentIndex(0)
 
         if ModelsDB.isMultiphaseModelOn():
-            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_PHASES)
+            self._ui.field.insertItem(0, self.tr('Fluid'), ALL_PHASES)
         else:
-            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_SPECIES)
+            self._ui.field.insertItem(0, self.tr('Fluid'), ALL_SPECIES)
 
         if self._ui.field.currentIndex() == 0:
             self._ui.field.setCurrentIndex(1)

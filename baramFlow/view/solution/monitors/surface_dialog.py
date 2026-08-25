@@ -44,9 +44,9 @@ class SurfaceDialog(QDialog):
 
         loadFieldsComboBox(self._ui.field)
         if ModelsDB.isMultiphaseModelOn():
-            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_PHASES)
+            self._ui.field.insertItem(0, self.tr('Fluid'), ALL_PHASES)
         else:
-            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_SPECIES)
+            self._ui.field.insertItem(0, self.tr('Fluid'), ALL_SPECIES)
 
         self._connectSignalsSlots()
         self._load()
