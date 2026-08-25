@@ -76,7 +76,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'separationVector')
 
         self._boundaryDict.content[bcname]['type'] = GeometricalType.MAPPED_WALL.value
-        self._boundaryDict.content[bcname]['sampleMode'] = 'nearestPatchFace'
+        self._boundaryDict.content[bcname]['sampleMode'] = 'nearestPatchFaceAMI'
         if self._rname:
             self._boundaryDict.content[bcname]['sampleRegion'] = BoundaryDB.getBoundaryRegion(cpid)
         else:
