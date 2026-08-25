@@ -1,20 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.sync_signal import SyncSignal
+
 from baramFlow.base.boundary.boundary_data import BoundaryData
 from baramFlow.base.cell_zone.cell_zone import CellZoneData
 from baramFlow.base.project_data import projectData
 from baramFlow.base.region.poly_mesh import PolyMeshRegion
-from baramFlow.base.region.region_patch import RegionInitializationPatch
+from baramFlow.base.region.region_data import RegionData
+from baramFlow.base.region.region_patch import RegionInitializationPatch, RegionMaterialsUpdate
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb import CoreDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.region_db import RegionDB
 
 REGIONS_XPATH = '/regions'
 
 
 class RegionService:
+    materialsUpdateRequested = SyncSignal(RegionMaterialsUpdate)
+
+    @staticmethod
+    def getRegion(rname: str):
+        return RegionData.fromElement(CoreDB().getElement(RegionDB.getXPath(rname)))
+
     @staticmethod
     def getBoundary(bcid: str):
         RegionService.reloadBoundary(bcid)    # ToDo: Delete if database synchronization is guaranteed.
@@ -86,6 +96,12 @@ class RegionService:
     @staticmethod
     def updatePolyMeshData(polyMeshBoundaries: dict):
         projectData.regions.updatePolyMeshData(polyMeshBoundaries)
+
+    @classmethod
+    def updateMaterials(cls, data: RegionMaterialsUpdate):
+        cls.materialsUpdateRequested.emit(data)
+
+        RegionDB.updateMaterials(data.rname, data.material, data.secondaryMaterials)
 
     @staticmethod
     def updateInitialization(patches: list[RegionInitializationPatch], writer: CoreDBWriter = None):

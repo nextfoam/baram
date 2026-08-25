@@ -9,6 +9,7 @@ from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.cell_zone.cell_zone import SpecificationMethod, CellZoneData
 from baramFlow.base.material.material import MaterialType
+from baramFlow.base.region.region_patch import RegionMaterialsUpdate
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType
 from baramFlow.coredb.general_db import GeneralDB
@@ -17,6 +18,7 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceFields
 from baramFlow.services.cell_zone.cell_zone_service import CellZoneService
+from baramFlow.services.region.region_service import RegionService
 from .actuator_disk_widget import ActuatorDiskWidget
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .constant_source_widget import ConstantSourceWidget
@@ -164,6 +166,9 @@ class CellZoneConditionDialog(QDialog):
         try:
             with coredb.CoreDB() as db:
                 if self._cellZone.isRegion():
+                    RegionService.updateMaterials(RegionMaterialsUpdate(rname = self._rname,
+                                                                        material=self._material,
+                                                                        secondaryMaterials=self._secondaryMaterials))
                     RegionDB.updateMaterials(self._rname, self._material, self._secondaryMaterials)
                     if not self._materialsWidget.updateDB(db):
                         return
@@ -248,10 +253,8 @@ class CellZoneConditionDialog(QDialog):
             self.accept()
         except KeyError as e:
             await AsyncMessageBox().information(self, self.tr("Input Error"), str(e))
-        # except ConfigurationException as c:
-        #     await AsyncMessageBox().information(self, self.tr("Input Error"), str(c))
-        # except ValueException as v:
-        #     await AsyncMessageBox().information(self, self.tr("Input Error"), dbErrorToMessage(v))
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), str(e))
 
     def _load(self):
         db = coredb.CoreDB()

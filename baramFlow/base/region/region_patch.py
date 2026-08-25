@@ -8,6 +8,13 @@ from baramFlow.coredb.region_db import RegionDB
 
 
 @dataclass
+class RegionMaterialsUpdate:
+    rname: str
+    material: str
+    secondaryMaterials: list[str]
+
+
+@dataclass
 class RegionInitializationPatch:
     rname: str
 

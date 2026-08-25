@@ -33,7 +33,6 @@ from baramFlow.app import app
 from baramFlow.base import expert_mode
 from baramFlow.base.event_bus import EventBus
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.base.model.model import ModelManager
 from baramFlow.base.project_data import projectData
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
@@ -52,6 +51,7 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.solver_status import SolverStatus
 from baramFlow.view.dock_widgets.chart_dock import ChartDock
 from baramFlow.view.dock_widgets.console_dock import ConsoleDock
@@ -984,7 +984,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     def _deleteMeshFilesAndData(self):
         db = coredb.CoreDB()
         db.clearRegions()
-        MonitorManager.clearMonitors()
+        MonitorService.clearMonitors()
         FileSystem.deleteMesh()
         self.meshUpdated()
 

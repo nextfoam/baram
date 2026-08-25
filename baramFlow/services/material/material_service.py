@@ -45,8 +45,12 @@ class MaterialService:
     def getMaterial(mid: str):
         return Material.fromElement(CoreDB().getElement(MaterialDB.getXPath(mid)))
 
+    @classmethod
+    def getName(cls, mid: str):
+        return CoreDB().getValue(MaterialDB.getXPath(mid) + '/name')
+
     @staticmethod
-    def getSpeciesIDSInMixture(mid: str) -> dict[str, str]:
+    def getSpeciesInMixture(mid: str) -> dict[str, str]:
         return {e.getparent().get('mid'): e.getparent().find('name', namespaces=nsmap).text
                 for e in CoreDB().getElements(f'{MATERIAL_XPATH}/specie[mixture="{mid}"]')}
 
@@ -76,7 +80,7 @@ class MaterialService:
 
                 mixtureID = data.specieProperties.mixtureID
                 copyTransportProperties(mixtureID, properties)
-                for mid in cls.getSpeciesIDSInMixture(mixtureID):
+                for mid in cls.getSpeciesInMixture(mixtureID):
                     copyTransportProperties(mid, properties)
 
             db.increaseConfigCount()

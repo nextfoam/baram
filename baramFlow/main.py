@@ -30,6 +30,7 @@ from analytics.events import EVENT_LOOP_ERROR
 
 from baramFlow.app import app
 from baramFlow.app_plug_in import AppPlugIn
+from baramFlow.base.policies import connectSignalsToPolicies
 from baramFlow.view.main_window.start_window import Baram
 from baramFlow.coredb.app_settings import AppSettings
 
@@ -83,6 +84,7 @@ def main():
 
     app.setupApplication(flowAppProperties)
     app.setPlug(AppPlugIn())
+    connectSignalsToPolicies()
 
     Analytics().configure(
         app_name=flowAppProperties.name,

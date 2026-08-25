@@ -15,11 +15,13 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 from widgets.selector_dialog import SelectorDialog
 
-from baramFlow.base.constants import FieldType, VectorComponent
-from baramFlow.base.field import VELOCITY, CollateralField, Field, SpecieField, UserScalarField
+from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
+from baramFlow.base.field import CollateralField, Field, SpecieField, UserScalarField, ALL_PHASES, ALL_SPECIES
+from baramFlow.base.material.constants import MaterialType
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.monitor_db import MonitorDB
-from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.libbaram.collateral_fields import collateralFieldDict
 from baramFlow.openfoam import parallel
@@ -27,10 +29,13 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict
 from baramFlow.openfoam.function_objects.components import foComponentsReport
 from baramFlow.openfoam.function_objects.mag import foMagReport
+from baramFlow.openfoam.function_objects.material_fields import foComplementAlphaPhiReport
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueReport
 from baramFlow.openfoam.post_processing.post_file_reader import readPostFile
 from baramFlow.openfoam.solver import findSolver
 from baramFlow.openfoam.solver_field import getSolverComponentName, getSolverFieldName
+from baramFlow.services.material.material_service import MaterialService
+from baramFlow.services.region.region_service import RegionService
 from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 
 from .surface_report_dialog_ui import Ui_SurfaceReportDialog
@@ -52,6 +57,15 @@ class SurfaceReportDialog(QDialog):
         loadFieldsComboBox(self._ui.field)
 
         self._ui.field.setCurrentIndex(0)
+
+        if ModelsDB.isMultiphaseModelOn():
+            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_PHASES)
+        else:
+            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_SPECIES)
+
+        if self._ui.field.currentIndex() == 0:
+            self._ui.field.setCurrentIndex(1)
+        self._ui.field.view().setRowHidden(0, True)
 
         field: Field = self._ui.field.currentData()
         if field.type == FieldType.VECTOR:
@@ -102,26 +116,69 @@ class SurfaceReportDialog(QDialog):
 
         functions = {}
 
-        if reportType == SurfaceReportType.MASS_FLOW_RATE:
+        if isinstance(field, SpecieField):
+            if field != ALL_SPECIES:
+                if reportType == SurfaceReportType.VOLUME_FLOW_RATE:
+                    await AsyncMessageBox().information(
+                        self, self.tr("Input Error"),
+                        self.tr("Volume Flow Rate does not support individual species."))
+                    self._ui.compute.setEnabled(True)
+                    return
+
+                region = RegionService.getRegion(rname)
+                if (MaterialService.getMaterial(region.material).type != MaterialType.MIXTURE
+                        or field.codeName not in MaterialService.getSpeciesInMixture(region.material)):
+                    await AsyncMessageBox().information(
+                        self, self.tr("Input Error"),
+                        self.tr("The region where the material is configured does not contain selected surface."))
+                    self._ui.compute.setEnabled(True)
+                    return
+
+        if reportType == SurfaceReportType.MASS_FLOW_RATE or reportType == SurfaceReportType.VOLUME_FLOW_RATE:
             solverFieldName = 'phi'
-            functions[foName] = foSurfaceFieldValueReport(BoundaryDB.getBoundaryName(self._surface), solverFieldName, reportType, rname)
 
-        elif reportType == SurfaceReportType.VOLUME_FLOW_RATE:
-            solverFieldName = 'U'
-            functions[foName] = foSurfaceFieldValueReport(BoundaryDB.getBoundaryName(self._surface), solverFieldName, reportType, rname)
+            if field.category == FieldCategory.PHASE:
+                db = CoreDBReader()
+                region = db.getRegionProperties(rname)
+                primary = MaterialService.getMaterial(region.mid)
+                secondary = MaterialService.getMaterial(region.secondaryMaterials[0])
 
+                phase = None
+                if field == ALL_PHASES:
+                    if reportType == SurfaceReportType.MASS_FLOW_RATE:
+                        solverFieldName = 'rhoPhi'
+                elif findSolver() == 'interFoam' and field.codeName == primary.mid:
+                    phase = primary
+                    solverFieldName = f'alphaPhi0.{phase.name}'
+                    functions[solverFieldName] = foComplementAlphaPhiReport(solverFieldName, secondary.name)
+                else:
+                    phase = MaterialService.getMaterial(field.codeName)
+                    solverFieldName = f'alphaPhi0.{phase.name}'
+
+                functions[foName] = foSurfaceFieldValueReport(BoundaryDB.getBoundaryName(self._surface), solverFieldName, reportType, rname)
+
+                if reportType == SurfaceReportType.MASS_FLOW_RATE and field != ALL_PHASES:
+                    functions[foName]['scaleFactor'] = db.getDensity([(phase.mid, 1)],
+                                                              region.initialTemperature,
+                                                              region.initialPressure)
+            elif field.category == FieldCategory.SPECIE:
+                functions[foName] = foSurfaceFieldValueReport(
+                    BoundaryDB.getBoundaryName(self._surface), solverFieldName, reportType, rname)
+
+                if reportType == SurfaceReportType.VOLUME_FLOW_RATE:
+                    # field == ALL_SPECIES (Individual species are not supported)
+                    functions[foName]['operation'] = 'weightedSum'
+                    functions[foName]['weightField'] = 'faceRho'
+                    functions[foName]['inverseWeight'] = 'true'
+                elif field != ALL_SPECIES:
+                    # reportType == SurfaceReportType.MASS_FLOW_RATE
+                    functions[foName]['operation'] = 'weightedSum'
+                    functions[foName]['weightField'] = MaterialService.getMaterial(field.codeName).name
         else:
             solverFieldName = getSolverFieldName(field)
 
             if isinstance(field, CollateralField):
                 functions.update(collateralFieldDict([field]))  # FO for generating the collateral field
-
-            elif isinstance(field, SpecieField):
-                if field.codeName not in RegionDB.getSecondaryMaterials(rname):
-                    await AsyncMessageBox().information(self, self.tr("Input Error"),
-                                                        self.tr("The region where the material is configured does not contain selected surface."))
-                    self._ui.compute.setEnabled(True)
-                    return
 
             elif isinstance(field, UserScalarField):
                 if rname != UserDefinedScalarsDB.getRegion(field.codeName):
@@ -163,7 +220,7 @@ class SurfaceReportDialog(QDialog):
         foDict.fullPath().unlink()
 
         if rc != 0:
-            await progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed 1'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -173,7 +230,7 @@ class SurfaceReportDialog(QDialog):
         foFiles:  list[Path] = list(foPath.glob('**/surfaceFieldValue.dat'))
 
         if len(foFiles) < 1:
-            await progressDialog.abort(self.tr('Computing failed'))
+            await progressDialog.abort(self.tr('Computing failed 2'))
             self._ui.resultValue.setText('0')
             self._ui.compute.setEnabled(True)
             return
@@ -184,7 +241,7 @@ class SurfaceReportDialog(QDialog):
 
         utils.rmtree(foPath)
 
-        await progressDialog.finish(self.tr('Calculation Completed'))
+        await progressDialog.abort(self.tr('Calculation Completed'))
 
         self._ui.compute.setEnabled(True)
 
@@ -203,21 +260,36 @@ class SurfaceReportDialog(QDialog):
 
     def _updateInputFields(self):
         reportType: SurfaceReportType = self._ui.reportType.currentData()
+        isFlowRateType = reportType in [SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE]
+        hasMultiMaterials = ModelsDB.isMultiphaseModelOn() or ModelsDB.isSpeciesModelOn()
 
-        if reportType in [SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE]:
-            self._ui.field.setEnabled(False)
-            index = self._ui.field.findData(VELOCITY)
-            self._ui.field.setCurrentIndex(index)
+        # Field Category to keep without hiding
+        category = None
+        # Hide other category fields only if report type is MASS_FLOW_RATE or VOLUME_FLOW_RATE
+        if isFlowRateType:
+            if ModelsDB.isMultiphaseModelOn():
+                category = FieldCategory.PHASE
+            elif ModelsDB.isSpeciesModelOn():
+                category = FieldCategory.SPECIE
 
-            self._ui.fieldComponent.setEnabled(False)
-            index = self._ui.fieldComponent.findData(VectorComponent.MAGNITUDE)
-            self._ui.fieldComponent.setCurrentIndex(index)
+        self._ui.field.view().setRowHidden(0, not isFlowRateType)   # ALL_PHASES or ALL_SPECIES
+        for i in range(1, self._ui.field.count()):
+            self._ui.field.view().setRowHidden(i,
+                                               category is not None and self._ui.field.itemData(i).category != category)
 
+        if isFlowRateType and not hasMultiMaterials:
+            self._ui.field.setCurrentIndex(0)
         else:
-            self._ui.field.setEnabled(True)
-            field: Field = self._ui.field.currentData()
+            if self._ui.field.view().isRowHidden(self._ui.field.currentIndex()):
+                if self._ui.field.currentIndex() == 0:
+                    self._ui.field.setCurrentIndex(1)
+                else:
+                    self._ui.field.setCurrentIndex(0)
 
-            if field.type == FieldType.VECTOR:
-                self._ui.fieldComponent.setEnabled(True)
-            else:
-                self._ui.fieldComponent.setEnabled(False)
+        self._ui.field.setEnabled(not isFlowRateType or hasMultiMaterials)
+
+        field: Field = self._ui.field.currentData()
+        if field.type == FieldType.VECTOR:
+            self._ui.fieldComponent.setEnabled(True)
+        else:
+            self._ui.fieldComponent.setEnabled(False)

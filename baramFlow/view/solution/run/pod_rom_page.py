@@ -29,11 +29,10 @@ from .pod_rom_page_ui import Ui_PODROMPage
 from .eval_enhance_rom_dialog import EvalNEnhanceROMDialog
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 
 from baramFlow.base.constants import VectorComponent, FieldType
-from baramFlow.base.field import VELOCITY, CollateralField, Field, SpecieField, UserScalarField
+from baramFlow.base.field import CollateralField, SpecieField, UserScalarField
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict

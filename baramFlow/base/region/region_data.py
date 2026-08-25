@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from xml.etree.ElementTree import Element
 
 from baramFlow.base.base import Vector
 from baramFlow.base.boundary.boundary_data import BoundaryData
@@ -137,6 +138,27 @@ class RegionInitialization:
         return RegionInitialization(
             initialValues=RegionInitialValues.fromElement(e.find('initialValues', namespaces=nsmap)))
 
+
+@dataclass
+class RegionData:
+    name: str
+    material: str
+    secondaryMaterials: list[str]
+
+    def isMultiPhase(self):
+        return len(self.secondaryMaterials) > 0
+
+    @staticmethod
+    def fromElement(e: Element):
+        rname = e.find('name', namespaces=nsmap).text
+        if rname is None:
+            rname = ''
+
+        secondaries = e.find('secondaryMaterials', namespaces=nsmap).text
+        return RegionData(
+            name=rname,
+            material=e.find('material', namespaces=nsmap).text,
+            secondaryMaterials=[] if secondaries is None else secondaries.split())
 
 
 @dataclass

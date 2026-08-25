@@ -10,9 +10,9 @@ from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
 from baramFlow.base.dynamic_mesh.dynamic_mesh import MotionType
 from baramFlow.base.dynamic_mesh.moving_boundary import PointMotionType
 from baramFlow.base.field import HEAT_TRANSFER_COEFF, WALL_HEAT_FLUX, AGE, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY
-from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE, VELOCITY
+from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS, CELSIUS_TEMPERATURE, VELOCITY, ALL_PHASES, ALL_SPECIES
 from baramFlow.base.material.material import Phase
-from baramFlow.base.monitor.monitor import MonitorManager, ForceMonitorConfiguration, PointMonitorConfiguration
+from baramFlow.base.monitor.monitor import ForceMonitorConfiguration, PointMonitorConfiguration
 from baramFlow.base.monitor.monitor import SurfaceMonitorConfiguration, VolumeMonitorConfiguration
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallMotion
@@ -37,6 +37,7 @@ from baramFlow.openfoam.function_objects.components import foComponentsMonitor
 from baramFlow.openfoam.function_objects.force_coeffs import foForceCoeffsMonitor
 from baramFlow.openfoam.function_objects.forces import foForcesMonitor
 from baramFlow.openfoam.function_objects.mag import foMagMonitor
+from baramFlow.openfoam.function_objects.material_fields import foComplementAlphaPhiMonitor
 from baramFlow.openfoam.function_objects.patch_probes import foPatchProbesMonitor
 from baramFlow.openfoam.function_objects.probes import foProbesMonitor
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueMonitor
@@ -44,6 +45,8 @@ from baramFlow.openfoam.function_objects.vol_field_value import VolumeType, foVo
 from baramFlow.openfoam.solver import findSolver
 from baramFlow.openfoam.solver_field import getAvailableFlowFields, getSolverFieldName
 from baramFlow.services.dynamic_mesh.dynamic_mesh_service import DynamicMeshService
+from baramFlow.services.material.material_service import MaterialService
+from baramFlow.services.monitor.monitor_service import MonitorService
 
 from .fv_options import generateSourceTermField, generateFixedValueField
 
@@ -150,10 +153,12 @@ def collateralFOName(field, rname):
 class ControlDict(DictionaryFile):
     def __init__(self):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(), 'controlDict')
-        self._data = None
-        self._db = None
-        self._writeControl = 'runTime'
-        self._writeInterval = None
+        self._data: dict | None = None
+        self._db: CoreDBReader
+        self._writeControl: str = 'runTime'
+        self._writeInterval: str
+
+        self._solver: str = findSolver()
 
     def build(self):
         if self._data is not None:
@@ -186,7 +191,7 @@ class ControlDict(DictionaryFile):
             purgeWrite = self._db.getValue(xpath + '/maximumNumberOfDataFiles')
 
         self._data = {
-            'application': findSolver(),
+            'application': self._solver,
             'startFrom': 'latestTime',
             'startTime': 0,
             'stopAt': 'endTime',
@@ -292,21 +297,21 @@ class ControlDict(DictionaryFile):
                 self._data['functions'][fieldName]['phase'] = 'alpha.' + MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
-        for monitor in MonitorManager.getForceMonitors():
+        for monitor in MonitorService.getForceMonitors():
             patches = [BoundaryDB.getBoundaryName(bcid) for bcid in monitor.boundaries]
             self._data['functions'][monitor.monitorBase.functionName + '_forces'] = self._generateForces(
                 monitor, patches)
             self._data['functions'][monitor.monitorBase.functionName] = self._generateForceMonitor(monitor, patches)
 
-        for monitor in MonitorManager.getPointMonitors():
+        for monitor in MonitorService.getPointMonitors():
             if monitorFunction := self._generatePointMonitor(monitor):
                 self._data['functions'][monitor.monitorBase.functionName] = monitorFunction
 
-        for monitor in MonitorManager.getSurfaceMonitors():
+        for monitor in MonitorService.getSurfaceMonitors():
             if monitorFunction := self._generateSurfaceMonitor(monitor):
                 self._data['functions'][monitor.monitorBase.functionName] = monitorFunction
 
-        for monitor in MonitorManager.getVolumeMonitors():
+        for monitor in MonitorService.getVolumeMonitors():
             if monitorFunction := self._generateVolumeMonitor(monitor):
                 self._data['functions'][monitor.monitorBase.functionName] = monitorFunction
 
@@ -430,7 +435,7 @@ class ControlDict(DictionaryFile):
                 for name in self._db.getRegions():
                     if isPointInDataSet(monitor.coordinate.toFloatList(), app.internalMeshActor(name).dataSet):
                         monitor.region = name
-                        MonitorManager.updatePointMonitorRegion(monitor.monitorBase.uuid, name)
+                        MonitorService.updatePointMonitorRegion(monitor.monitorBase.uuid, name)
                         break
                 else:
                     return None
@@ -452,16 +457,51 @@ class ControlDict(DictionaryFile):
         patchName = BoundaryDB.getBoundaryName(monitor.surface)
         rname = BoundaryDB.getBoundaryRegion(monitor.surface)
 
-        if monitor.reportType == SurfaceReportType.MASS_FLOW_RATE:
+        if monitor.reportType == SurfaceReportType.MASS_FLOW_RATE or monitor.reportType == SurfaceReportType.VOLUME_FLOW_RATE:
             fieldText = 'phi'
-        elif monitor.reportType == SurfaceReportType.VOLUME_FLOW_RATE:
-            fieldText = 'U'
         else:
+            self._appendAdditionalFO(monitor.field, rname)
             fieldText = monitor.field.openfoamField()
 
-        self._appendAdditionalFO(monitor.field, rname)
         data = foSurfaceFieldValueMonitor(
             patchName, fieldText, monitor.reportType, rname, int(monitor.monitorBase.writeInterval))
+
+        field = monitor.field.field
+        if monitor.reportType in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
+            if field.category == FieldCategory.PHASE:
+                region = self._db.getRegionProperties(rname)
+                primary = MaterialService.getMaterial(region.mid)
+                secondary = MaterialService.getMaterial(region.secondaryMaterials[0])
+
+                if field == ALL_PHASES:
+                    if monitor.reportType == SurfaceReportType.MASS_FLOW_RATE:
+                        data['fields'] = ['rhoPhi']
+                elif self._solver == 'interFoam' and field.codeName == primary.mid:
+                    phase = primary
+                    fieldName = f'alphaPhi0.{phase.name}'
+
+                    self._data['functions'][f'alphaPhi0.{phase.name}'] = foComplementAlphaPhiMonitor(
+                        fieldName, secondary.name, int(monitor.monitorBase.writeInterval))
+
+                    data['fields'] = [fieldName]
+                else:
+                    phase = MaterialService.getMaterial(field.codeName)
+                    data['fields'] = [f'alphaPhi0.{phase.name}']
+
+                if monitor.reportType == SurfaceReportType.MASS_FLOW_RATE and field != ALL_PHASES:
+                    data['scaleFactor'] = self._db.getDensity([(phase.mid, 1)],
+                                                              region.initialTemperature,
+                                                              region.initialPressure)
+            elif field.category == FieldCategory.SPECIE:
+                if monitor.reportType == SurfaceReportType.VOLUME_FLOW_RATE:
+                    # field == ALL_SPECIES (Individual species are not supported)
+                    data['operation'] = 'weightedSum'
+                    data['weightField'] = 'faceRho'
+                    data['inverseWeight'] = 'true'
+                elif field != ALL_SPECIES:
+                    # reportType == SurfaceReportType.MASS_FLOW_RATE
+                    data['operation'] = 'weightedSum'
+                    data['weightField'] = MaterialService.getMaterial(field.codeName).name
 
         return data
 

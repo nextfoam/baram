@@ -4,11 +4,11 @@
 
 from PySide6.QtWidgets import QWidget
 
-from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.coredb.monitor_db import MonitorDB
-from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
+from baramFlow.services.monitor.monitor_service import MonitorService
 from .force_dialog import ForceDialog
 from .point_dialog import PointDialog
 from .surface_dialog import SurfaceDialog
@@ -46,7 +46,7 @@ class ForceMonitorWidget(MonitorWidget):
 
     def load(self, data=None):
         if data is None:
-            data = MonitorManager.getForceMonitor(self._uuid)
+            data = MonitorService.getForceMonitor(self._uuid)
         else:
             self._uuid = data.monitorBase.uuid
             self._name = data.monitorBase.name
@@ -62,7 +62,7 @@ class ForceMonitorWidget(MonitorWidget):
         self._dialog.open()
 
     def delete(self):
-        MonitorManager.removeForceMonitor(self._uuid)
+        MonitorService.removeForceMonitor(self._uuid)
 
 
 class PointMonitorWidget(MonitorWidget):
@@ -71,7 +71,7 @@ class PointMonitorWidget(MonitorWidget):
 
     def load(self, data=None):
         if data is None:
-            data = MonitorManager.getPointMonitor(self._uuid)
+            data = MonitorService.getPointMonitor(self._uuid)
         else:
             self._uuid = data.monitorBase.uuid
             self._name = data.monitorBase.name
@@ -85,7 +85,7 @@ class PointMonitorWidget(MonitorWidget):
         self._dialog.open()
 
     def delete(self):
-        MonitorManager.removePointMonitor(self.uuid)
+        MonitorService.removePointMonitor(self.uuid)
 
 
 class SurfaceMonitorWidget(MonitorWidget):
@@ -94,7 +94,7 @@ class SurfaceMonitorWidget(MonitorWidget):
 
     def load(self, data=None):
         if data is None:
-            data = MonitorManager.getSurfaceMonitor(self._uuid)
+            data = MonitorService.getSurfaceMonitor(self._uuid)
         else:
             self._uuid = data.monitorBase.uuid
             self._name = data.monitorBase.name
@@ -116,7 +116,7 @@ class SurfaceMonitorWidget(MonitorWidget):
         self._dialog.open()
 
     def delete(self):
-        MonitorManager.removeSurfaceMonitor(self.uuid)
+        MonitorService.removeSurfaceMonitor(self.uuid)
 
 
 class VolumeMonitorWidget(MonitorWidget):
@@ -125,7 +125,7 @@ class VolumeMonitorWidget(MonitorWidget):
 
     def load(self, data=None):
         if data is None:
-            data = MonitorManager.getVolumeMonitor(self._uuid)
+            data = MonitorService.getVolumeMonitor(self._uuid)
         else:
             self._uuid = data.monitorBase.uuid
             self._name = data.monitorBase.name
@@ -145,4 +145,4 @@ class VolumeMonitorWidget(MonitorWidget):
         self._dialog.open()
 
     def delete(self):
-        MonitorManager.removeVolumeMonitor(self.uuid)
+        MonitorService.removeVolumeMonitor(self.uuid)

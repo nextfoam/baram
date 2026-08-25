@@ -1545,6 +1545,22 @@ def _version_13(root: etree.Element, path):
                        E('background1', '#d1d1d1'),
                        E('background2', '#383d54')))
 
+    for p in root.findall(f'monitors/surfaces/surfaceMonitor', namespaces=_nsmap):
+        e = p.find('reportType', namespaces=_nsmap)
+        if e.text == 'massFlowRate' or e.text == 'volumeFlowRate':
+            logger.debug(f'    Changing fieldCategory to phase/specie in {p}')
+            category = p.find('fieldCategory', namespaces=_nsmap)
+            if category.text != 'phase' and category.text != 'specie':
+                if root.find('models/multiphaseModels/model', namespaces=_nsmap).text == 'volumeOfFluid':
+                    logger.debug(f'    Changing fieldCategory to phase in {p}')
+                    category.text = 'phase'
+                else:
+                    logger.debug(f'    Changing fieldCategory to specie in {p}')
+                    category.text = 'specie'
+
+                p.find('fieldCodeName', namespaces=_nsmap).text = '0'
+                p.find('fieldComponent', namespaces=_nsmap).text = '1'
+
 
 _fTable = [
     None,

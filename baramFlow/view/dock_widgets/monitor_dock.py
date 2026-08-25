@@ -7,12 +7,13 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QScrollArea, QVBoxLayout
 from PySide6QtAds import CDockWidget
 
-from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.view.widgets.flow_layout import FlowLayout
 from baramFlow.view.widgets.chart_wigdet import ChartWidget
-from baramFlow.openfoam.post_processing.monitor import ForceMonitor, PointMonitor, SurfaceMonitor, VolumeMonitor, calculateMaxX
+from baramFlow.openfoam.post_processing.monitor import ForceMonitor, PointMonitor, SurfaceMonitor, VolumeMonitor
+from baramFlow.openfoam.post_processing.monitor import calculateMaxX
+from baramFlow.services.monitor.monitor_service import MonitorService
 
 
 class MonitorView(QWidget):
@@ -83,14 +84,14 @@ class MonitorView(QWidget):
     def _startMonitor(self):
         maxX = calculateMaxX()
 
-        for configurations in MonitorManager.getForceMonitors():
+        for configurations in MonitorService.getForceMonitors():
             self._addMonitor(
                 ForceMonitor(configurations, self._createChart(maxX), self._createChart(maxX), self._createChart(maxX)))
-        for configurations in MonitorManager.getPointMonitors():
+        for configurations in MonitorService.getPointMonitors():
             self._addMonitor(PointMonitor(configurations, self._createChart(maxX)))
-        for configurations in MonitorManager.getSurfaceMonitors():
+        for configurations in MonitorService.getSurfaceMonitors():
             self._addMonitor(SurfaceMonitor(configurations, self._createChart(maxX)))
-        for configurations in MonitorManager.getVolumeMonitors():
+        for configurations in MonitorService.getVolumeMonitors():
             self._addMonitor(VolumeMonitor(configurations, self._createChart(maxX)))
 
     def _stopMonitor(self):
@@ -113,7 +114,7 @@ class MonitorView(QWidget):
         chart.layout().setContentsMargins(QMargins(15, 10, 15, 15))
 
         pal = QPalette()
-        pal.setColor(QPalette.Window, Qt.white)
+        pal.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.white)
         chart.setAutoFillBackground(True)
         chart.setPalette(pal)
 

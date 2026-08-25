@@ -543,6 +543,4 @@ class ThermophysicalProperties(DictionaryFile):
                 else 'false')
         })
 
-        print(self._data)
-
         return self

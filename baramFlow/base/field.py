@@ -79,6 +79,9 @@ class PhaseField(Field):
         return MaterialDB.getName(self._codeName)
 
 
+ALL_PHASES  = PhaseField('0')
+
+
 class SpecieField(Field):
     def __init__(self, codeName: str):
         super().__init__(FieldCategory.SPECIE, codeName, FieldType.SCALAR)
@@ -86,6 +89,9 @@ class SpecieField(Field):
     @property
     def text(self) -> str:
         return MaterialDB.getName(self._codeName)
+
+
+ALL_SPECIES = SpecieField('0')
 
 
 class UserScalarField(Field):

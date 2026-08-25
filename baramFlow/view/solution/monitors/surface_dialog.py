@@ -10,27 +10,25 @@ from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
-from baramFlow.base.constants import FieldCategory, VectorComponent
-from baramFlow.base.field import Field, FieldType, VELOCITY, TEMPERATURE, getFieldInstance
+from baramFlow.base.constants import FieldCategory
+from baramFlow.base.field import Field, FieldType, TEMPERATURE, getFieldInstance, ALL_PHASES, ALL_SPECIES
 from baramFlow.base.material.material import Phase
 from baramFlow.case_manager import CaseManager
-from baramFlow.base.monitor.monitor import MonitorManager, SurfaceMonitorConfiguration, MonitorField
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.base.monitor.monitor import SurfaceMonitorConfiguration, MonitorField
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
+from baramFlow.services.monitor.monitor_policy import MonitorPolicy
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
 class SurfaceDialog(QDialog):
     def __init__(self, parent, uuid=None):
-        """Constructs surface monitor setup dialog.
-
-        Args:
-            name: Force Monitor name. If None, create a new monitor.
-        """
         super().__init__(parent)
         self._ui = Ui_SurfaceDialog()
         self._ui.setupUi(self)
@@ -42,9 +40,13 @@ class SurfaceDialog(QDialog):
         self._surface = None
 
         for t in SurfaceReportType:
-            self._ui.reportType.addItem(MonitorDB.surfaceReportTypeToText(t), t)
+             self._ui.reportType.addItem(MonitorDB.surfaceReportTypeToText(t), t)
 
         loadFieldsComboBox(self._ui.field)
+        if ModelsDB.isMultiphaseModelOn():
+            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_PHASES)
+        else:
+            self._ui.field.insertItem(0, self.tr('<Fluid>'), ALL_SPECIES)
 
         self._connectSignalsSlots()
         self._load()
@@ -69,9 +71,9 @@ class SurfaceDialog(QDialog):
     def _load(self):
         if self._uuid is None:
             self._isNew = True
-            data = MonitorManager.newSurfaceMonitor()
+            data = MonitorService.newSurfaceMonitor()
         else:
-            data = MonitorManager.getSurfaceMonitor(self._uuid)
+            data = MonitorService.getSurfaceMonitor(self._uuid)
             self._ui.nameWidget.hide()
             self._ui.monitor.setTitle(data.monitorBase.name)
 
@@ -95,7 +97,7 @@ class SurfaceDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
             return
 
-        if name != self._base.name and MonitorManager.isExistingName(name):
+        if name != self._base.name and MonitorService.isExistingName(name):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Name "{0}" already exist.'.format(name)))
             return
@@ -103,6 +105,14 @@ class SurfaceDialog(QDialog):
         field = self._ui.field.currentData()
         if field is None:
             await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Field."))
+            return
+
+        reportType = self._ui.reportType.currentData()
+        if (reportType == SurfaceReportType.VOLUME_FLOW_RATE
+                and field.category == FieldCategory.SPECIE and field != ALL_SPECIES):
+            await AsyncMessageBox().information(
+                self, self.tr("Input Error"),
+                self.tr("Volume Flow Rate does not support individual species."))
             return
 
         if not self._surface:
@@ -130,16 +140,18 @@ class SurfaceDialog(QDialog):
 
             data = SurfaceMonitorConfiguration(
                 monitorBase=base,
-                reportType=self._ui.reportType.currentData(),
+                reportType=reportType,
                 field=MonitorField(field=getFieldInstance(field.category, field.codeName),
                                    component=self._ui.fieldComponent.currentData()),
                 surface=self._surface
             )
 
+            MonitorPolicy.validateSurfaceMonitor(data)
+
             if self._isNew:
-                MonitorManager.addSurfaceMonitor(data)
+                MonitorService.addSurfaceMonitor(data)
             else:
-                MonitorManager.updateSurfaceMonitor(data)
+                MonitorService.updateSurfaceMonitor(data)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
@@ -161,21 +173,36 @@ class SurfaceDialog(QDialog):
 
     def _updateInputFields(self):
         reportType: SurfaceReportType = self._ui.reportType.currentData()
+        isFlowRateType = reportType in [SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE]
+        hasMultiMaterials = ModelsDB.isMultiphaseModelOn() or ModelsDB.isSpeciesModelOn()
 
-        if reportType in [SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE]:
-            self._ui.field.setEnabled(False)
-            index = self._ui.field.findData(VELOCITY)
-            self._ui.field.setCurrentIndex(index)
+        # Field Category to keep without hiding
+        category = None
+        # Hide other category fields only if report type is MASS_FLOW_RATE or VOLUME_FLOW_RATE
+        if isFlowRateType:
+            if ModelsDB.isMultiphaseModelOn():
+                category = FieldCategory.PHASE
+            elif ModelsDB.isSpeciesModelOn():
+                category = FieldCategory.SPECIE
 
-            self._ui.fieldComponent.setEnabled(False)
-            index = self._ui.fieldComponent.findData(VectorComponent.MAGNITUDE)
-            self._ui.fieldComponent.setCurrentIndex(index)
+        self._ui.field.view().setRowHidden(0, not isFlowRateType)
+        for i in range(1, self._ui.field.count()):
+            self._ui.field.view().setRowHidden(i,
+                                               category is not None and self._ui.field.itemData(i).category != category)
 
+        if isFlowRateType and not hasMultiMaterials:
+            self._ui.field.setCurrentIndex(0)   # All Regions have single material. Select ALL_SPECIES
         else:
-            self._ui.field.setEnabled(True)
-            field: Field = self._ui.field.currentData()
+            if self._ui.field.view().isRowHidden(self._ui.field.currentIndex()):
+                if self._ui.field.currentIndex() == 0:
+                    self._ui.field.setCurrentIndex(1)
+                else:
+                    self._ui.field.setCurrentIndex(0)
 
-            if field.type == FieldType.VECTOR:
-                self._ui.fieldComponent.setEnabled(True)
-            else:
-                self._ui.fieldComponent.setEnabled(False)
+        self._ui.field.setEnabled(not isFlowRateType or hasMultiMaterials)
+
+        field: Field = self._ui.field.currentData()
+        if field.type == FieldType.VECTOR:
+            self._ui.fieldComponent.setEnabled(True)
+        else:
+            self._ui.fieldComponent.setEnabled(False)

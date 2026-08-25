@@ -27,38 +27,39 @@ _mutex = Lock()
 
 class Region:
     def __init__(self, db, rname):
-        self._rname = rname
+        self._rname: str = rname
 
-        self._db = db
+        self._db: _CoreDB = db
 
-        self._mid = RegionDB.getMaterial(rname)
-        self._secondaryMaterials = RegionDB.getSecondaryMaterials(rname)
-        self._phase = MaterialDB.getPhase(self._mid)
-        self._boundaries = db.getBoundaryConditions(self._rname)
+        self._mid: str = RegionDB.getMaterial(rname)
+        self._secondaryMaterials: list[str] = RegionDB.getSecondaryMaterials(rname)
+        self._phase: Phase = MaterialDB.getPhase(self._mid)
+        self._boundaries: list[str, str, str] = db.getBoundaryConditions(self._rname)
 
-        self._U = None
-        self._t = None
-        self._rho = None
+        self._U: list[float, float, float]
+        self._p: float
+        self._t: float
+        self._rho: float
 
-        self._nut = None
-        self._alphat = None
-        self._k = None
-        self._e = None
-        self._w = None
+        self._nut: float
+        self._alphat: float
+        self._k: float
+        self._e: float
+        self._w: float
 
         self._initialValuesXpath = InitializationDB.getXPath(rname) + '/initialValues'
 
         self._U = db.getVector(f'{self._initialValuesXpath}/velocity')
+        self._p = float(db.getValue(f'{self._initialValuesXpath}/pressure'))
         self._t = float(db.getValue(f'{self._initialValuesXpath}/temperature'))
 
         if self.isFluid():
-            p = float(db.getValue(f'{self._initialValuesXpath}/pressure'))
             v = float(db.getValue(f'{self._initialValuesXpath}/scaleOfVelocity'))
             i = (float(db.getValue(f'{self._initialValuesXpath}/turbulentIntensity')) / 100.0)
             b = float(db.getValue(f'{self._initialValuesXpath}/turbulentViscosity'))
 
             material = MaterialDB.getMaterialComposition(f'{self._initialValuesXpath}/species', self._mid)
-            self._rho = db.getDensity(material, self._t, p)  # Density
+            self._rho = db.getDensity(material, self._t, self._p)  # Density
             mu = db.getViscosity(material, self._t)  # Viscosity
 
             if self._rho == 0:
@@ -139,6 +140,10 @@ class Region:
         return self._w
 
     @property
+    def initialPressure(self):
+        return self._p
+
+    @property
     def initialTemperature(self):
         return self._t
 
@@ -171,6 +176,8 @@ class Region:
     def isSolid(self):
         return self._phase == Phase.SOLID
 
+    def isMultiPhase(self):
+        return len(self.secondaryMaterials) > 0
 
 class CoreDBReader(_CoreDB):
     def __new__(cls, *args, **kwargs):
