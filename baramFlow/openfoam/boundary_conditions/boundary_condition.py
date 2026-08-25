@@ -52,8 +52,9 @@ class BoundaryCondition(DictionaryFile):
 
             for name, builded in self._data['boundaryField'].items():
                 loaded = self._fieldsData.content['boundaryField'][name]
-                if loaded['type'] == builded['type'] == 'fixedValue' and not loaded['value'].isUniform():
-                    builded['value'] = None
+                if loaded['type'] == builded['type'] == 'fixedValue':
+                    if 'value' not in loaded or not loaded['value'].isUniform():
+                        builded['value'] = None
 
                 loaded.update({k: v for k, v in builded.items() if v is not None})
 
