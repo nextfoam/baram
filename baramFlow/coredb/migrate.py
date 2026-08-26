@@ -1523,7 +1523,7 @@ def _version_12(root: etree.Element, path):
 def _version_13(root: etree.Element, path):
     logger.debug('  Upgrading to v14')
 
-    # root.set('version', '14')
+    root.set('version', '14')
 
     if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
         if p.find('crankNicolsonBlendingFactor', namespaces=_nsmap) is None:
