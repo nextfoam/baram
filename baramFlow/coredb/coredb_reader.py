@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Lock
+from typing import Optional
 
 from PySide6.QtCore import QCoreApplication
 from thermo import PR
@@ -39,13 +40,13 @@ class Region:
         self._U: list[float, float, float]
         self._p: float
         self._t: float
-        self._rho: float
+        self._rho: Optional[float] = None
 
-        self._nut: float
-        self._alphat: float
-        self._k: float
-        self._e: float
-        self._w: float
+        self._nut: Optional[float] = None
+        self._alphat: Optional[float] = None
+        self._k: Optional[float] = None
+        self._e: Optional[float] = None
+        self._w: Optional[float] = None
 
         self._initialValuesXpath = InitializationDB.getXPath(rname) + '/initialValues'
 
