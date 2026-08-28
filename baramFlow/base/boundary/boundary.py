@@ -156,8 +156,8 @@ def updateSpeciesInDB(db: _CoreDB, bcid: str, specieRatios: SpecieRatios):
 
 @dataclass
 class TemperatureLayer:
-    thickness: PFloat
-    thermalConductivity : PFloat
+    thickness: str
+    thermalConductivity : str
 
 
 @dataclass
@@ -178,8 +178,8 @@ class TemperatureLayers:
         thicknessLayers = ''
         thermalConductivityLayers = ''
         for row in self.layers:
-            thicknessLayers += str(row.thickness) + ' '
-            thermalConductivityLayers += str(row.thermalConductivity) + ' '
+            thicknessLayers += row.thickness + ' '
+            thermalConductivityLayers += row.thermalConductivity + ' '
 
         return E('wallLayers',
                     E('thicknessLayers', thicknessLayers),

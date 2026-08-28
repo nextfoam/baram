@@ -5,11 +5,11 @@ from enum import IntEnum, auto
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout, QGridLayout
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
-from widgets.pfloat_line_edit import PFloatLineEdit
+from widgets.typed_edit import FloatEdit
 
 from baramFlow.base.boundary.boundary import TemperatureLayers, TemperatureLayer
 from baramFlow.coredb import coredb
@@ -28,11 +28,11 @@ class WallLayerItem(QObject):
 
     _removeIcon = QIcon(':/icons/trash-outline.svg')
 
-    def __init__(self, no, thickness='', thermalConductivity=''):
+    def __init__(self, no, thickness: str, thermalConductivity: str):
         super().__init__()
 
-        self._widgets = None
-        self._hidden = False
+        self._widgets: list[QWidget]
+        self._hidden: bool = False
 
         if no > 1:
             removeButton = FlatPushButton(self._removeIcon, '')
@@ -42,16 +42,15 @@ class WallLayerItem(QObject):
 
         self._widgets = [
             QLabel(str(no)),
-            PFloatLineEdit(thickness),
-            PFloatLineEdit(thermalConductivity),
+            FloatEdit(thickness),
+            FloatEdit(thermalConductivity),
             removeButton]
 
     def thickness(self):
-        return self.widget(Column.THICKNESS).pFloat(self.tr('Thickness of Wall Layer {}').format(self.no()))
+        return self.widget(Column.THICKNESS).text()
 
     def thermalConductivity(self):
-        return self.widget(Column.THERMAL_CONDUCTIVITY).pFloat(
-            self.tr('Thermal Conductivity of Wall Layer {}').format(self.no()))
+        return self.widget(Column.THERMAL_CONDUCTIVITY).text()
 
     def widget(self, column):
         return self._widgets[column]
@@ -80,9 +79,9 @@ class WallLayersWidget(QWidget):
         self._ui = Ui_WallLayersWidget()
         self._ui.setupUi(self)
 
-        self._layout = self._ui.wallLayersTable.layout()
+        self._layout: QGridLayout = self._ui.wallLayersTable.layout()
 
-        self._rows = []
+        self._rows: list[WallLayerItem] = []
         
         self._connectSignalsSlots()
 
