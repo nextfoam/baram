@@ -59,5 +59,20 @@ def isRenderingHold():
 async def vtk_run_in_thread(func, /, *args, **kwargs):
     async with vtkThreadLock:
         holdRendering()
-        await _to_vtk_thread(func, *args, **kwargs)
-        resumeRendering()
+
+        future = asyncio.ensure_future(_to_vtk_thread(func, *args, **kwargs))
+
+        try:
+            return await asyncio.shield(future)
+        except asyncio.CancelledError:
+            # run_in_executor() cannot interrupt a function that has already started,
+            # so the worker keeps touching VTK data after the await is cancelled.
+            # Rendering must stay on hold until it actually finishes.
+            await asyncio.wait([future])
+            raise
+        finally:
+            # Not a plain statement after the await. Without this the hold leaks on
+            # an exception or a cancellation, and since _holdRendering is global that
+            # blanks every view in the process and makes holdRendering() raise from
+            # then on.
+            resumeRendering()
