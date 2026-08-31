@@ -642,7 +642,7 @@ class VisualReportView(RenderingView):
         did = uuid4()
         graphic: Graphic = self._graphic
 
-        control = DisplayControl(self._treeWidget, did, graphic, displayItem, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
+        control = DisplayControl(self._treeWidget, did, graphic, displayItem, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
 
         self._controls[did] = control
 

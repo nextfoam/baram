@@ -9,7 +9,8 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkLookupTable
-from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkUnstructuredGrid
+from vtkmodules.vtkCommonDataModel import vtkDataObject
+from vtkmodules.vtkCommonExecutionModel import vtkAlgorithm
 from vtkmodules.vtkFiltersCore import vtkGlyph3D, vtkMaskPoints, vtkPassThrough
 from vtkmodules.vtkFiltersFlowPaths import vtkStreamTracer
 from vtkmodules.vtkFiltersModeling import vtkRibbonFilter
@@ -53,13 +54,12 @@ class Column(IntEnum):
 
 
 class DisplayControl(QTreeWidgetItem):
-    def __init__(self, parent, did: UUID, graphic: Graphic, displayItem: DisplayItem, internalMesh: vtkUnstructuredGrid, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+    def __init__(self, parent, did: UUID, graphic: Graphic, displayItem: DisplayItem, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
         self._did = did
         self._graphic = graphic
         self._displayItem = displayItem
-        self._internalMesh = internalMesh
         self._field = field
         self._useNodeValues = useNodeValues
         self._lookupTable = lookupTable
@@ -99,6 +99,8 @@ class DisplayControl(QTreeWidgetItem):
         self._vectorActor: vtkActor = None
 
         self._streamMask: vtkMaskPoints = None
+        self._streamTracer: vtkStreamTracer = None
+        self._streamDeco: vtkAlgorithm = None
         self._streamMapper: vtkPolyDataMapper = None
         self._streamActor: vtkActor = None
 
@@ -432,6 +434,10 @@ class DisplayControl(QTreeWidgetItem):
 
         await vtk_run_in_thread(self._vectorGlyph.Update)
 
+        # The mapper is deliberately fed the filter output as data, not as a connection.
+        # A connected mapper makes vtkPolyDataMapper::Render() execute its upstream
+        # pipeline, which would run the filters on the GUI thread during a paint,
+        # possibly while vtk_run_in_thread() is executing the very same filters.
         self._vectorMapper.SetInputData(self._vectorGlyph.GetOutput())
 
         if self._displayItem.solidColor:
@@ -523,7 +529,7 @@ class DisplayControl(QTreeWidgetItem):
         else:
             raise AssertionError
 
-        self._streamTracer.SetInputData(self._internalMesh)
+        self._streamTracer.SetInputData(self._graphic.internalMesh)
 
         if self._graphic.streamlineType == StreamlineType.RIBBON:
             self._streamDeco = vtkRibbonFilter()
@@ -540,6 +546,7 @@ class DisplayControl(QTreeWidgetItem):
 
         await vtk_run_in_thread(self._streamDeco.Update)
 
+        # Fed as data rather than connected, for the reason noted in _setUpVectors().
         self._streamMapper.SetInputData(self._streamDeco.GetOutput())
 
         if self._displayItem.solidColor:
