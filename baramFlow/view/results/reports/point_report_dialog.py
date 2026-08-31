@@ -147,6 +147,7 @@ class PointReportDialog(QDialog):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The point is not in the mesh.'))
+            self._ui.compute.setEnabled(True)
             return
 
         seed = str(uuid.uuid4())
