@@ -45,11 +45,11 @@ else:
         if cmd.is_file():
             MPICMD = str(cmd)
         else:
-            MPICMD = None
+            MPICMD = ''
 
 
 async def checkMPI():
-    if platform.system() == 'Linux' and MPICMD is None:
+    if platform.system() == 'Linux' and not MPICMD:
         return MPIStatus.INVALID_PREFIX
 
     try:

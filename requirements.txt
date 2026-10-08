@@ -8,12 +8,12 @@ openpyxl==3.1.2
 pandas==2.2.3
 psutil==5.9.5
 pyqtgraph==0.14.0
-PySide6-QtAds==4.4.1
+#PySide6-QtAds==4.4.1
 PySide6_Essentials==6.9.2
 python-dateutil==2.8.2
 PyYAML==6.0.3
 qasync==0.27.1
-superqt==0.6.1
+superqt==0.8.2
 tables==3.10.2
 thermo==0.6.0
 vtk==9.4.2

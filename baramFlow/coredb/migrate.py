@@ -1520,6 +1520,48 @@ def _version_12(root: etree.Element, path):
             pointMotionType.text = 'fixed'
 
 
+def _version_13(root: etree.Element, path):
+    logger.debug('  Upgrading to v14')
+
+    root.set('version', '14')
+
+    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
+        if p.find('crankNicolsonBlendingFactor', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "crankNicolsonBlendingFactor" to {p}')
+            p.insert(1, E('crankNicolsonBlendingFactor', '0.9'))
+
+        if p.find('time', namespaces=_nsmap).text == 'secondOrderImplicit':
+            p.getparent().find('multiphase/maxIterationsPerTimeStep', namespaces=_nsmap).text = '1'
+
+    for p in root.findall('graphics/graphic', namespaces=_nsmap):
+        if p.find('labelFormat', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "labelFormat" to {p}')
+            clipToRange = p.find('clipToRange', namespaces=_nsmap)
+            clipToRange.addnext(E('labelFormat', '%-#6.5g'))
+
+        if p.find('rendering', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "rendering" to {p}')
+            p.append(E('rendering',
+                       E('background1', '#d1d1d1'),
+                       E('background2', '#383d54')))
+
+    for p in root.findall(f'monitors/surfaces/surfaceMonitor', namespaces=_nsmap):
+        e = p.find('reportType', namespaces=_nsmap)
+        if e.text == 'massFlowRate' or e.text == 'volumeFlowRate':
+            logger.debug(f'    Changing fieldCategory to phase/specie in {p}')
+            category = p.find('fieldCategory', namespaces=_nsmap)
+            if category.text != 'phase' and category.text != 'specie':
+                if root.find('models/multiphaseModels/model', namespaces=_nsmap).text == 'volumeOfFluid':
+                    logger.debug(f'    Changing fieldCategory to phase in {p}')
+                    category.text = 'phase'
+                else:
+                    logger.debug(f'    Changing fieldCategory to specie in {p}')
+                    category.text = 'specie'
+
+                p.find('fieldCodeName', namespaces=_nsmap).text = '0'
+                p.find('fieldComponent', namespaces=_nsmap).text = '1'
+
+
 _fTable = [
     None,
     _version_1,
@@ -1533,7 +1575,8 @@ _fTable = [
     _version_9,
     _version_10,
     _version_11,
-    _version_12
+    _version_12,
+    _version_13
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

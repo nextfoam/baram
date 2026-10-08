@@ -11,75 +11,79 @@ from PySide6.QtCore import Qt, Signal
 from .number_input_dialog_ui import Ui_NumberInputDialog
 
 
-class PiecewiseLinearDialog(QDialog):
-    class RowWidget(QWidget):
-        def __init__(self, fieldWidgets, buttonWidget):
-            super().__init__()
-            self._edits = fieldWidgets
-            self._button = buttonWidget
+class RowWidget(QWidget):
+    def __init__(self, fieldWidgets, buttonWidget):
+        super().__init__()
+        self._edits = fieldWidgets
+        self._button = buttonWidget
+        self._filled = False
+        self._setupUI()
+
+    def value(self, index):
+        return self._edits[index].text().strip()
+
+    def values(self):
+        return [value.text() for value in self._edits]
+
+    def clear(self):
+        for value in self._edits:
+            value.clear()
+
+    def setFocus(self):
+        self._edits[0].setFocus()
+
+    def _setupUI(self):
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(9, 0, 9, 0)
+
+        for widget in self._edits:
+            self._layout.addWidget(widget)
+        self._layout.addWidget(self._button)
+
+
+class EditRowWidget(RowWidget):
+    removeClicked = Signal(int)
+    changed = Signal(str)
+
+    def __init__(self, index, columnCount):
+        super().__init__([QLineEdit() for _ in range(columnCount)], QPushButton())
+
+        self._index = index
+        self._button.setIcon(QIcon(u":/icons/close.svg"))
+
+        self._connectSignalsSlots()
+
+    def setValues(self, values):
+        for i in range(len(self._edits)):
+            self._edits[i].setText(values[i])
+
+    def isFilled(self):
+        return self._filled
+
+    def _connectSignalsSlots(self):
+        for field in self._edits:
+            field.textChanged.connect(self._valueChanged)
+        self._button.clicked.connect(self._remove)
+
+    def _remove(self):
+        self.removeClicked.emit(self._index)
+
+    def _valueChanged(self, text):
+        if text.strip() == "":
             self._filled = False
-            self._setupUI()
+        elif not self._filled:
+            for edit in self._edits:
+                if edit.text() == "":
+                    return
+            self._filled = True
 
-        def value(self, index):
-            return self._edits[index].text().strip()
+        self.changed.emit(text)
 
-        def values(self):
-            return [value.text() for value in self._edits]
 
-        def clear(self):
-            for value in self._edits:
-                value.clear()
-
-        def setFocus(self):
-            self._edits[0].setFocus()
-
-        def _setupUI(self):
-            self._layout = QHBoxLayout(self)
-            self._layout.setContentsMargins(9, 0, 9, 0)
-
-            for widget in self._edits:
-                self._layout.addWidget(widget)
-            self._layout.addWidget(self._button)
-
-    class EditRowWidget(RowWidget):
-        removeClicked = Signal(int)
-        changed = Signal(str)
-
-        def __init__(self, index, columnCount):
-            super().__init__([QLineEdit() for _ in range(columnCount)], QPushButton())
-
-            self._index = index
-            self._button.setIcon(QIcon(u":/icons/close.svg"))
-
-            self._connectSignalsSlots()
-
-        def setValues(self, values):
-            for i in range(len(self._edits)):
-                self._edits[i].setText(values[i])
-
-        def isFilled(self):
-            return self._filled
-
-        def _connectSignalsSlots(self):
-            for field in self._edits:
-                field.textChanged.connect(self._valueChanged)
-            self._button.clicked.connect(self._remove)
-
-        def _remove(self):
-            self.removeClicked.emit(self._index)
-
-        def _valueChanged(self, text):
-            if text.strip() == "":
-                self._filled = False
-            elif not self._filled:
-                for edit in self._edits:
-                    if edit.text() == "":
-                        return
-                self._filled = True
-
-            self.changed.emit(text)
-
-    def __init__(self, parent, title, columns, data, prefix="", maxRows=0):
+class NumberInputDialog(QDialog):
+    def __init__(self,
+                 parent: QWidget, title: str, columns: list[str], data: [list[list[str]]],
+                 prefix: str = "", maxRows: int = 0):
         """Constructs a dialog for piecewise linear values.
 
         Args:
@@ -94,17 +98,17 @@ class PiecewiseLinearDialog(QDialog):
         self._ui.setupUi(self)
         self.setWindowTitle(title)
 
-        self._columnCount = len(columns)
-        self._prefix = prefix
-        self._no = 0
-        self._rowFields = []
+        self._columnCount: int = len(columns)
+        self._prefix: str = prefix
+        self._no: int = 0
+        self._rowFields: list[RowWidget] = []
 
-        self._maxRows = maxRows
+        self._maxRows: int = maxRows
 
         self._dialog = None
 
-        self._scrollBar = self._ui.editArea.verticalScrollBar()
-        self._scrollBar.rangeChanged.connect(lambda: self._scrollBar.setValue(self._scrollBar.maximum()))
+        scrollBar = self._ui.editArea.verticalScrollBar()
+        scrollBar.rangeChanged.connect(lambda: scrollBar.setValue(scrollBar.maximum()))
 
         self._connectSignalsSlots()
 
@@ -135,26 +139,24 @@ class PiecewiseLinearDialog(QDialog):
         headers = []
         for column in columns:
             header = QLabel(column)
-            header.setAlignment(Qt.AlignCenter)
+            header.setAlignment(Qt.AlignmentFlag.AlignCenter)
             headers.append(header)
         emptyButton = QLabel()
         emptyButton.setFixedSize(28, 24)
 
         self._layout = self._ui.polynomialWidget.layout()
-        self._layout.addRow("", self.RowWidget(headers, emptyButton))
+        self._layout.addRow("", RowWidget(headers, emptyButton))
         self._ui.editArea.setMinimumWidth(self._columnCount * 80 + 100)
         self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
-    def _setData(self, data):
-        values = [d.split() if d else [] for d in data]
-
-        for i in range(len(values[0])):
+    def _setData(self, data: list[list[str]]):
+        for i in range(len(data[0])):
             row = self._addRow()
-            row.setValues([v[i] for v in values])
+            row.setValues([v[i] for v in data])
 
     def _addRow(self):
         label = self._prefix + str(self._no)
-        row = self.EditRowWidget(len(self._rowFields), self._columnCount)
+        row = EditRowWidget(len(self._rowFields), self._columnCount)
         self._layout.addRow(label, row)
         self._rowFields.append(row)
         self._no = self._no + 1
@@ -220,13 +222,15 @@ class PiecewiseLinearDialog(QDialog):
                     row.setValues(line)
 
 
-class PolynomialDialog(PiecewiseLinearDialog):
-    def __init__(self, parent, title, data, prefix=""):
+class PolynomialDialog(NumberInputDialog):
+    dataAccepted = Signal(list)
+
+    def __init__(self, parent: QWidget, title: str, data: list[str], prefix: str = ''):
         """Constructs a dialog for polynomial coefficients.
 
         Args:
             title: The title of the dialog
-            data: Space-separated column data. "value1 value2 ..."
+            data: [value1 value2 ...]
             prefix: The prefix of index
         """
         super().__init__(parent, title, [self.tr("Coefficient")], [data], prefix, 8)
@@ -240,3 +244,7 @@ class PolynomialDialog(PiecewiseLinearDialog):
             values = values + field.value(0) + ' '
 
         return values[:-1]
+
+    def accept(self, /):
+        self.dataAccepted.emit([field.value(0) for field in self._rowFields])
+        super().accept()

@@ -37,10 +37,7 @@ class CyclicDialog(CoupledBoundaryConditionDialog):
 
         try:
             with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
-
-                if coupleTypeChanged:
-                    self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
                 super().accept()
         except ValueException as ve:

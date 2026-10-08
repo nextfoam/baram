@@ -116,6 +116,8 @@ class SplitDialog(QDialog):
         self._ui.okButton.clicked.connect(self._okClicked)
         self._ui.cancelButton.clicked.connect(self._cancelClicked)
 
+        self._ui.axis.setChecked(True)
+        
     def _featureAngleSliderChanged(self, value):
         self._ui.featureAngleText.setText(str(value))
 

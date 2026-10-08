@@ -9,7 +9,7 @@ from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.base.boundary.ABL_inlet import ABLFlowDirection, Vector, AtmosphericBoundaryLayer
 from baramFlow.base.boundary.ABL_inlet import PasquillStability
-from baramFlow.base.boundary.boundary_patch import ABLInletPatch
+from baramFlow.base.boundary.boundary_patch import ABLInletUpdate
 from baramFlow.coredb.libdb import xmlToBool
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, FlowDirectionSpecificationMethod
@@ -60,9 +60,9 @@ class ABLInletDialog(QDialog):
                 flowDirection = ABLFlowDirection(
                     specificationMethod=specMethod,
                     value = Vector(
-                        x=PFloat(self._ui.flowDirectionXComponent.text(), self.tr("Flow Direction X-Component")),
-                        y=PFloat(self._ui.flowDirectionYComponent.text(), self.tr("Flow Direction Y-Component")),
-                        z=PFloat(self._ui.flowDirectionZComponent.text(), self.tr("Flow Direction Z-Component"))))
+                        x=self._ui.flowDirectionXComponent.pFloat(self.tr('Flow Direction X-Component')),
+                        y=self._ui.flowDirectionYComponent.pFloat(self.tr('Flow Direction Y-Component')),
+                        z=self._ui.flowDirectionZComponent.pFloat(self.tr('Flow Direction Z-Component'))))
             else:
                 flowDirection = ABLFlowDirection(specificationMethod=specMethod)
 
@@ -70,32 +70,28 @@ class ABLInletDialog(QDialog):
                 pasquillStability = PasquillStability(
                     disabled=False,
                     stabilityClass=self._ui.stabilityClass.currentData(),
-                    latitude=str(PFloat(self._ui.latitude.text(), self.tr("Latitude"))),
-                    surfaceHeatFlux=str(PFloat(self._ui.surfaceHeatFlux.text(), self.tr("Surface Heat Flux"))),
-                    referenceDensity=str(PFloat(self._ui.referenceDensity.text(), self.tr("Reference Density"))),
-                    referenceSpecificHeat=str(
-                        PFloat(self._ui.referenceSpecificHeat.text(), self.tr("Reference Specific Heat"))),
-                    referenceTemperature=str(
-                        PFloat(self._ui.referenceTemperature.text(), self.tr("Reference Temperature")))
-                )
+                    latitude=self._ui.latitude.pFloat(self.tr('Latitude')),
+                    surfaceHeatFlux=self._ui.surfaceHeatFlux.pFloat(self.tr('Surface Heat Flux')),
+                    referenceDensity=self._ui.referenceDensity.pFloat(self.tr('Reference Density')),
+                    referenceSpecificHeat=self._ui.referenceSpecificHeat.pFloat(self.tr('Reference Specific Heat')),
+                    referenceTemperature=self._ui.referenceTemperature.pFloat(self.tr('Reference Temperature')))
             else:
                 pasquillStability = PasquillStability(disabled=True)
 
-            data = ABLInletPatch(
+            data = ABLInletUpdate(
                 abl= AtmosphericBoundaryLayer(
                     flowDirection=flowDirection,
                     groundNormalDirection=Vector(
-                        x=PFloat(self._ui.groundNormalDirectionXComponent.text(),
-                                     self.tr("Ground-Normal Direction X-Component")),
-                        y=PFloat(self._ui.groundNormalDirectionYComponent.text(),
-                                     self.tr("Ground-Normal Direction Y-Component")),
-                        z=PFloat(self._ui.groundNormalDirectionZComponent.text(),
-                                     self.tr("Ground-Normal Direction Z-Component"))),
-                    referenceFlowSpeed=str(PFloat(self._ui.referenceFlowSpeed.text(), self.tr("Reference Flow Speed"))),
-                    referenceHeight= str(PFloat(self._ui.referenceHeight.text(), self.tr("Reference Height"))),
-                    surfaceRoughnessLength= str(
-                        PFloat(self._ui.surfaceRoughnessLength.text(), self.tr("Surface Roughness Length"))),
-                    minimumZCoordinate=str(PFloat(self._ui.minimumZCoordinate.text(), self.tr("Minimum z-coordinate"))),
+                        x=self._ui.groundNormalDirectionXComponent.pFloat(
+                            self.tr('Ground-Normal Direction X-Component')),
+                        y=self._ui.groundNormalDirectionYComponent.pFloat(
+                            self.tr('Ground-Normal Direction Y-Component')),
+                        z=self._ui.groundNormalDirectionZComponent.pFloat(
+                            self.tr('Ground-Normal Direction Z-Component'))),
+                    referenceFlowSpeed=self._ui.referenceFlowSpeed.pFloat(self.tr('Reference Flow Speed')),
+                    referenceHeight= self._ui.referenceHeight.pFloat(self.tr('Reference Height')),
+                    surfaceRoughnessLength= self._ui.surfaceRoughnessLength.pFloat(self.tr('Surface Roughness Length')),
+                    minimumZCoordinate=self._ui.minimumZCoordinate.pFloat(self.tr('Minimum z-coordinate')),
                     pasquillStability=pasquillStability),
                 userDefinedScalars=self._scalarsWidget.data(),
                 species=self._speciesWidget.data())

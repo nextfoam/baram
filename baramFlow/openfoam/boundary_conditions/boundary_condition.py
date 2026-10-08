@@ -9,7 +9,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
-from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.boundary_db import WallMotion, BoundaryDB, FlowDirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader, Region
 from baramFlow.coredb.material_db import MaterialDB
@@ -52,8 +52,9 @@ class BoundaryCondition(DictionaryFile):
 
             for name, builded in self._data['boundaryField'].items():
                 loaded = self._fieldsData.content['boundaryField'][name]
-                if loaded['type'] == builded['type'] == 'fixedValue' and not loaded['value'].isUniform():
-                    builded['value'] = None
+                if loaded['type'] == builded['type'] == 'fixedValue':
+                    if 'value' not in loaded or not loaded['value'].isUniform():
+                        builded['value'] = None
 
                 loaded.update({k: v for k, v in builded.items() if v is not None})
 

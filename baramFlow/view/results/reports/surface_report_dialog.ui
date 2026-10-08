@@ -133,7 +133,7 @@
      <property name="title">
       <string>Result</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="1,8">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="1,0">
       <item row="0" column="0">
        <widget class="QLabel" name="resultLabel">
         <property name="text">
@@ -142,14 +142,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="resultValue">
-        <property name="font">
-         <font>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>0</string>
+       <widget class="QLineEdit" name="resultValue">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

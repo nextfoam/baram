@@ -3,8 +3,8 @@
 
 # A simple script to demonstrate the vtkCutter function
 
-import math
 import platform
+from enum import Enum, auto
 from typing import Optional
 
 # noinspection PyUnresolvedReferences
@@ -12,18 +12,24 @@ import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from PySide6.QtCore import QTimer, Qt, Signal, QObject
-from PySide6.QtGui import QMouseEvent
+from PySide6.QtGui import QMouseEvent, QColor
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
 # load implementations for rendering and interaction factory classes
+from vtkmodules.vtkFiltersCore import vtkExtractCells
+from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget, vtkOrientationMarkerWidget
 from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
+from vtkmodules.vtkRenderingCore import (
+    vtkActor, vtkRenderer, vtkPropPicker, vtkCellPicker,
+    vtkLightKit, vtkProp, vtkPolyDataMapper,
+)
 
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from libbaram.vtk_threads import isRenderingHold
 
 from resources import resource
@@ -33,6 +39,11 @@ colors = vtkNamedColors()
 
 RENDER_DELAY_TIME = 200
 REPAINT_SUPPRESS_TIME = 100
+
+
+class InteractionMode(Enum):
+    NORMAL = auto()
+    ROTATION_CENTER = auto()
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -80,12 +91,13 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._Iren.InvokeEvent(vtkCommand.LeftButtonDoubleClickEvent, None)
         elif self._ActiveButton == Qt.MouseButton.RightButton:
             self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
-        elif self._ActiveButton == Qt.MiddleButton:
+        elif self._ActiveButton == Qt.MouseButton.MiddleButton:
             self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
 
 
 class MouseHandler(QObject):
     mouseClicked = Signal(float, float, bool)
+    cellSelectionRequested = Signal(float, float)
 
     def __init__(self, style):
         super().__init__()
@@ -136,7 +148,10 @@ class MouseHandler(QObject):
         return False
 
     def _leftButtonClicked(self, x, y):
-        self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
+        if self._style.GetInteractor().GetShiftKey():
+            self.cellSelectionRequested.emit(x, y)
+        else:
+            self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
         return False
 
     def _mouseMoved(self, x, y, px, py):
@@ -147,15 +162,21 @@ class RenderingWidget(QWidget):
     actorPicked = Signal(vtkActor, bool)
     viewClosed = Signal()
 
+    cellSelected = Signal(object, int)
+
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
         self._dialog: Optional[QFileDialog] = None
 
-        self._originAxes: Optional[vtkOrientationMarkerWidget] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._actorPicker = vtkPropPicker()
+
+        self._cellPicker = vtkCellPicker()
+        self._cellPicker.SetTolerance(0.005)
+
+        self._cellSelectionActor: Optional[vtkActor] = None
 
         self._style = vtkInteractorStyleTrackballCamera()
         self._widget = RenderWindowInteractor(self)
@@ -169,9 +190,14 @@ class RenderingWidget(QWidget):
         self._widget.Initialize()
         self._widget.Start()
 
+        self._originAxes = vtkOrientationMarkerWidget()
+        self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._originAxes.SetOrientationMarker(vtkAxesActor())
+        self._originAxes.SetInteractor(self._widget)
+
         self._renderer.GradientBackgroundOn()
-        self._renderer.SetBackground(0.82, 0.82, 0.82)
-        self._renderer.SetBackground2(0.22, 0.24, 0.33)
+        self.setBackground1(QColor.fromString(NFM_LIGHT_GRAY))
+        self.setBackground2(QColor.fromString(NFM_DARK_SLATE_GRAY))
 
         self._lightKit = vtkLightKit()
         self._lightKit.AddLightsToRenderer(self._renderer)
@@ -183,10 +209,12 @@ class RenderingWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._widget)
 
-        self._originalMouseObserver = MouseHandler(self._style)
-        self._mouseObserver = self._originalMouseObserver
+        self._defaultHandler = MouseHandler(self._style)
+        self._handlers = {InteractionMode.NORMAL: self._defaultHandler}
+        self._mode = InteractionMode.NORMAL
+        self._activeHandler = self._defaultHandler
 
-        self._mouseObserver.mouseClicked.connect(self._mouseClicked)
+        self._wireHandlerSignals(self._defaultHandler)
 
         # To pick actors
         self._style.AddObserver(vtkCommand.LeftButtonPressEvent, self._leftButtonPressEvent)
@@ -239,7 +267,60 @@ class RenderingWidget(QWidget):
 
         return actor
 
+    def pickCell(self, x, y):
+        self._cellPicker.Pick(x, y, 0, self._renderer)
+        actor = self._cellPicker.GetActor()
+        cellId = self._cellPicker.GetCellId()
+        return actor, cellId
+
+    def showCellSelection(self, polyData, cellIds):
+        self.clearCellSelection()
+
+        if not cellIds:
+            return
+
+        from vtkmodules.vtkCommonCore import vtkIdList
+        idList = vtkIdList()
+        for cid in cellIds:
+            idList.InsertNextId(cid)
+
+        extractor = vtkExtractCells()
+        extractor.SetInputData(polyData)
+        extractor.SetCellList(idList)
+        extractor.Update()
+
+        geom = vtkGeometryFilter()
+        geom.SetInputConnection(extractor.GetOutputPort())
+        geom.Update()
+
+        mapper = vtkPolyDataMapper()
+        mapper.SetInputConnection(geom.GetOutputPort())
+        mapper.ScalarVisibilityOff()
+        mapper.SetResolveCoincidentTopologyToPolygonOffset()
+        mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(0.0, -1.0)
+
+        self._cellSelectionActor = vtkActor()
+        self._cellSelectionActor.SetMapper(mapper)
+        prop = self._cellSelectionActor.GetProperty()
+        prop.SetColor(1.0, 1.0, 1.0)
+        prop.SetOpacity(1.0)
+        prop.SetRepresentationToSurface()
+        prop.EdgeVisibilityOn()
+        prop.SetEdgeColor(1.0, 0.0, 1.0)
+        prop.SetLineWidth(2.0)
+        prop.SetLighting(False)
+
+        self._renderer.AddActor(self._cellSelectionActor)
+        self._widget.Render()
+
+    def clearCellSelection(self):
+        if self._cellSelectionActor is not None:
+            self._renderer.RemoveActor(self._cellSelectionActor)
+            self._cellSelectionActor = None
+            self._widget.Render()
+
     def clear(self):
+        self.clearCellSelection()
         self._renderer.RemoveAllViewProps()
         self._showLogo()
 
@@ -299,10 +380,12 @@ class RenderingWidget(QWidget):
     def getBounds(self):
         return self._renderer.ComputeVisiblePropBounds()
 
-    def setBackground1(self, r, g, b):
+    def setBackground1(self, color: QColor):
+        r, g, b, a = color.getRgbF()
         self._renderer.SetBackground(r, g, b)
 
-    def setBackground2(self, r, g, b):
+    def setBackground2(self, color: QColor):
+        r, g, b, a = color.getRgbF()
         self._renderer.SetBackground2(r, g, b)
 
     def background1(self):
@@ -311,11 +394,27 @@ class RenderingWidget(QWidget):
     def background2(self):
         return self._renderer.GetBackground2()
 
-    def setMouseHandler(self, observer):
-        self._mouseObserver = observer
+    def registerMouseHandler(self, mode: InteractionMode, handler):
+        self._handlers[mode] = handler
+        self._wireHandlerSignals(handler)
 
-    def resetMouseHandler(self):
-        self._mouseObserver = self._originalMouseObserver
+    def setInteractionMode(self, mode: InteractionMode):
+        if mode == self._mode:
+            return
+        if mode not in self._handlers:
+            raise ValueError(f'No handler registered for {mode}')
+        self._mode = mode
+        self._activeHandler = self._handlers[mode]
+
+    def resetInteractionMode(self):
+        self.setInteractionMode(InteractionMode.NORMAL)
+
+    def interactionMode(self) -> InteractionMode:
+        return self._mode
+
+    def _wireHandlerSignals(self, handler):
+        handler.mouseClicked.connect(self._mouseClicked)
+        handler.cellSelectionRequested.connect(self._onCellSelectionRequested)
 
     def _showCubeAxes(self):
         if self._cubeAxesActor is not None:
@@ -354,17 +453,10 @@ class RenderingWidget(QWidget):
             self._cubeAxesActor = None
 
     def _showOriginAxes(self):
-        if self._originAxes is None:
-            self._originAxes = vtkOrientationMarkerWidget()
-            self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
-            self._originAxes.SetOrientationMarker(vtkAxesActor())
-            self._originAxes.SetInteractor(self._widget)
-
         self._originAxes.EnabledOn()
 
     def _hideOriginAxes(self):
-        if self._originAxes is not None:
-            self._originAxes.EnabledOff()
+        self._originAxes.EnabledOff()
 
     # def _resizeOriginAxis(self):
     #     if self._originActor:
@@ -382,13 +474,16 @@ class RenderingWidget(QWidget):
     #         self._originActor.SetTotalLength(length, length, length)
 
     def _leftButtonPressEvent(self, obj, event):
-        self._mouseObserver.leftButtonPressed(obj, event)
+        self._activeHandler.leftButtonPressed(obj, event)
 
     def _leftButtonReleaseEvent(self, obj, event):
-        self._mouseObserver.leftButtonReleased(obj, event)
+        self._activeHandler.leftButtonReleased(obj, event)
+
+    def rightButtonReleaseEvent(self):
+        self._style.GetInteractor().InvokeEvent(vtkCommand.RightButtonReleaseEvent)
 
     def _mouseMoveEvent(self, obj, event):
-        self._mouseObserver.mouseMoved(obj, event)
+        self._activeHandler.mouseMoved(obj, event)
 
     def _mouseClicked(self, x, y, controlKeyPressed):
         self.actorPicked.emit(self.pickActor(x, y), controlKeyPressed)
@@ -412,6 +507,10 @@ class RenderingWidget(QWidget):
     # def _interactionEvent(self, obj, event):
     #     self._resizeOriginAxis()
     #     self._widget.Render()
+
+    def _onCellSelectionRequested(self, x, y):
+        actor, cellId = self.pickCell(x, y)
+        self.cellSelected.emit(actor, cellId)
 
     def _showLogo(self):
         reader = vtkPNGReader()

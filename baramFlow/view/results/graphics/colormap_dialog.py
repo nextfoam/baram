@@ -8,12 +8,11 @@ import qasync
 
 from baramFlow.base.constants import FieldType
 from baramFlow.base.field import VECTOR_COMPONENT_TEXTS
-from baramFlow.base.graphic.color_scheme import ColorbarWidget, ColormapScheme
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
-from baramFlow.base.graphic.color_scheme import colormapName
+from widgets.rendering.color_scheme import ColorbarWidget, ColormapScheme, colormapName
 from .colormap_scheme_dialog import ColormapSchemeDialog
 from .colormap_dialog_ui import Ui_ColormapDialog
 
@@ -33,7 +32,7 @@ class ColormapDialog(ResizableDialog):
         self._colorbarLayout.setContentsMargins(0, 0, 0, 0)
 
         self._ui.fieldDisplayName.setText(graphic.fieldDisplayName)
-        self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression(r'(^\p{L}$)|(^\p{L}[\p{L}\p{N}\p{Z}_\(\)]*[\p{L}\p{N}_\)]$)')))
+        # self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression(r'(^\p{L}$)|(^\p{L}[\p{L}\p{N}\p{Z}_\(\)]*[\p{L}\p{N}_\)]$)')))
 
         self._ui.numberOfLevels.setText(str(graphic.numberOfLevels))
         self._ui.numberOfLevels.setValidator(QIntValidator(1, 256))
@@ -62,6 +61,10 @@ class ColormapDialog(ResizableDialog):
         self._ui.customRangeMax.setValidator(QDoubleValidator())
 
         self._ui.clipToRange.setChecked(graphic.clipToRange)
+
+        self._ui.labelFormat.setText(graphic.labelFormat)
+        self._ui.labelFormat.setValidator(QRegularExpressionValidator(QRegularExpression(r"^%[-+ #0]*\d*(?:\.\d*)?[feEgG]$")))
+
 
         self._setPresetColorScheme(graphic.colorScheme)
         self._presetColorScheme = graphic.colorScheme
@@ -108,6 +111,7 @@ class ColormapDialog(ResizableDialog):
         self._graphic.customRangeMin = self._ui.customRangeMin.text()
         self._graphic.customRangeMax = self._ui.customRangeMax.text()
         self._graphic.clipToRange = True if self._ui.clipToRange.isChecked() else False
+        self._graphic.labelFormat = self._ui.labelFormat.text()
         self._graphic.useCustomColorScheme = True if self._ui.useCustomColorScheme.isChecked() else False
         self._graphic.colorScheme = self._presetColorScheme
         self._graphic.customMinColor = self._customMinColor
@@ -145,6 +149,11 @@ class ColormapDialog(ResizableDialog):
         if numberOfLevels > 256:
             await AsyncMessageBox().critical(self, self.tr('Input Error'),
                                                 self.tr('Number of levels should be less than 257'))
+            return False
+
+        if not self._ui.labelFormat.hasAcceptableInput():
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Label Format is not a valid format (e.g. %-#6.5g).'))
             return False
 
         return True

@@ -22,31 +22,35 @@ from .geometry_list import GeometryList
 from .split_dialog import SplitDialog
 from .stl_utility import StlImporter
 from .surface_dialog import SurfaceDialog
+from .surface_splitter import splitPolyData
+from .surfaces_rename_dkialog import SurfacesRenameDialog
 from .volume_dialog import VolumeDialog
 
 
 class ContextMenu(QMenu):
     editActionTriggered = Signal()
+    renameActionTriggered = Signal()
     removeActionTriggered = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._renameAction = QAction(self.tr('Rename'), self)
         self._removeAction = QAction(self.tr('Remove'), self)
 
         editAction = QAction(self.tr('Edit/View'), self)
 
         self.addAction(editAction)
+        self.addAction(self._renameAction)
         self.addAction(self._removeAction)
 
         editAction.triggered.connect(self.editActionTriggered)
+        self._renameAction.triggered.connect(self.renameActionTriggered)
         self._removeAction.triggered.connect(self.removeActionTriggered)
 
-    def enableEditActions(self):
-        self._removeAction.setVisible(True)
-
-    def disableEditActions(self):
-        self._removeAction.setVisible(False)
+    def updateStatus(self, locked, forSurfaces):
+        self._renameAction.setVisible(not locked and forSurfaces)
+        self._removeAction.setVisible(not locked)
 
 
 class GeometryPage(StepPage):
@@ -83,10 +87,18 @@ class GeometryPage(StepPage):
 
         self._geometryManager.selectedActorsChanged.connect(self._applyDisplaySelections)
 
+        app.window.displayControl.splitRequested.connect(self._splitSurface)
+
         self._loaded = True
 
     def retranslate(self):
         self._list.retranslate()
+
+    def openRenameDialog(self):
+        self._dialog = SurfacesRenameDialog(self._widget,
+                                            [(item.gId(), item.geometry().value('name')) for item in self._list.selectedItems()])
+        self._dialog.accepted.connect(lambda: self._updateSurfaces(self._dialog.gIds()))
+        self._dialog.open()
 
     def _connectSignalsSlots(self):
         self._ui.geometryList.customContextMenuRequested.connect(self._executeContextMenu)
@@ -94,17 +106,14 @@ class GeometryPage(StepPage):
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
         self._menu.editActionTriggered.connect(self._openEditDialog)
+        self._menu.renameActionTriggered.connect(self.openRenameDialog)
         self._menu.removeActionTriggered.connect(self._removeGeometry)
 
     def _executeContextMenu(self, pos):
         if not self._list.selectedItems():
             return
 
-        if self._locked:
-            self._menu.disableEditActions()
-        else:
-            self._menu.enableEditActions()
-
+        self._menu.updateStatus(self._locked, self._list.selectedItems()[0].isSurface())
         self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
 
     def _selectedItemsChanged(self):
@@ -136,14 +145,7 @@ class GeometryPage(StepPage):
             gId = self._dialog.gId()
             volume = app.db.getElement('geometry',  gId)
             self._list.update(gId, volume)
-            self._geometryManager.updateCustomSurfaces(volume, self._list.childSurfaces(gId))
-
-        def updateSurfaces():
-            gIds = self._dialog.gIds()
-            for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
-                self._list.update(gId, surface)
-                if surface.value('volume') is not None:
-                    self._geometryManager.updateIndependentSurface(gId, surface)
+            self._geometryManager.updateCustomSurfacesByVolume(volume, self._list.childSurfaces(gId))
 
         items = self._list.selectedItems()
 
@@ -172,7 +174,7 @@ class GeometryPage(StepPage):
 
             self._dialog.setData([item.gId() for item in items], sources)
             self._dialog.finished.connect(self._restoreActors)
-            self._dialog.accepted.connect(updateSurfaces)
+            self._dialog.accepted.connect(lambda: self._updateSurfaces(self._dialog.gIds()))
             self._dialog.open()
 
     @qasync.asyncSlot()
@@ -212,6 +214,66 @@ class GeometryPage(StepPage):
         self._updateNextStepAvailable()
 
         self.geometryRemoved.emit()
+
+    def _splitSurface(self, actorId: str, cellIds: list):
+        if self._locked:
+            return
+
+        actorInfo = self._geometryManager.actorInfo(actorId)
+        if actorInfo is None:
+            return
+
+        polyData = actorInfo.dataSet()
+        if polyData is None:
+            return
+
+        totalCells = polyData.GetNumberOfCells()
+        if len(cellIds) == 0 or len(cellIds) == totalCells:
+            app.window.displayControl.clearCellSelection()
+            return
+
+        polyData1, polyData2 = splitPolyData(polyData, cellIds)
+
+        db = app.db.checkout()
+
+        original = db.getElement('geometry', actorId)
+        originalPath = original.value('path')
+
+        if originalPath:
+            db.removeGeometryPolyData(originalPath)
+
+        path1 = db.addGeometryPolyData(polyData1)
+        path2 = db.addGeometryPolyData(polyData2)
+
+        db.setValue(f'geometry/{actorId}/path', path1)
+
+        baseName = original.value('name')
+        newName = db.getUniqueSeq('geometry', 'name', baseName + '_split', '')
+        newName = baseName + '_split' + newName
+
+        element = db.newElement('geometry')
+        element.setValue('gType', original.value('gType'))
+        element.setValue('name', newName)
+        element.setValue('shape', original.value('shape'))
+        element.setValue('cfdType', original.value('cfdType'))
+        element.setValue('path', path2)
+
+        volumeId = original.value('volume')
+        if volumeId:
+            element.setValue('volume', volumeId)
+
+        newGId = db.addElement('geometry', element)
+
+        app.db.commit(db)
+
+        self._geometryManager.splitSurface(actorId, polyData1, newGId, newName, polyData2)
+
+        newGeometry = app.db.getElement('geometry', newGId)
+        self._list.add(newGId, newGeometry)
+
+        app.window.displayControl._clearPendingSplit()
+
+        self._updateNextStepAvailable()
 
     @qasync.asyncSlot()
     async def _importSTL(self):
@@ -339,3 +401,9 @@ class GeometryPage(StepPage):
             actorInfo.setOpacity(opacity)
 
         self._actorsBackup.clear()
+
+    def _updateSurfaces(self, gIds):
+        for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
+            self._list.update(gId, surface)
+            self._geometryManager.updateSurface(gId, surface)
+

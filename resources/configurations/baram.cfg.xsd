@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="13">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="14">
 
     <!-- type definitions -->
     <xs:simpleType name="uuidType">
@@ -891,37 +891,28 @@
                             <xs:element name="mass">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
                                         <xs:element name="specification" default="constant">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="constant"/>
-                                                    <xs:enumeration
-                                                            value="piecewiseLinear"/>
-                                                    <xs:enumeration
-                                                            value="polynomial"/>
+                                                    <xs:enumeration value="constant"/>
+                                                    <xs:enumeration value="piecewiseLinear"/>
+                                                    <xs:enumeration value="polynomial"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
-                                        <xs:element
-                                                name="piecewiseLinear" type="temporalScalarListType"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
+                                        <xs:element name="piecewiseLinear" type="temporalScalarListType"/>
                                         <xs:element name="polynomial" type="inputNumberListType"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="materials">
@@ -931,14 +922,11 @@
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
-                                                    <xs:element name="unit"
-                                                                default="valueForEntireCellZone">
+                                                    <xs:element name="unit" default="valueForEntireCellZone">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
-                                                                <xs:enumeration
-                                                                        value="valuePerUnitVolume"/>
-                                                                <xs:enumeration
-                                                                        value="valueForEntireCellZone"/>
+                                                                <xs:enumeration value="valuePerUnitVolume"/>
+                                                                <xs:enumeration value="valueForEntireCellZone"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
@@ -952,14 +940,11 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
-                                                    <xs:element name="constant"
-                                                                type="inputNumberType" default="0"/>
-                                                    <xs:element
-                                                            name="piecewiseLinear" type="temporalScalarListType"/>
+                                                    <xs:element name="constant" type="inputNumberType" default="0"/>
+                                                    <xs:element name="piecewiseLinear" type="temporalScalarListType"/>
                                                     <xs:element name="polynomial" type="inputNumberListType"/>
                                                 </xs:sequence>
-                                                <xs:attribute name="disabled" type="xs:boolean"
-                                                              use="required"/>
+                                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -968,121 +953,92 @@
                             <xs:element name="energy">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
                                         <xs:element name="specification" default="constant">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="constant"/>
-                                                    <xs:enumeration
-                                                            value="piecewiseLinear"/>
-                                                    <xs:enumeration
-                                                            value="polynomial"/>
+                                                    <xs:enumeration value="constant"/>
+                                                    <xs:enumeration value="piecewiseLinear"/>
+                                                    <xs:enumeration value="polynomial"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
-                                        <xs:element
-                                                name="piecewiseLinear" type="temporalScalarListType"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
+                                        <xs:element name="piecewiseLinear" type="temporalScalarListType"/>
                                         <xs:element name="polynomial" type="inputNumberListType"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="turbulentKineticEnergy">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="turbulentDissipationRate">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="specificDissipationRate">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="modifiedTurbulentViscosity">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="unit"
-                                                    default="valueForEntireCellZone">
+                                        <xs:element name="unit" default="valueForEntireCellZone">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
-                                                    <xs:enumeration
-                                                            value="valuePerUnitVolume"/>
-                                                    <xs:enumeration
-                                                            value="valueForEntireCellZone"/>
+                                                    <xs:enumeration value="valuePerUnitVolume"/>
+                                                    <xs:enumeration value="valueForEntireCellZone"/>
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-                                        <xs:element name="constant"
-                                                    type="inputNumberType" default="0"/>
+                                        <xs:element name="constant" type="inputNumberType" default="0"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled" type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="userDefinedScalars">
@@ -1995,6 +1951,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="crankNicolsonBlendingFactor" type="inputRatioType" default="0.9"/>
                         <xs:element name="momentum" default="secondOrderUpwind">
                             <xs:simpleType>
                                 <xs:restriction base='xs:string'>
@@ -3605,6 +3562,7 @@
                                         <xs:element name="customRangeMin" type="xs:double" default="0"/>
                                         <xs:element name="customRangeMax" type="xs:double" default="0"/>
                                         <xs:element name="clipToRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="labelFormat" type="xs:string" default="%-#6.5g"/>
                                         <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
                                         <xs:element name="colorScheme" type="xs:string" default="Blue to Red Rainbow"/>
                                         <xs:element name="customMinColor" type="xs:string" default="#000000"/>
@@ -3663,6 +3621,14 @@
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="rendering">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="background1" type="xs:string" default="#d1d1d1"/>
+                                                    <xs:element name="background2" type="xs:string" default="#383d54"/>
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>

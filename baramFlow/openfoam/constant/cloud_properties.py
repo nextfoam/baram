@@ -72,13 +72,12 @@ class CloudProperties(DictionaryFile):
         self._data = {
             'solution': {
                 'active': 'true',
-                'calcFrequency': 10,
                 'maxTrackTime': 5.0,
                 'coupled': self._helper.boolValue(properties.numericalConditions.interactionWithContinuousPhase),
                 'transient': self._helper.boolValue(GeneralDB.isTimeTransient()),
                 'cellValueSourceCorrection': self._helper.boolValue(properties.numericalConditions.nodeBasedAveraging),
-                'maxCo': self._helper.pFloatValue(properties.numericalConditions.maxParticleCourantNumber),
-                'calcFrequency': self._helper.pFloatValue(properties.numericalConditions.DPMIterationInterval),
+                'maxCo': float(properties.numericalConditions.maxParticleCourantNumber),
+                'calcFrequency': float(properties.numericalConditions.DPMIterationInterval),
                 'sourceTerms': {
                     'resetOnStartup': 'false',
                     'schemes': {
@@ -108,7 +107,7 @@ class CloudProperties(DictionaryFile):
             },
             'constantProperties': {
                 'rho0': self._db.getValue(MaterialDB.getXPath(mid) + '/density/constant'),
-                'T0': self._helper.pFloatValue(properties.droplet.temperature),
+                'T0': float(properties.droplet.temperature),
                 'Cp0': self._db.getValue(MaterialDB.getXPath(mid) + '/specificHeat/constant'),
             },
             'subModels': {
@@ -145,12 +144,12 @@ class CloudProperties(DictionaryFile):
         def dragForceDict(specification):
             if specification == DPMDragForce.NON_SPHERICAL:
                 return {
-                    'phi': self._helper.pFloatValue(model.dragForce.nonSphereDrag.shapeFactor)
+                    'phi': float(model.dragForce.nonSphereDrag.shapeFactor)
                 }
 
             if specification == DPMDragForce.TOMIYAMA:
                 return {
-                    'sigma': self._helper.pFloatValue(model.dragForce.tomyamaDrag.surfaceTension),
+                    'sigma': float(model.dragForce.tomyamaDrag.surfaceTension),
                     'contamination': model.dragForce.tomyamaDrag.contamination.value
                 }
 
@@ -159,7 +158,7 @@ class CloudProperties(DictionaryFile):
         def liftForceDict(specification):
             if specification == DPMLiftForce.TOMIYAMA:
                 return {
-                    'sigma': self._helper.pFloatValue(model.liftForce.tomiyamaLift.surfaceTension),
+                    'sigma': float(model.liftForce.tomiyamaLift.surfaceTension),
                 }
 
             return {}
@@ -181,7 +180,7 @@ class CloudProperties(DictionaryFile):
             and TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR \
                 and ModelsDB.isEnergyModelOn():
             data['BrownianMotion'] = {
-                'lambda': self._helper.pFloatValue(model.brownianMotionForce.molecularFreePathLength),
+                'lambda': float(model.brownianMotionForce.molecularFreePathLength),
                 'turbulence': self._helper.boolValue(model.brownianMotionForce.useTurbulence),
                 'spherical': 'false'
             }
@@ -190,8 +189,8 @@ class CloudProperties(DictionaryFile):
 
     def _constructFlowRate(self, flowRate: FlowRate):
         if GeneralDB.isTimeTransient():
-            startTime = self._helper.pFloatValue(flowRate.startTime)
-            duration = float(self._helper.pFloatValue(flowRate.stopTime)) - float(startTime)
+            startTime = float(flowRate.startTime)
+            duration = float(float(flowRate.stopTime)) - float(startTime)
         else:
             startTime = 0
             duration = 1
@@ -199,8 +198,8 @@ class CloudProperties(DictionaryFile):
         if flowRate.specification == DPMFlowRateSpec.PARTICLE_COUNT:
             return {
                 'parcelBasisType': 'fixed',
-                'parcelsPerSecond': self._helper.pFloatValue(flowRate.particleCount.parcelPerSecond),
-                'nParticle': self._helper.pFloatValue(flowRate.particleCount.numberOfParticlesPerParcel),
+                'parcelsPerSecond': float(flowRate.particleCount.parcelPerSecond),
+                'nParticle': float(flowRate.particleCount.numberOfParticlesPerParcel),
                 'massTotal': '0',
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
                 'massFlowRate': ('constant', '0'),
@@ -210,10 +209,10 @@ class CloudProperties(DictionaryFile):
         elif flowRate.specification == DPMFlowRateSpec.PARTICLE_VOLUME:
             return {
                 'parcelBasisType': 'mass',
-                'parcelsPerSecond': self._helper.pFloatValue(flowRate.particleVolume.parcelPerSecond),
-                'massTotal': self._helper.pFloatValue(flowRate.particleVolume.totalMass),
+                'parcelsPerSecond': float(flowRate.particleVolume.parcelPerSecond),
+                'massTotal': float(flowRate.particleVolume.totalMass),
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
-                'massFlowRate': ('constant', self._helper.pFloatValue(flowRate.particleVolume.massFlowRate)),
+                'massFlowRate': ('constant', float(flowRate.particleVolume.massFlowRate)),
                 'SOI': startTime,
                 'duration': duration
             }
@@ -223,45 +222,45 @@ class CloudProperties(DictionaryFile):
             return {
                 'type': 'fixedValue',
                 'fixedValueDistribution': {
-                    'value': self._helper.pFloatValue(distribution.diameter)
+                    'value': float(distribution.diameter)
                 }
             }
         elif distribution.type == DPMDiameterDistribution.LINEAR:
             return {
                 'type': 'uniform',
                 'uniformDistribution': {
-                    'minValue': self._helper.pFloatValue(distribution.minDiameter),
-                    'maxValue': self._helper.pFloatValue(distribution.maxDiameter)
+                    'minValue': float(distribution.minDiameter),
+                    'maxValue': float(distribution.maxDiameter)
                 }
             }
         elif distribution.type == DPMDiameterDistribution.ROSIN_RAMMLER:
             return {
                 'type': 'RosinRammler',
                 'RosinRammlerDistribution': {
-                    'minValue': self._helper.pFloatValue(distribution.minDiameter),
-                    'maxValue': self._helper.pFloatValue(distribution.maxDiameter),
-                    'lambda': self._helper.pFloatValue(distribution.meanDiameter),
-                    'n': self._helper.pFloatValue(distribution.spreadParameter)
+                    'minValue': float(distribution.minDiameter),
+                    'maxValue': float(distribution.maxDiameter),
+                    'lambda': float(distribution.meanDiameter),
+                    'n': float(distribution.spreadParameter)
                 }
             }
         elif distribution.type == DPMDiameterDistribution.MASS_ROSIN_RAMMLER:
             return {
                 'type': 'massRosinRammler',
                 'massRosinRammlerDistribution': {
-                    'minValue': self._helper.pFloatValue(distribution.minDiameter),
-                    'maxValue': self._helper.pFloatValue(distribution.maxDiameter),
-                    'lambda': self._helper.pFloatValue(distribution.meanDiameter),
-                    'n': self._helper.pFloatValue(distribution.spreadParameter)
+                    'minValue': float(distribution.minDiameter),
+                    'maxValue': float(distribution.maxDiameter),
+                    'lambda': float(distribution.meanDiameter),
+                    'n': float(distribution.spreadParameter)
                 }
             }
         elif distribution.type == DPMDiameterDistribution.NORMAL:
             return {
                 'type': 'normal',
                 'massRosinRammlerDistribution': {
-                    'mu': self._helper.pFloatValue(distribution.meanDiameter),
-                    'sigma': self._helper.pFloatValue(distribution.stdDeviation),
-                    'minValue': self._helper.pFloatValue(distribution.minDiameter),
-                    'maxValue': self._helper.pFloatValue(distribution.maxDiameter)
+                    'mu': float(distribution.meanDiameter),
+                    'sigma': float(distribution.stdDeviation),
+                    'minValue': float(distribution.minDiameter),
+                    'maxValue': float(distribution.maxDiameter)
                 }
             }
 
@@ -274,11 +273,11 @@ class CloudProperties(DictionaryFile):
         return {
             'type': 'manualInjection',
             'parcelBasisType': 'fixed',
-            'nParticle': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
+            'nParticle': float(injection.numberOfParticlesPerPoint),
             'massTotal': '0',
             'massFlowRate': ('constant', '0'),
             'parcelsPerSecond': '1',
-            'SOI': self._helper.pFloatValue(injection.injectionTime),
+            'SOI': float(injection.injectionTime),
             'positionsFile': f'"{positionsFileName}"',
             'U0': self._helper.vectorValue(injection.particleVelocity)
         }
@@ -300,11 +299,11 @@ class CloudProperties(DictionaryFile):
             'flowType': ('constantVelocity' if injection.particleSpeed == DPMParticleSpeed.FROM_INJECTION_SPEED
                          else 'pressureDrivenVelocity' if injection.particleSpeed == DPMParticleSpeed.FROM_PRESSURE
                          else 'flowRateAndDischarge'),
-            'UMag': self._helper.pFloatValue(injection.injectionSpeed),
+            'UMag': float(injection.injectionSpeed),
             'Pinj': self._helper.function1ScalarValue(injection.injectorPressure),
             'Cd': self._helper.function1ScalarValue(injection.dischargeCoeff),
-            'outerDiameter': float(self._helper.pFloatValue(injection.outerRadius)) * 2,
-            'innerDiameter': float(self._helper.pFloatValue(injection.innerRadius)) * 2,
+            'outerDiameter': float(float(injection.outerRadius)) * 2,
+            'innerDiameter': float(float(injection.innerRadius)) * 2,
             'thetaInner': self._helper.function1ScalarValue(injection.innerConeAngle),
             'thetaOuter': self._helper.function1ScalarValue(injection.outerConeAngle),
             'position': self._helper.function1VectorValue(injection.position),
@@ -347,7 +346,7 @@ class CloudProperties(DictionaryFile):
                     'patchInteractionModel': 'recycleInteraction',
                     'recycleInteractionCoeffs': {
                         'recyclePatches': [[name, BoundaryDB.getBoundaryName(interaction.recycle.recycleBoundary)]],
-                        'recycleFraction': self._helper.pFloatValue(interaction.recycle.recycleFraction),
+                        'recycleFraction': float(interaction.recycle.recycleFraction),
                     }
                 }
             else:  # localInteraction
@@ -355,8 +354,8 @@ class CloudProperties(DictionaryFile):
                 if interaction.type == PatchInteractionType.REFLECT:
                     localPatches.append({
                         'type': 'rebound',
-                        'e': self._helper.pFloatValue(interaction.reflect.normal),
-                        'mu': (1 - float(self._helper.pFloatValue(interaction.reflect.tangential))),
+                        'e': float(interaction.reflect.normal),
+                        'mu': (1 - float(float(interaction.reflect.tangential))),
                     })
                 elif interaction.type == PatchInteractionType.ESCAPE:
                     localPatches.append({

@@ -26,6 +26,7 @@ from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDial
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
+from baramMesh.db.configurations_schema import Step
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.openfoam.utility.snappy_hex_mesh import snappyHexMesh
 from baramMesh.view.display_control.display_control import DisplayControl
@@ -35,7 +36,6 @@ from baramMesh.view.widgets.language_dialog import LanugageDialog
 from baramMesh.view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
 from baramMesh.view.menu.help.about_dialog import AboutDialog
 from baramMesh.view.geometry.geometry_manager import GeometryManager
-from widgets.themed_icon import load_themed_icon
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
 from .rendering_tool import RenderingTool
@@ -53,15 +53,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-
-        self._ui.axis.setIcon(load_themed_icon(':/graphicsIcons/originAxes'))
-        self._ui.cubeAxis.setIcon(load_themed_icon(':/graphicsIcons/ruler.svg'))
-        self._ui.ruler.setIcon(load_themed_icon(':/graphicsIcons/distance.svg'))
-        self._ui.perspective.setIcon(load_themed_icon(':/graphicsIcons/2d-label-icon.svg'))
-        self._ui.fit.setIcon(load_themed_icon(':/icons/expand.svg'))
-        self._ui.alignAxis.setIcon(load_themed_icon(':/graphicsIcons/alignAxis.svg'))
-        self._ui.rotate.setIcon(load_themed_icon(':/icons/reload.svg'))
-        self._ui.rotationCenter.setIcon(load_themed_icon(':/graphicsIcons/rotationCenter'))
 
         self._ui.renderingSplitter.setStretchFactor(0, 0)
         self._ui.renderingSplitter.setStretchFactor(1, 1)
@@ -83,7 +74,8 @@ class MainWindow(QMainWindow):
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
-        self._startDialog = ProjectDialog()
+        self._startDialog = None
+        self._setupStartDialog()
         self._dialog = None
 
         self._readyToQuit = False
@@ -153,6 +145,23 @@ class MainWindow(QMainWindow):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
 
+    def _setupStartDialog(self):
+        self._startDialog = ProjectDialog()
+        self._startDialog.actionNewSelected.connect(self._actionNew)
+        self._startDialog.actionOpenSelected.connect(self._actionOpen)
+        self._startDialog.actionProjectSelected.connect(self._openProject)
+        self._startDialog.finished.connect(self._startDialogClosed)
+
+    def _returnToStartScreen(self):
+        # A project open/create failed after the previous project was already
+        # closed, leaving no open project. Hide the now-projectless main window
+        # and bring back the start dialog so the user isn't left with a UI that
+        # crashes on every action that touches app.db (which is now None).
+        self.hide()
+        self._setupStartDialog()
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
+
     def _setupShortcuts(self):
         self._ui.actionNew.setShortcut('Ctrl+N')
         self._ui.actionOpen.setShortcut('Ctrl+O')
@@ -181,18 +190,15 @@ class MainWindow(QMainWindow):
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
 
-        self._startDialog.actionNewSelected.connect(self._actionNew)
-        self._startDialog.actionOpenSelected.connect(self._actionOpen)
-        self._startDialog.actionProjectSelected.connect(self._openProject)
-        self._startDialog.finished.connect(self._startDialogClosed)
-
-        self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
+        self._stepManager.workingStepChanged.connect(self._displayControl.handleWorkingStepChanged)
         self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
+
+        self._displayControl.renameTriggered.connect(self._stepManager.page(Step.GEOMETRY).openRenameDialog)
 
         snappyHexMesh.snappyStarted.connect(self._disableMenubar)
         snappyHexMesh.snappyStopped.connect(self._enableMenubar)
 
-        self._closeTriggered.connect(self._closeProject)
+        self._closeTriggered.connect(self._closeProjectSlot)
 
     def _setRenderingEnabled(self, enabled):
         self._displayControl.setEnabled(enabled)
@@ -269,32 +275,48 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _createProject(self):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
-        if app.createProject(self._dialog.projectPath()):
-            self._recentFilesMenu.addRecentest(app.project.path)
-            self._projectOpened()
+        try:
+            app.createProject(self._dialog.projectPath())
+        except (OSError, Timeout) as ex:
+            await AsyncMessageBox().information(self, self.tr('Project Creation Error'), str(ex))
+            self._recoverFromMissingProject()
+            return
+
+        self._recentFilesMenu.addRecentest(app.project.path)
+        self._projectOpened()
 
     @qasync.asyncSlot()
     async def _openProject(self, file):
-        await self._closeProject()
+        if not await self._closeProject():  # user cancelled, keep current project
+            return
         self._clear()
 
         path = Path(file)
         try:
             app.openProject(path.resolve())
             self._projectOpened()
+            return
         except FileNotFoundError:
-            await AsyncMessageBox().information(
-                self, self.tr('Project Open Error'),
-                self.tr('{0} is not a {1} project.').format(path.name, meshAppProperties.fullName))
+            message = self.tr('{0} is not a {1} project.').format(path.name, meshAppProperties.fullName)
         except Timeout:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr('{0} is already open in another program.').format(path.name))
+            message = self.tr('{0} is already open in another program.').format(path.name)
         except ValidationError as e:
-            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
-                                                self.tr(f'configurations error : {e.path} - {e.name}'))
+            message = self.tr(f'configurations error : {e.path} - {e.name}')
+
+        await AsyncMessageBox().information(self, self.tr('Project Open Error'), message)
+        self._recoverFromMissingProject()
+
+    def _recoverFromMissingProject(self):
+        # The open/create failed after the previous project was already closed.
+        # If the main window is showing (an in-session switch), it now has no
+        # project and every db-backed action would crash, so go back to the
+        # start screen. At launch the start dialog is still up, so leave it.
+        if self._startDialog is None:
+            self._returnToStartScreen()
 
     @qasync.asyncSlot()
     async def _saveAs(self, path):
@@ -309,7 +331,20 @@ class MainWindow(QMainWindow):
             await self._closeProject()
             self._clear()
             self._projectClosed()
-            app.openProject(path)
+
+            try:
+                app.openProject(path)
+            except (FileNotFoundError, Timeout, ValidationError) as ex:
+                # The new project was already written to disk by saveAs above, but
+                # reopening it failed after the old project was closed and cleared,
+                # leaving the window project-less. Go back to the start screen
+                # instead of leaving a UI that crashes on every db-backed action
+                # (e.g. meshManager is now None).
+                progressDialog.close()
+                await AsyncMessageBox().information(self, self.tr('Project Open Error'), str(ex))
+                self._recoverFromMissingProject()
+                return
+
             self._projectOpened()
             progressDialog.close()
 
@@ -330,6 +365,9 @@ class MainWindow(QMainWindow):
         self._ui.menuParallel.setEnabled(True)
 
     @qasync.asyncSlot()
+    async def _closeProjectSlot(self, toQuit=False):
+        return await self._closeProject(toQuit)
+
     async def _closeProject(self, toQuit=False):
         if app.project is None:
             return True
@@ -376,7 +414,7 @@ class MainWindow(QMainWindow):
             await redistributionTask.redistribute(numCores)
 
         app.project.setParallelEnvironment(environment)
-        progressDialog.finish('Parallel Environment was Applied.')
+        await progressDialog.finish('Parallel Environment was Applied.')
 
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):

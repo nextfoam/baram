@@ -15,7 +15,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB, UserDefinedScalar
-from .user_defined_scalar_dialog import UserDefiendScalarDialog, ALL_MATERIALS_TEXT, SCALAR_SPECIFICATION_METHODS
+from .user_defined_scalar_dialog import UserDefinedScalarDialog, ALL_MATERIALS_TEXT, SCALAR_SPECIFICATION_METHODS
 from .user_defined_scalars_dialog_ui import Ui_UserDefinedScalarsDialog
 
 
@@ -53,7 +53,7 @@ class ScalarItem(QTreeWidgetItem):
 
         self.setText(Column.FIELD_NAME, scalar.fieldName)
         self.setText(Column.TARGET, target)
-        self.setText(Column.DIFFUSIVITY, (scalar.constantDiffusivity
+        self.setText(Column.DIFFUSIVITY, (str(scalar.constantDiffusivity)
                                           if scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT
                                           else SCALAR_SPECIFICATION_METHODS[scalar.specificationMethod]))
 
@@ -96,8 +96,8 @@ class UserDefinedScalarsDialog(QDialog):
             self._addScalar(UserDefinedScalarsDB.getUserDefinedScalar(scalarID))
 
     def _openScalarAddDialog(self):
-        self._dialog = UserDefiendScalarDialog(self, UserDefinedScalarsDB.getUserDefinedScalar(0))
-        self._dialog.accepted.connect(lambda: self._addScalar(self._dialog.scalar()))
+        self._dialog = UserDefinedScalarDialog(self, UserDefinedScalarsDB.getUserDefinedScalar(0))
+        self._dialog.dataAccepted.connect(self._addScalar)
         self._dialog.open()
 
     def _addScalar(self,  scalar: UserDefinedScalar):
@@ -129,12 +129,12 @@ class UserDefinedScalarsDialog(QDialog):
         # self._ui.scalars.takeTopLevelItem(self._ui.scalars.indexOfTopLevelItem(item))
 
     def _openScalarEditDialog(self, item):
-        self._dialog = UserDefiendScalarDialog(self, item.scalar())
-        self._dialog.accepted.connect(lambda: self._updateScalar(item))
-        self._dialog.open()
+        def updateScalar(data: UserDefinedScalar):
+            item.setScalar(data)
 
-    def _updateScalar(self,  item):
-        item.setScalar(self._dialog.scalar())
+        self._dialog = UserDefinedScalarDialog(self, item.scalar())
+        self._dialog.dataAccepted.connect(updateScalar)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -153,12 +153,12 @@ class UserDefinedScalarsDialog(QDialog):
                             db.setValue(xpath + '/material', scalar.material)
                             db.setValue(xpath + '/diffusivity/specificationMethod', scalar.specificationMethod.value)
                             if scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:
-                                db.setValue(xpath + '/diffusivity/constant', scalar.constantDiffusivity)
+                                db.setValue(xpath + '/diffusivity/constant', str(scalar.constantDiffusivity))
                             else:
                                 db.setValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient',
-                                            scalar.laminarViscosityCoefficient)
+                                            str(scalar.laminarViscosityCoefficient))
                                 db.setValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient',
-                                            scalar.turbulentViscosityCoefficient)
+                                            str(scalar.turbulentViscosityCoefficient))
 
                     elif not item.isHidden():
                         UserDefinedScalarsDB.addUserDefinedScalar(db, scalar)

@@ -29,11 +29,10 @@ from .pod_rom_page_ui import Ui_PODROMPage
 from .eval_enhance_rom_dialog import EvalNEnhanceROMDialog
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 
 from baramFlow.base.constants import VectorComponent, FieldType
-from baramFlow.base.field import VELOCITY, CollateralField, Field, SpecieField, UserScalarField
+from baramFlow.base.field import CollateralField, SpecieField, UserScalarField
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.function_objects import FoDict
@@ -211,9 +210,9 @@ class PODROMPage(ContentPage):
             activeNames = [p for p, v in self._paramActive.items() if v]
             self._project.fileDB().putText("ROMparams", "\n".join(activeNames))
             self.loadSnapshotCases(overwriteSlider=True)
-            progressDialog.finish(self.tr('ROM build finished'))
+            await progressDialog.finish(self.tr('ROM build finished'))
         except Exception as e:
-            progressDialog.finish(self.tr('ROM build error : ') + str(e))
+            await progressDialog.finish(self.tr('ROM build error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
 
@@ -376,9 +375,9 @@ class PODROMPage(ContentPage):
             await self._caseManager.podRunReconstruct(caseName, listSnapshotCase, paramsActive)
             await self._caseManager.podSaveToBatchCase(caseName)
             await self._caseManager.podAddToBatchList(caseName, paramsToReconstruct)
-            progressDialog.finish(self.tr('Reconstruction Finished'))
+            await progressDialog.finish(self.tr('Reconstruction Finished'))
         except Exception as e:
-            progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
+            await progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
 

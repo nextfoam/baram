@@ -3,9 +3,9 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 
-from baramFlow.base.xml_helper import Vector
-from libbaram.pfloat import PFloat
 from widgets.pfloat_line_edit import PFloatLineEdit
+
+from baramFlow.base.base import Vector
 
 
 class VectorWidget(QWidget):

@@ -61,7 +61,7 @@
              </widget>
             </item>
             <item>
-             <widget class="BatchableFloatEdit" name="totalPressure"/>
+             <widget class="PFloatLineEdit" name="totalPressure"/>
             </item>
            </layout>
           </widget>
@@ -101,11 +101,11 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
+         <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>208</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -132,9 +132,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

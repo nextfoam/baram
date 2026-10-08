@@ -37,8 +37,9 @@ class EventBus:
         self.onMeshLoading = AsyncSignal(dict[str, RegionComponents], dict[str, RegionComponents])
         self.onProjectOpen = AsyncSignal()
         self.onProjectClose = AsyncSignal()
-        # self.onBoundaryTypeChange = AsyncSignal(str, BoundaryType, BoundaryType)  # bcid, oldType, newType
-        self.onBoundaryTypeChange = AsyncSignal(str, Enum, Enum)  # Enum type is used to avoid circular import
+        # self.onBoundaryTypeChange = SyncSignal(str, BoundaryType, BoundaryType)  # bcid, oldType, newType
+        self.onBoundaryTypeChange = SyncSignal(str, Enum, Enum)  # Enum type is used to avoid circular import
 
         self.onSaving = SyncSignal()
         self.onConfigChanged = SyncSignal()
+        self.onGraphicsPlaybackChanged = SyncSignal(bool)  # Graphics Report time-slider playback started/stopped

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+from typing import Optional
 from uuid import UUID, uuid4
 
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QColor
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QColorDialog, QHeaderView, QMenu, QWidget
@@ -15,23 +17,32 @@ from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkTextProperty
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
+from baramFlow.coredb.project import Project
+from baramFlow.solver_status import SolverStatus
 
 from baramFlow.base.constants import FieldType, VectorComponent
-from baramFlow.base.graphic.color_scheme import getColorTable
+from baramFlow.base.event_bus import EventBus
+from baramFlow.base.field import CollateralField
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.libbaram.collateral_fields import calculateCollateralField
+from baramFlow.openfoam.file_system import FileSystem
 
 from baramFlow.view.results.graphics.colormap_dialog import ColormapDialog
 from baramFlow.view.results.graphics.display_control_panel_ui import Ui_DisplayControlPanel
-from baramFlow.view.results.graphics.opacity_dialog import OpacityDialog
 from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
-from baramFlow.view.results.graphics.scalar_bar_widget import ScalarBarWidget
+from baramFlow.view.results.graphics.report_time_toolbar import ReportTimeToolbar
 from baramFlow.view.widgets.rendering_view import RenderingView
 
 from resources import resource
 
+from widgets.async_message_box import AsyncMessageBox
+from widgets.opacity_dialog import OpacityDialog
 from widgets.overlay_frame import OverlayFrame
+from widgets.rendering.color_scheme import getColorTable
+from widgets.rendering.scalar_bar_widget import ScalarBarWidget
 
 from baramFlow.view.results.graphics.display_control import ColorMode, DisplayMode, DisplayControl, Column
 from widgets.progress_dialog import ProgressDialog
@@ -45,14 +56,6 @@ class VisualReportView(RenderingView):
     def __init__(self, parent: QWidget, graphic: Graphic):
         super().__init__(parent)
 
-        # To Remove RenderingMode tool menu, which is not used in Visual Report
-        layout = self._ui.renderingMode.parentWidget().layout()
-        layout.removeWidget(self._ui.renderingMode)
-
-        # Remove the combobox for "Rendering Mode"
-        self._ui.renderingMode.setParent(None)  # type: ignore
-        self._ui.renderingMode = None           # type: ignore
-
         self._dialog = None
 
         self._lookupTable = vtkLookupTable()
@@ -61,7 +64,7 @@ class VisualReportView(RenderingView):
         self._overlayFrame = OverlayFrame(self._view)
 
         self._displayControlUi = Ui_DisplayControlPanel()
-        self._displayControlUi.setupUi(self._overlayFrame)
+        self._displayControlUi.setupUi(self._overlayFrame.content())
 
         self._treeWidget = self._displayControlUi.treeWidget
         self._treeWidget.headerItem().setText(Column.NAME_COLUMN, self.tr('Name'))
@@ -76,18 +79,24 @@ class VisualReportView(RenderingView):
 
         self._treeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
 
-        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+        self._treeWidget.header().setSectionsMovable(False)
 
-        self._colormap = ScalarBarWidget(self, graphic, self._colormapDoubleClicked)
+        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Interactive)
+        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._treeWidget.header().setSectionResizeMode(Column.COLOR_COLUMN, QHeaderView.ResizeMode.Fixed)
+
+        self._colormap = ScalarBarWidget(self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
+
+        self._view.setBackground1(QColor(graphic.background1))
+        self._view.setBackground2(QColor(graphic.background2))
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetLookupTable(self._lookupTable)
         actor.UnconstrainedFontSizeOn()
 
         actor.SetTitle(graphic.fieldDisplayName)
-        actor.SetLabelFormat('%-#6.5g')  # VTK default is "%-#6.3g". Now change the number of significant digits to "5"
+        actor.SetLabelFormat(graphic.labelFormat)
 
         titleTextProp: vtkTextProperty = actor.GetTitleTextProperty()
         titleTextProp.SetFontFamily(VTK_FONT_FILE)
@@ -111,6 +120,25 @@ class VisualReportView(RenderingView):
         self._scaffold2displayControl: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
+        self._playing = False
+        self._stopRequested = False
+        self._globalLocked = False
+        self._timeChanging = False
+        self._closing = False
+        self._activeTask: Optional[asyncio.Task] = None
+
+        self._ui.horizontalLayout.removeItem(self._ui.horizontalSpacer)
+        self._timeToolbar = ReportTimeToolbar()
+        index = self._ui.horizontalLayout.indexOf(self._ui.frame_2)
+        self._ui.horizontalLayout.insertWidget(index, self._timeToolbar, 1)
+        # self._ui.frame is the common ancestor of both this toolbar and self._ui.view
+        # (the 3D view) — the current-time overlay label needs to live there instead
+        # of inside the toolbar itself, or the 3D view would paint over/clip it.
+        self._timeToolbar.setOverlayParent(self._ui.frame)
+        self._timeToolbar.updateTimeValues(FileSystem.times())
+        self._timeToolbar.setCurrentTime(graphic.time)
+        self._updatePlayButtonEnabled()
+
         graphic.rangeMin, graphic.rangeMax = graphic.getValueRange(graphic.useNodeValues, graphic.relevantScaffoldsOnly)
 
         for scaffoldUuid in self._graphic.getScaffolds():
@@ -118,6 +146,8 @@ class VisualReportView(RenderingView):
             displayUuid = self._createDisplayControl(item)
 
             self._scaffold2displayControl[item.scaffoldUuid] = displayUuid
+
+        self._project = Project.instance()
 
         self._view.fitCamera()
 
@@ -140,6 +170,18 @@ class VisualReportView(RenderingView):
         self._graphic.displayItemAdded.asyncConnect(self._displayItemAdded)
         self._graphic.displayItemRemoving.asyncConnect(self._displayItemRemoving)
 
+        self._toolbar.background1Changed.connect(self._graphic.updateBackground1)
+        self._toolbar.background2Changed.connect(self._graphic.updateBackground2)
+
+        self._timeToolbar.timeSelected.connect(self._onTimeSelected)
+        self._timeToolbar.playClicked.connect(self._startPlay)
+        self._timeToolbar.stopClicked.connect(self._requestStop)
+
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
+
+        CaseManager().resultCleared.connect(self._refreshLastTime)
+        EventBus().onGraphicsPlaybackChanged.connect(self._onGlobalPlaybackChanged)
+
     def _disconnectSignalsSlots(self):
         ScaffoldsDB().scaffoldUpdated.disconnect(self._scaffoldUpdated)
 
@@ -147,14 +189,163 @@ class VisualReportView(RenderingView):
         self._graphic.displayItemAdded.disconnect(self._displayItemAdded)
         self._graphic.displayItemRemoving.disconnect(self._displayItemRemoving)
 
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+
+        CaseManager().resultCleared.disconnect(self._refreshLastTime)
+        EventBus().onGraphicsPlaybackChanged.disconnect(self._onGlobalPlaybackChanged)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._overlayFrame.updateGeometry()
+        self._overlayFrame.reflow()
 
     def closeEvent(self, event):
+        self._closing = True
+        self._stopRequested = True
+
+        # A play/time-select coroutine can be suspended mid-flight (e.g. awaiting
+        # calculateCollateralField) when the app closes. RenderingView.close(), called
+        # right below via the dock teardown, finalizes the VTK render window
+        # synchronously; if that coroutine were left to resume afterwards it would
+        # call updatePolyMesh() -> Render() on the now-finalized window, which is
+        # what produced the wglMakeCurrent floods. Cancelling stops it at its next
+        # resume point before it can render again.
+        if self._activeTask is not None and not self._activeTask.done():
+            self._activeTask.cancel()
+
         self._disconnectSignalsSlots()
 
         super().closeEvent(event)
+
+    def _refreshLastTime(self):
+        self._timeToolbar.updateTimeValues(FileSystem.times())
+        self._updatePlayButtonEnabled()
+
+    def _solverStatusChanged(self, status, name, liveStatusChanged=False):
+        if status in (SolverStatus.ENDED, SolverStatus.ERROR):
+            self._refreshLastTime()
+
+    def _onGlobalPlaybackChanged(self, playing: bool):
+        if self._playing:
+            return
+
+        self._globalLocked = playing
+        self._timeToolbar.setSliderEnabled(not playing)
+        self._updatePlayButtonEnabled()
+
+    def _updatePlayButtonEnabled(self):
+        self._timeToolbar.setPlayButtonEnabled(not self._globalLocked and self._timeToolbar.hasMultipleTimes())
+
+    @qasync.asyncSlot(str)
+    async def _onTimeSelected(self, time: str):
+        # Clicking (or holding) the slider groove fires one valueChanged per
+        # click regardless of setTracking(False) -- that only suppresses
+        # intermediate events during a handle *drag*. Without this guard,
+        # several quick clicks before the slider below is actually disabled
+        # could each spawn an overlapping _onTimeSelected task, racing on
+        # self._graphic's mesh state and on OpenFOAMReader.
+        if self._playing or self._globalLocked or self._timeChanging:
+            return
+
+        if time == self._graphic.time:
+            return
+
+        self._timeChanging = True
+        self._activeTask = asyncio.current_task()
+        self._timeToolbar.setSliderEnabled(False)
+        self._timeToolbar.setPlayButtonEnabled(False)
+
+        progressDialog = ProgressDialog(self, self.tr('Graphics Report'), openDelay=500)
+        progressDialog.setLabelText(self.tr('Calculating Collateral Field...'))
+        progressDialog.open()
+
+        try:
+            if not await self._ensureFieldCalculated(time):
+                if not self._closing:
+                    await progressDialog.abort(self.tr('Calculation failed'))
+                else:
+                    progressDialog.close()
+                return
+
+            progressDialog.setLabelText(self.tr('Updating Graphics...'))
+
+            await self._changeTime(time)
+        finally:
+            progressDialog.close()
+            self._timeChanging = False
+
+            if not self._closing:
+                self._timeToolbar.setSliderEnabled(True)
+                self._updatePlayButtonEnabled()
+
+    def _requestStop(self):
+        self._stopRequested = True
+
+    @qasync.asyncSlot()
+    async def _startPlay(self):
+        if self._playing or self._globalLocked or self._timeChanging:
+            return
+
+        times = self._timeToolbar.getTimeValues()
+        if self._graphic.time not in times or len(times) < 2:
+            return
+
+        # At the last time step there's nothing left ahead to play, so restart
+        # from the first time step instead of doing nothing.
+        remaining = times[times.index(self._graphic.time) + 1:] or times
+
+        self._activeTask = asyncio.current_task()
+
+        self._playing = True
+        self._stopRequested = False
+        self._timeToolbar.setPlaying(True)
+        self._timeToolbar.setSliderEnabled(False)
+        self._timeToolbar.setBusy(True)
+        EventBus().onGraphicsPlaybackChanged.emit(True)
+
+        try:
+            for time in remaining:
+                if self._stopRequested or self._closing:
+                    break
+
+                if not await self._ensureFieldCalculated(time):
+                    if not self._closing:
+                        await AsyncMessageBox().critical(self, self.tr('Error'),
+                                                         self.tr('Failed to calculate the field at the selected time.'))
+                    break
+
+                await self._changeTime(time)
+
+                if self._closing:
+                    break
+
+                self._timeToolbar.setCurrentTime(time)
+
+                # Workaround to give some time for QT to process events.
+                await asyncio.sleep(0.1)
+
+        finally:
+            self._playing = False
+
+            if not self._closing:
+                self._timeToolbar.setPlaying(False)
+                self._timeToolbar.setSliderEnabled(True)
+                self._timeToolbar.setBusy(False)
+                self._updatePlayButtonEnabled()
+
+            EventBus().onGraphicsPlaybackChanged.emit(False)
+
+    async def _ensureFieldCalculated(self, time: str) -> bool:
+        field = self._graphic.field
+        if not isinstance(field, CollateralField):
+            return True
+
+        rc = await calculateCollateralField([field], [time])
+        return rc == 0
+
+    async def _changeTime(self, time: str):
+        self._graphic.time = time
+        self._graphic.saveToCoreDB()
+        await self._graphic.updatePolyMesh()
 
     def _colormapDoubleClicked(self):
         self._dialog = ColormapDialog(self, self._graphic)
@@ -167,6 +358,7 @@ class VisualReportView(RenderingView):
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
+        actor.SetLabelFormat(graphic.labelFormat)
         actor.SetMaximumNumberOfColors(levels)
 
         if graphic.field.type == FieldType.VECTOR:
@@ -450,7 +642,7 @@ class VisualReportView(RenderingView):
         did = uuid4()
         graphic: Graphic = self._graphic
 
-        control = DisplayControl(self._treeWidget, did, graphic, displayItem, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
+        control = DisplayControl(self._treeWidget, did, graphic, displayItem, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
 
         self._controls[did] = control
 

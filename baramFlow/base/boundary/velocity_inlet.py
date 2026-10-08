@@ -8,7 +8,7 @@ from enum import Enum
 
 from baramFlow.base.base import SimpleSheetData
 from baramFlow.base.base import SpatialVectorList, TemporalScalarList, TemporalVectorList
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.base import Vector
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.libdb import E
 

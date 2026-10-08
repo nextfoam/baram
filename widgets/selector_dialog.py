@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QListWidgetItem, QAbstr
 from PySide6.QtCore import Qt
 
 from .selector_dialog_ui import Ui_SelectorDialog
+from libbaram.sort_utils import naturalKey
 
 
 class ListDataRole(IntEnum):
@@ -47,7 +48,7 @@ class SelectorDialog(QDialog):
             item.setData(ListDataRole.FILTERING_TEXT, '')
             self._ui.list.addItem(item)
 
-        for data in items:
+        for data in sorted(items, key=lambda d: naturalKey(d.label)):
             if exclude is None or data.data != exclude:
                 item = QListWidgetItem(data.label)
                 item.setData(ListDataRole.USER_DATA, data.data)

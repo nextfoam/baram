@@ -7,7 +7,7 @@ from enum import Enum
 from uuid import UUID, uuid4
 
 from baramFlow.coredb.libdb import E, nsmap
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.base import Vector
 from libbaram.pfloat import PFloat
 
 

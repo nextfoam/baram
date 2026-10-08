@@ -7,14 +7,13 @@ import qasync
 from PySide6.QtCore import Qt
 import pandas as pd
 
-from baramFlow.base.base import TrackedData
-from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb.project import Project
+from baramFlow.base.base import TrackedData
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 
@@ -42,7 +41,7 @@ class ExhaustFanDialog(ResizableDialog):
         event.ignore()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
             event.ignore()
         else:
             super().keyPressEvent(event)
@@ -55,13 +54,14 @@ class ExhaustFanDialog(ResizableDialog):
 
         try:
             with coredb.CoreDB() as db:
-                db.setValue(self._xpath + '/pressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
+                db.setValue(self._xpath + '/pressure', str(self._ui.totalPressure.pFloat(self.tr("Total Pressure"))))
 
                 if self._fanCurve.isModified():
                     self._fanCurveName = uuid4()
                     db.setValue(self._xpath + '/fanCurveName', str(self._fanCurveName), self.tr("Fan Curve Name"))
-        except ValueException as ve:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return
 
         Project.instance().fileDB().putDataFrame(uuidToNnstr(self._fanCurveName), pd.DataFrame(self._fanCurve.data()))
 

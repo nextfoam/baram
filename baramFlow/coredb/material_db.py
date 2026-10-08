@@ -3,14 +3,13 @@
 
 from PySide6.QtCore import QCoreApplication, QObject
 
-from baramFlow.base.material.material import NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS
-from baramFlow.coredb.general_db import GeneralDB
 import baramFlow.coredb.libdb as xml
-from baramFlow.base.material.material import Phase, MaterialType, SpecificHeatSpecification, DensitySpecification, TransportSpecification
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.base.material.constants import NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS, Phase, MaterialType
+from baramFlow.base.material.constants import SpecificHeatSpecification, DensitySpecification, TransportSpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from .configuraitions import ConfigurationException
-from .material_schema import MaterialSchema
 from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
 MATERIAL_XPATH = '/materials/material'
@@ -46,14 +45,6 @@ class IMaterialObserver(QObject):
 
 def _rootElement():
     return coredb.CoreDB().getElement(MaterialDB.MATERIALS_XPATH)
-
-
-def _newID(db):
-    return db.availableID(MATERIAL_XPATH, 'mid')
-
-
-def _newName(db, name):
-    return db.toUniqueText(MATERIAL_XPATH, 'name', name)
 
 
 class MaterialDB(object):
@@ -197,7 +188,7 @@ class MaterialDB(object):
         return xml.getText(coredb.CoreDB().getElement(MaterialDB.getXPath(mid) + '/specie'), 'mixture')
 
     @classmethod
-    def getMaterials(cls, type_=None) -> list[(str, str, str, str)]:
+    def getMaterials(cls, type_=None) -> list[tuple[str, str, str, str]]:
         """Returns configured materials
 
         Returns configured materials with name, chemicalFormula and phase
@@ -222,53 +213,6 @@ class MaterialDB(object):
                      xml.getText(e, 'type'),
                      xml.getText(e, 'phase'))
                     for e in elements if xml.getText(e, 'type') == type_]
-
-    @classmethod
-    def addNonMixture(cls, db, base: str) -> str:
-        mid = _newID(db)
-        name = _newName(db, base)
-        _rootElement().append(MaterialSchema.newNonMixture(mid, name, base))
-        db.setValue(MaterialDB.getXPath(mid) + '/name', name)   # For increase configuCount of CoreDB
-
-        return mid
-
-    @classmethod
-    def addMixture(cls, db, name: str, specieBases: list) -> str:
-        materials = _rootElement()
-
-        mid = _newID(db)
-        mixture = MaterialSchema.newMixture(mid,_newName(db, name), specieBases[0])
-        materials.append(mixture)
-
-        primary = None
-        for base in specieBases:
-            sid = _newID(db)
-            materials.append(
-                MaterialSchema.newSpecie(sid, _newName(db, base), base, MaterialSchema.defaultsToInherit(mixture), mid))
-            if primary is None:
-                primary = sid
-
-        db.setValue(MaterialDB.getXPath(mid) + '/mixture/primarySpecie', primary)
-        db.increaseConfigCount()
-
-        return mid
-
-    @classmethod
-    def addSpecie(cls, db, base: str, mixtureID: str):
-        mid = _newID(db)
-        name = _newName(db, base)
-
-        _rootElement().append(
-            MaterialSchema.newSpecie(mid, name, base,
-                                     MaterialSchema.defaultsToInherit(db.getElement(MaterialDB.getXPath(mixtureID))),
-                                     mixtureID))
-
-        for observer in cls._observers:
-            observer.specieAdded(db, mid, mixtureID)
-
-        db.increaseConfigCount()
-
-        return mid
 
     @classmethod
     def removeMaterial(cls, db, mid: str):

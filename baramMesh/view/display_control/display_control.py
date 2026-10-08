@@ -3,9 +3,9 @@
 
 from typing import Optional
 
-from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtCore import QObject, Signal, Qt, QPoint
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
+from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView, QTreeWidget
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import Step
@@ -13,9 +13,11 @@ from baramMesh.rendering.actor_info import DisplayMode, Properties
 from widgets.rendering.rendering_widget import RenderingWidget
 from .mesh_quality_info import MeshQualityInfo
 
-from .opacity_dialog import OpacityDialog
+from widgets.opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
 from .cut_tool import CutTool, CutType
+
+from baramMesh.view.geometry.surface_splitter import floodFillByAngle
 
 
 class ContextMenu(QMenu):
@@ -29,7 +31,11 @@ class ContextMenu(QMenu):
     surfaceDisplayModeSelected = Signal()
     surfaceEdgeDisplayModeSelected = Signal()
 
-    def __init__(self, parent):
+    splitActionTriggered = Signal()
+
+    renameTriggered = Signal()
+
+    def __init__(self, parent: QTreeWidget):
         super().__init__(parent)
 
         self._opacityDialog = OpacityDialog(app.window)
@@ -52,6 +58,12 @@ class ContextMenu(QMenu):
 
         self._noCutAction = self.addAction(self.tr('No Cut'), self._noCutActionTriggered)
 
+        self.addSeparator()
+        self._splitAction = self.addAction(self.tr('Split Surface'), lambda: self.splitActionTriggered.emit())
+
+        self.addSeparator()
+        self._renameAction = self.addAction(self.tr('Rename'), lambda: self.renameTriggered.emit())
+
         self._wireFrameDisplayAction.setCheckable(True)
         self._surfaceDisplayAction.setCheckable(True)
         self._surfaceEdgeDisplayAction.setCheckable(True)
@@ -59,7 +71,7 @@ class ContextMenu(QMenu):
 
         self._connectSignalsSlots()
 
-    def execute(self, pos, properties: Properties):
+    def execute(self, pos: QPoint, properties: Properties, geometryEditable: bool, hasPendingSplit: bool = False):
         self._properties = properties
 
         self._showAction.setVisible(not properties.visibility)
@@ -68,6 +80,10 @@ class ContextMenu(QMenu):
         self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
         self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
         self._noCutAction.setChecked(properties.cutEnabled is False)
+
+        self._splitAction.setVisible(hasPendingSplit)
+
+        self._renameAction.setVisible(geometryEditable)
 
         self.exec(pos)
 
@@ -92,6 +108,12 @@ class DisplayControl(QObject):
     selectedActorsChanged = Signal(list)
     selectionApplied = Signal()
 
+    splitRequested = Signal(str, list)   # (actorId, selectedCellIds)
+
+    renameTriggered = Signal()
+
+    SPLIT_ANGLE_THRESHOLD = 30.0
+
     def __init__(self, ui):
         super().__init__()
 
@@ -105,6 +127,10 @@ class DisplayControl(QObject):
 
         self._items: dict[str, DisplayItem] = {}
         self._selectedItems: list[DisplayItem] = []
+
+        self._pendingSplit: Optional[dict] = None
+
+        self._geometryEditable: bool = True
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
 
@@ -162,12 +188,14 @@ class DisplayControl(QObject):
     def fitView(self):
         self._view.fitCamera()
 
-    def openedStepChanged(self, step):
-        if step >= Step.BASE_GRID.value:
+    def handleWorkingStepChanged(self, step: Step):
+        if step >= Step.BASE_GRID:
             if not self._cutTool.isVisible():
                 self._cutTool.show()
         else:
             self._cutTool.hide()
+
+        self._geometryEditable = (step == Step.GEOMETRY)
 
     def currentStepChanged(self, step):
         if step >= Step.CASTELLATION.value:
@@ -184,6 +212,7 @@ class DisplayControl(QObject):
         self._view.clear()
         self._items = {}
         self._selectedItems = []
+        self._pendingSplit = None
 
     def setSelectedActors(self, ids: list[str]):
         self._list.clearSelection()
@@ -201,6 +230,12 @@ class DisplayControl(QObject):
         self.selectedActorsChanged.emit(ids)
         self._view.refresh()
 
+    def splitAngleThreshold(self):
+        return self.SPLIT_ANGLE_THRESHOLD
+
+    def setSplitAngleThreshold(self, degrees: float):
+        self.SPLIT_ANGLE_THRESHOLD = degrees
+
     def _connectSignalsSlots(self):
         self._ui.rendering.toggled.connect(app.renderingToggled)
         self._list.customContextMenuRequested.connect(self._showContextMenu)
@@ -215,13 +250,19 @@ class DisplayControl(QObject):
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
         self._menu.noCutActionTriggered.connect(self._applyCutOption)
+        self._menu.renameTriggered.connect(self.renameTriggered)
+
+        self._view.cellSelected.connect(self._onCellSelected)
+        self._menu.splitActionTriggered.connect(self._onSplitTriggered)
 
     def _executeContextMenu(self, pos):
         properties = self._selectedItemsInfo()
         if properties is None:
             return
 
-        self._menu.execute(pos, properties)
+        hasPendingSplit = self._isPendingSplitForSelection()
+        self._menu.execute(pos, properties, self._geometryEditable, hasPendingSplit)
+        self._view.rightButtonReleaseEvent()
 
     def _showContextMenu(self, pos):
         self._executeContextMenu(self._list.mapToGlobal(pos))
@@ -232,9 +273,18 @@ class DisplayControl(QObject):
         x = pos.x() * ratio
         y = (self._view.height() - pos.y() - 1) * ratio
         actor = self._view.pickActor(x, y)
-        if actor:
+        if actor and actor.GetObjectName() and actor.GetObjectName() in self._items:
             self._actorPicked(actor, False, True)
-            self._executeContextMenu(self._view.mapToGlobal(pos))
+        elif self._pendingSplit is not None:
+            actorId = self._pendingSplit['actorId']
+            if actorId in self._items:
+                self._list.blockSignals(True)
+                self._list.clearSelection()
+                self._items[actorId].setSelected(True)
+                self._list.blockSignals(False)
+                self._selectedItems = [self._items[actorId]]
+
+        self._executeContextMenu(self._view.mapToGlobal(pos))
 
     def _selectedItemsInfo(self) -> Optional[Properties]:
         items = self._list.selectedItems()
@@ -308,6 +358,9 @@ class DisplayControl(QObject):
             item.setActorColor(color)
 
     def _actorPicked(self, actor, ctrlKeyPressed=False, forContextMenu=False):
+        if not forContextMenu:
+            self._clearPendingSplit()
+
         if not ctrlKeyPressed and not forContextMenu:
             self._list.clearSelection()
 
@@ -315,7 +368,7 @@ class DisplayControl(QObject):
             return
 
         actorInfoId: str = actor.GetObjectName()
-        if actorInfoId not in self._items:
+        if not actorInfoId or actorInfoId not in self._items:
             return
 
         item = self._items[actorInfoId]
@@ -334,4 +387,50 @@ class DisplayControl(QObject):
         else:
             self._items[id_].actorInfo().slice(planes)
 
+    def _onCellSelected(self, actor, cellId):
+        if actor is None or cellId < 0:
+            self._clearPendingSplit()
+            return
 
+        actorId = actor.GetObjectName()
+        if actorId not in self._items:
+            self._clearPendingSplit()
+            return
+
+        actorInfo = self._items[actorId].actorInfo()
+        polyData = actorInfo.dataSet()
+
+        if polyData is None or polyData.GetNumberOfCells() == 0:
+            self._clearPendingSplit()
+            return
+
+        cellIds = floodFillByAngle(polyData, cellId, self.SPLIT_ANGLE_THRESHOLD)
+
+        totalCells = polyData.GetNumberOfCells()
+        if len(cellIds) == 0 or len(cellIds) == totalCells:
+            self._clearPendingSplit()
+            return
+
+        self._pendingSplit = {'actorId': actorId, 'cellIds': cellIds}
+
+        self._view.showCellSelection(polyData, cellIds)
+
+    def _onSplitTriggered(self):
+        if self._pendingSplit is None:
+            return
+
+        actorId = self._pendingSplit['actorId']
+        cellIds = self._pendingSplit['cellIds']
+
+        self.splitRequested.emit(actorId, cellIds)
+
+    def _clearPendingSplit(self):
+        self._pendingSplit = None
+        self._view.clearCellSelection()
+
+    def _isPendingSplitForSelection(self):
+        if self._pendingSplit is None:
+            return False
+        if self._selectedItems is None or len(self._selectedItems) != 1:
+            return False
+        return self._selectedItems[0].actorInfo().id() == self._pendingSplit['actorId']

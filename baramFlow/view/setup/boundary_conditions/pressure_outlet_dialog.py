@@ -6,9 +6,9 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import PressureOutletPatch
+from baramFlow.base.boundary.boundary_patch import PressureOutletUpdate
 from baramFlow.base.boundary.pressure_port import PressureOutlet
-from baramFlow.base.material.material import Phase, DensitySpecification, SpecificHeatSpecification
+from baramFlow.base.material.constants import Phase, DensitySpecification, SpecificHeatSpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -97,13 +97,13 @@ class PressureOutletDialog(ResizableDialog):
 
                 turbulence = self._turbulenceWidget.data()
 
-            data = PressureOutletPatch(
+            data = PressureOutletUpdate(
                 pressureOutlet=PressureOutlet(
-                    totalPressure=str(PFloat(self._ui.totalPressure.text(), self.tr("Total Pressure"))),
+                    totalPressure=PFloat(self._ui.totalPressure.text(), self.tr("Total Pressure")),
                     nonReflective=self._ui.nonReflectingBoundary.isChecked(),
                     calculatedBackflow=self._ui.calculateBackflow.isChecked(),
-                    backflowTotalTemperature=str(
-                        PFloat(self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature")))),
+                    backflowTotalTemperature=PFloat(self._ui.backflowTotalTemperature.text(),
+                                                    self.tr("Backflow Total Temperature"))),
                 turbulence=turbulence)
 
             BoundaryService.updateBoundaryCondition(self._bcid, data, writer)

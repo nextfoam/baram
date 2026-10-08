@@ -38,7 +38,7 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
 
         try:
             with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
+                self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
                 self._writeConditions(db, self._xpath + self.RELATIVE_XPATH)
                 self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH)
@@ -46,9 +46,6 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
                 super().accept()
         except ValueException as ve:
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
-
-        if coupleTypeChanged:
-            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)

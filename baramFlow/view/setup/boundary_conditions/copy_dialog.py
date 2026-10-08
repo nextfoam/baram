@@ -3,11 +3,11 @@
 
 import qasync
 
-from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QWidget, QListWidget
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.region.region_data import BoundaryModel
 from baramFlow.coredb import coredb
 from baramFlow.services.boundary.boundary_service import BoundaryService
@@ -44,8 +44,6 @@ class Filter:
 
 
 class CopyDialog(QDialog):
-    boundariesCopied = Signal(set)
-
     def __init__(self, parent: QWidget, bcid: str):
         super().__init__(parent)
         self._ui = Ui_CopyDialog()
@@ -53,7 +51,6 @@ class CopyDialog(QDialog):
 
         self._items: dict[str: BoundaryListItem] = {}
         self._sourceId: str = bcid
-        self._copied: set[str] = set()
 
         self._targetFilter = Filter(self._ui.targetFilter, self._ui.targets)
 
@@ -92,11 +89,16 @@ class CopyDialog(QDialog):
                     ', '.join([item.text() for item in self._ui.targets.selectedItems()])))):
             return
 
+        newType = BoundaryService.getBoundary(self._sourceId).bctype
         for item in targets:
-            self._copied.add(item.bcid())
+            bcid = item.bcid()
+            oldType = BoundaryService.getBoundary(bcid).bctype
+
             db = coredb.CoreDB()
-            db.copyBoundaryConditions(self._sourceId, item.bcid())
+            db.copyBoundaryConditions(self._sourceId, bcid)
+
+            if oldType != newType:
+                EventBus().onBoundaryTypeChange.emit(bcid, oldType, newType)
 
     def _close(self):
-        self.boundariesCopied.emit(self._copied)
         self.close()

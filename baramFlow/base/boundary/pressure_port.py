@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from libbaram.pfloat import PFloat
 
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb import _CoreDB
@@ -18,14 +20,14 @@ class PressureInlet:
 
 @dataclass
 class PressureOutlet:
-    totalPressure: str
+    totalPressure: PFloat
     nonReflective: bool
     calculatedBackflow: bool
-    backflowTotalTemperature: str = None
+    backflowTotalTemperature: PFloat = field(default_factory=lambda: PFloat('300'))
 
     def toElement(self):
         return E('pressureOutlet',
-                    E('totalPressure',              self.totalPressure),
-                    E('nonReflective',              self.nonReflective),
-                    E('calculatedBackflow',         self.calculatedBackflow),
-                    E('backflowTotalTemperature',   self.backflowTotalTemperature))
+                 self.totalPressure.toElement('totalPressure'),
+                 E('nonReflective', self.nonReflective),
+                 E('calculatedBackflow', self.calculatedBackflow),
+                 self.backflowTotalTemperature.toElement('backflowTotalTemperature'))

@@ -79,6 +79,9 @@ class PhaseField(Field):
         return MaterialDB.getName(self._codeName)
 
 
+ALL_PHASES  = PhaseField('0')
+
+
 class SpecieField(Field):
     def __init__(self, codeName: str):
         super().__init__(FieldCategory.SPECIE, codeName, FieldType.SCALAR)
@@ -86,6 +89,9 @@ class SpecieField(Field):
     @property
     def text(self) -> str:
         return MaterialDB.getName(self._codeName)
+
+
+ALL_SPECIES = SpecieField('0')
 
 
 class UserScalarField(Field):
@@ -134,6 +140,10 @@ ALL_FIELDS: dict[tuple[FieldCategory, str], Field] = {
     (TURBULENT_DISSIPATION_RATE.category,   TURBULENT_DISSIPATION_RATE.codeName):   TURBULENT_DISSIPATION_RATE,
     (SPECIFIC_DISSIPATION_RATE.category,    SPECIFIC_DISSIPATION_RATE.codeName):    SPECIFIC_DISSIPATION_RATE,
     (MODIFIED_TURBULENT_VISCOSITY.category, MODIFIED_TURBULENT_VISCOSITY.codeName): MODIFIED_TURBULENT_VISCOSITY,
+    (INTERMITTENCY.category,                INTERMITTENCY.codeName):                INTERMITTENCY,
+    (TRANSITION_ONSET_MOMENTUM_THICKNESS_RE.category,
+                                            TRANSITION_ONSET_MOMENTUM_THICKNESS_RE.codeName):
+                                                                                    TRANSITION_ONSET_MOMENTUM_THICKNESS_RE,
     (TEMPERATURE.category,                  TEMPERATURE.codeName):                  TEMPERATURE,
     (DENSITY.category,                      DENSITY.codeName):                      DENSITY,
     (AGE.category,                          AGE.codeName):                          AGE,
@@ -158,6 +168,8 @@ def _getPredefinedFieldText(field: Field):
         TURBULENT_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Turbulent Dissipation Rate'),
         SPECIFIC_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Specific Dissipation Rate'),
         MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('PostField', 'Modified Turbulent Viscosity'),
+        INTERMITTENCY: QCoreApplication.translate('PostField', 'Intermittency'),
+        TRANSITION_ONSET_MOMENTUM_THICKNESS_RE: QCoreApplication.translate('PostField', 'Transition Onset Momentum Thickness Re'),
         TEMPERATURE: QCoreApplication.translate('PostField', 'Temperature'),
         DENSITY: QCoreApplication.translate('PostField', 'Density'),
         AGE: QCoreApplication.translate('PostField', 'Age'),

@@ -16,7 +16,6 @@ from baramFlow.app import app
 from baramFlow.base.event_bus import EventBus, RegionComponents
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.model.DPM_model import DPMModelManager
-from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.base.region.poly_mesh import PolyMeshRegion
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
@@ -28,6 +27,7 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.mesh.mesh_model import ActorInfo, MeshModel
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.services.region.region_service import RegionService
 
 
@@ -283,7 +283,7 @@ class PolyMeshLoader(QObject):
 
         UserDefinedScalarsDB.clearUserDefinedScalars(db)
         RegionService.clear()
-        MonitorManager.clearMonitors()
+        MonitorService.clearMonitors()
         DPMModelManager.turnOff(meshUpdated=True)
 
         regions = []
@@ -332,9 +332,11 @@ class PolyMeshLoader(QObject):
         meshModel = MeshModel()
         cellZones = {}
         internalMeshes = {}
+        boundaryInfos = []
         for rname in db.getRegions():
-            for bcid, bcname, _ in db.getBoundaryConditions(rname):
+            for bcid, bcname, bctype in db.getBoundaryConditions(rname):
                 meshModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
+                boundaryInfos.append((bcid, rname, bcname, BoundaryType(bctype)))
 
             for czid, czname in db.getCellZones(rname):
                 if not CellZoneDB.isRegion(czname):
@@ -342,7 +344,7 @@ class PolyMeshLoader(QObject):
 
             internalMeshes[rname] = vtkMesh[rname]['internalMesh']
 
-        app.updateMeshModel(meshModel, cellZones, internalMeshes)
+        app.updateMeshModel(meshModel, cellZones, internalMeshes, boundaryInfos)
 
         ScaffoldsDB().rematchBoundaries()
 

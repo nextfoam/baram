@@ -2,61 +2,47 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QWidget
 
 from widgets.async_message_box import AsyncMessageBox
-from widgets.validation.validation import FormValidator
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.material_schema import NonNewtonianPowerLawViscosity
+from baramFlow.base.material.transport import NonNewtonianPowerLawViscosity
 from .viscosity_non_newtonian_power_law_dialog_ui import Ui_ViscosityNonNewtonianPowerLaw
 
 
 class ViscosityNonNewtonianPowerLawDialog(QDialog):
-    def __init__(self, parent, xpath, data):
+    dataAccepted = Signal(NonNewtonianPowerLawViscosity)
+
+    def __init__(self, parent: QWidget, data: NonNewtonianPowerLawViscosity | None):
         super().__init__(parent)
         self._ui = Ui_ViscosityNonNewtonianPowerLaw()
         self._ui.setupUi(self)
 
+        self._data: NonNewtonianPowerLawViscosity = data or NonNewtonianPowerLawViscosity()
+
         self._connectSignalsSlots()
-
-        self._xpath = xpath + '/transport/nonNewtonianPowerLaw'
-        self._load(data)
-
-    def getValues(self):
-        return NonNewtonianPowerLawViscosity(
-            maximumViscosity=self._ui.maximumViscosity.text(),
-            minimumViscosity=self._ui.minimumViscosity.text(),
-            consistencyIndex=self._ui.consistencyIndex.text(),
-            powerLawIndex=self._ui.powerLawIndex.text()
-        )
+        self._load()
 
     def _connectSignalsSlots(self):
         self._ui.ok.clicked.connect(self._accept)
 
     @qasync.asyncSlot()
     async def _accept(self):
-        validator = FormValidator()
-        validator.addRequiredValidation(self._ui.maximumViscosity, self.tr('Maximum Viscosity'))
-        validator.addRequiredValidation(self._ui.minimumViscosity, self.tr('Minimum Viscosity'))
-        validator.addRequiredValidation(self._ui.consistencyIndex, self.tr('Consistency Index'))
-        validator.addRequiredValidation(self._ui.powerLawIndex, self.tr('Power Law Index'))
+        try:
+            self.dataAccepted.emit(NonNewtonianPowerLawViscosity(
+                maximumViscosity=self._ui.maximumViscosity.pFloat(self.tr('Maximum Viscosity')),
+                minimumViscosity=self._ui.minimumViscosity.pFloat(self.tr('Minimum Viscosity')),
+                consistencyIndex=self._ui.consistencyIndex.pFloat(self.tr('Consistency Index')),
+                powerLawIndex=self._ui.powerLawIndex.pFloat(self.tr('Power Law Index'))))
 
-        valid, msg = validator.validate()
-        if valid:
             self.accept()
-        else:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            return
 
-    def _load(self, data):
-        if data is None:
-            db = coredb.CoreDB()
-            self._ui.maximumViscosity.setText(db.getValue(self._xpath + '/maximumViscosity'))
-            self._ui.minimumViscosity.setText(db.getValue(self._xpath + '/minimumViscosity'))
-            self._ui.consistencyIndex.setText(db.getValue(self._xpath + '/consistencyIndex'))
-            self._ui.powerLawIndex.setText(db.getValue(self._xpath + '/powerLawIndex'))
-        else:
-            self._ui.maximumViscosity.setText(data.maximumViscosity)
-            self._ui.minimumViscosity.setText(data.minimumViscosity)
-            self._ui.consistencyIndex.setText(data.consistencyIndex)
-            self._ui.powerLawIndex.setText(data.powerLawIndex)
+    def _load(self):
+        self._ui.maximumViscosity.setPFloat(self._data.maximumViscosity)
+        self._ui.minimumViscosity.setPFloat(self._data.minimumViscosity)
+        self._ui.consistencyIndex.setPFloat(self._data.consistencyIndex)
+        self._ui.powerLawIndex.setPFloat(self._data.powerLawIndex)

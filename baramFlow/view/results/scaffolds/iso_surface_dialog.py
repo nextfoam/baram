@@ -13,9 +13,7 @@ from baramFlow.openfoam.solver_field import getAvailableFields
 from baramFlow.base.scaffold.iso_surface import IsoSurface
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
-from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.libbaram.util import getScalarRange, getVectorRange
-from baramFlow.openfoam.solver_field import getSolverFieldName
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.libbaram.collateral_fields import calculateCollateralField
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -54,7 +52,7 @@ class IsoSurfaceDialog(QDialog):
         if isNew:
             self._ui.ok.setText('Create')
 
-        self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
+        self._timeSlider = TimeSlider(self._ui.slider, self._ui.lastTime)
         self._timeSlider.updateTimeValues(times)
         self._timeSlider.setCurrentTime(times[-1])
 
@@ -97,7 +95,7 @@ class IsoSurfaceDialog(QDialog):
             rc = await calculateCollateralField([field], [time])
 
             if rc != 0:
-                progressDialog.finish(self.tr('Calculation failed'))
+                await progressDialog.finish(self.tr('Calculation failed'))
                 return
 
         progressDialog.setLabelText(self.tr('Computing range...'))

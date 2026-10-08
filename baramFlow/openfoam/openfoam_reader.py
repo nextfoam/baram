@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import logging
 from threading import Lock
 from typing import Optional
@@ -39,26 +40,32 @@ class OpenFOAMReader(QObject):
         super().__init__()
 
         self._acquired = False
-        self._readerSetUpOnEnter = False
 
         self._reader: Optional[vtkPOpenFOAMReader] = None
 
+        # A plain threading.Lock must never be held across an "await" on the
+        # event-loop thread: while one caller is suspended inside the "async
+        # with" block (e.g. awaiting vtk_run_in_thread), a second caller's
+        # blocking acquire() would freeze that same thread, and since it's the
+        # only thread that could ever resume the first caller to release the
+        # lock, the app deadlocks outright rather than just queueing up.
+        # asyncio.Lock() yields control back to the loop instead of blocking
+        # it. Created lazily here (rather than at class/module scope) so it is
+        # always constructed after the event loop is already running, since
+        # __init__ only ever runs from inside "async with OpenFOAMReader()".
+        self._asyncLock = asyncio.Lock()
+
     async def __aenter__(self):
-        _mutex.acquire()
+        await self._asyncLock.acquire()
 
         self._acquired = True
-
-        if self._reader is None:
-            await self.setupReader()
-            self._readerSetUpOnEnter = True
 
         return self
 
     async def __aexit__(self, eType, eValue, eTraceback):
-        _mutex.release()
+        self._asyncLock.release()
 
         self._acquired = False
-        self._readerSetUpOnEnter = False
 
         logger.debug('exit without error')
         return None
@@ -75,9 +82,6 @@ class OpenFOAMReader(QObject):
 
         caseRoot = FileSystem.caseRoot()
         if caseRoot is None:
-            return
-
-        if self._readerSetUpOnEnter:
             return
 
         self._caseRoot = caseRoot

@@ -5,14 +5,14 @@ from PySide6.QtCore import Signal, QCoreApplication, QEvent, Qt
 
 from PySide6QtAds import CDockWidget
 
-from baramFlow.view.widgets.rendering_view import RenderingView
+from baramFlow.view.widgets.mesh_view import MeshView
 
 
 class RenderingDock(CDockWidget):
     def __init__(self):
         super().__init__(self._title())
 
-        self._widget = RenderingView()
+        self._widget = MeshView()
         self.setWidget(self._widget)
 
     def changeEvent(self, event):

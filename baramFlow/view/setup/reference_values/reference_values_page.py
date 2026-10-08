@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
-from PySide6.QtWidgets import QMessageBox
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
@@ -23,7 +22,6 @@ class ReferenceValuesPage(ContentPage):
         self._updateEnabled()
         self._load()
 
-    @qasync.asyncSlot()
     async def save(self):
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
 
@@ -36,7 +34,7 @@ class ReferenceValuesPage(ContentPage):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().critical(self, self.tr("Input Error"), writer.firstError().toMessage())
             return False
 
         return True

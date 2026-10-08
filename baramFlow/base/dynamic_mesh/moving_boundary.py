@@ -6,14 +6,15 @@ from dataclasses import field as dataClassField
 from enum import Enum
 from uuid import UUID, uuid4
 
+from libbaram.pfloat import PFloat
+
 from baramFlow.coredb.libdb import E, nsmap
 from baramFlow.base.dynamic_mesh.motion_function import MotionFunction
 from baramFlow.base.dynamic_mesh.rigid_body_solver import RigidBodySolver
 from baramFlow.base.dynamic_mesh.restraint import (
     Restraint,
 )
-from baramFlow.base.xml_helper import Vector
-from libbaram.pfloat import PFloat
+from baramFlow.base.base import Vector
 
 
 class PointMotionType(Enum):
@@ -42,7 +43,7 @@ class RotationalConstraintType(Enum):
 
 @dataclass
 class RigidBodyMotion:
-    mass: PFloat = PFloat('0')
+    mass: PFloat = dataClassField(default_factory=lambda: PFloat('0'))
 
     centerOfMass: Vector = dataClassField(default_factory=Vector.zero)
     centerOfRotation: Vector = dataClassField(default_factory=Vector.zero)

@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 
 from baramFlow.app import app
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.boundary.boundary import PatchInteraction
 from baramFlow.base.boundary.boundary_data import BoundaryData
 from baramFlow.base.boundary.wall import WallHeatTransfer
@@ -91,12 +92,15 @@ class BoundaryService:
     @staticmethod
     def updateBoundaryType(bcid: str, newType: BoundaryType):
         boundaryModel = BoundaryService.getBoundary(bcid)
-        if boundaryModel.bctype == newType:
+        oldType = boundaryModel.bctype
+        if oldType == newType:
             return
 
         keepCouple= True
+        coupleOldType = None
         if boundaryModel.boundary.coupledBoundary != '0':
             coupleModel = BoundaryService.getBoundary(boundaryModel.boundary.coupledBoundary)
+            coupleOldType = coupleModel.bctype
             if (not BoundaryDB.needsCoupledBoundary(newType)
                     or (newType != BoundaryType.THERMO_COUPLED_WALL and boundaryModel.rname != coupleModel.rname)
                     or bcid != coupleModel.boundary.coupledBoundary):
@@ -120,6 +124,10 @@ class BoundaryService:
             RegionService.reloadBoundary(bcid)
             if couplePatch.bcid != '0':
                 RegionService.reloadBoundary(couplePatch.bcid)
+
+        EventBus().onBoundaryTypeChange.emit(bcid, oldType, newType)
+        if keepCouple and couplePatch.bcid != '0':
+            EventBus().onBoundaryTypeChange.emit(couplePatch.bcid, coupleOldType, newType)
 
     @staticmethod
     def patchInteraction(bcid: str):

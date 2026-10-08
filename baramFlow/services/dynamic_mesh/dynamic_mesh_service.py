@@ -47,7 +47,7 @@ class DynamicMeshService:
         EventBus().onMeshLoading.asyncConnect(self._handleMeshUpdate)
         EventBus().onProjectOpen.asyncConnect(self._handleProjectOpen)
         EventBus().onProjectClose.asyncConnect(self._handleProjectClose)
-        EventBus().onBoundaryTypeChange.asyncConnect(self._handleBoundaryTypeChange)
+        EventBus().onBoundaryTypeChange.connect(self._handleBoundaryTypeChange)
 
         EventBus().onSaving.connect(self._handleSave)
 
@@ -123,7 +123,10 @@ class DynamicMeshService:
             body.processMeshUpdate(oldBoundaries, newBoundaries)
 
     # This method is left here just to leave a scaffold for future evolution
-    async def _handleBoundaryTypeChange(self, bcid: str, oldType: BoundaryType, newType: BoundaryType):
+    def _handleBoundaryTypeChange(self, bcid: str, oldType: BoundaryType, newType: BoundaryType):
+        if not self._dynamicMesh.movingBoundaries:
+            return
+
         boundaryEntry = next((be for be in self._dynamicMesh.movingBoundaries if be.boundary == bcid), None)
         if boundaryEntry is None:
             raise AssertionError

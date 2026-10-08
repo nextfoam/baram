@@ -152,13 +152,13 @@ class ProcessInformationPage(ContentPage):
 
             try:
                 await self._caseManager.liveRun(skipCaseGeneration=skipCaseGeneration)
-                progressDialog.finish(self.tr('Calculation started'))
+                await progressDialog.finish(self.tr('Calculation started'))
             except SolverNotFound as e:
-                progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+                await progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             except CanceledException:
-                progressDialog.finish(self.tr('Calculation cancelled'))
+                await progressDialog.finish(self.tr('Calculation cancelled'))
             except RuntimeError as r:
-                progressDialog.finish(str(r))
+                await progressDialog.finish(str(r))
             finally:
                 self._caseManager.progress.disconnect(progressDialog.setLabelText)
 

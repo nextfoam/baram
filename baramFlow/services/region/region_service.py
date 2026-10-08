@@ -1,62 +1,69 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.sync_signal import SyncSignal
+
 from baramFlow.base.boundary.boundary_data import BoundaryData
 from baramFlow.base.cell_zone.cell_zone import CellZoneData
+from baramFlow.base.project_data import projectData
 from baramFlow.base.region.poly_mesh import PolyMeshRegion
-from baramFlow.base.region.region_patch import RegionInitializationPatch
-from baramFlow.base.region.regions_cache import regionCache
+from baramFlow.base.region.region_data import RegionData
+from baramFlow.base.region.region_patch import RegionInitializationPatch, RegionMaterialsUpdate
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb import CoreDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.region_db import RegionDB
 
 REGIONS_XPATH = '/regions'
 
 
 class RegionService:
+    materialsUpdateRequested = SyncSignal(RegionMaterialsUpdate)
+
+    @staticmethod
+    def getRegion(rname: str):
+        return RegionData.fromElement(CoreDB().getElement(RegionDB.getXPath(rname)))
+
     @staticmethod
     def getBoundary(bcid: str):
         RegionService.reloadBoundary(bcid)    # ToDo: Delete if database synchronization is guaranteed.
-        return regionCache.boundaries[bcid]
+        return projectData.regions.boundaries[bcid]
 
     @staticmethod
     def getBoundaries():
-        return regionCache.boundaries.values()
+        return projectData.regions.boundaries.values()
 
     @staticmethod
     def getBoundariesIn(rname):
-        return regionCache.regions[rname].boundaries
+        return projectData.regions.regions[rname].boundaries
 
     @staticmethod
     def getCellZone(czid: str):
         RegionService.reloadCellZone(czid)    # ToDo: Delete if database synchronization is guaranteed.
-        return regionCache.cellZones[czid]
+        return projectData.regions.cellZones[czid]
 
     @staticmethod
     def getCellZones():
-        return regionCache.cellZones.values()
+        return projectData.regions.cellZones.values()
 
     @staticmethod
     def isMultiRegion():
-        return len(regionCache.regions) > 1
+        return len(projectData.regions.regions) > 1
 
     @staticmethod
     def reloadBoundary(bcid: str):
         new = BoundaryData.fromElement(CoreDB().getElement(BoundaryDB.getXPath(bcid)))
-        regionCache.boundaries[bcid].boundary = new
+        projectData.regions.boundaries[bcid].boundary = new
 
     @staticmethod
     def reloadCellZone(czid: str):
         new = CellZoneData.fromElement(CoreDB().getElement(CellZoneDB.getXPath(czid)))
-        regionCache.cellZones[czid].cellZone = new
+        projectData.regions.cellZones[czid].configurations = new
 
     @staticmethod
     def matches(vtkMesh: dict):
-        if regionCache is None:
-            return False
-
-        regions = regionCache.regions
+        regions = projectData.regions.regions
         if set(regions) != set(rname for rname in vtkMesh if 'boundary' in vtkMesh[rname]):
             return False
 
@@ -67,7 +74,7 @@ class RegionService:
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 newCellZones = set(vtkMesh[rname]['zones']['cellZones'].keys())
             else:
-                newCellZones = {}
+                newCellZones = set()
 
             if set(region.getCellZoneNames(includeEntireZone=False)) != newCellZones:
                 return False
@@ -76,19 +83,25 @@ class RegionService:
 
     @staticmethod
     def clear():
-        regionCache.clear()
+        projectData.regions.clear()
 
     @staticmethod
     def replace(data: list[PolyMeshRegion]):
-        regionCache.replace(data)
+        projectData.regions.replace(data)
 
         with CoreDB() as db:
-            db.replaceElement(REGIONS_XPATH, regionCache.toElement())
+            db.replaceElement(REGIONS_XPATH, projectData.regions.toElement())
             db.increaseConfigCount()
 
     @staticmethod
     def updatePolyMeshData(polyMeshBoundaries: dict):
-        regionCache.updatePolyMeshData(polyMeshBoundaries)
+        projectData.regions.updatePolyMeshData(polyMeshBoundaries)
+
+    @classmethod
+    def updateMaterials(cls, data: RegionMaterialsUpdate):
+        cls.materialsUpdateRequested.emit(data)
+
+        RegionDB.updateMaterials(data.rname, data.material, data.secondaryMaterials)
 
     @staticmethod
     def updateInitialization(patches: list[RegionInitializationPatch], writer: CoreDBWriter = None):

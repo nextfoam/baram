@@ -4,12 +4,12 @@
 import numpy as np
 from numpy.typing import NDArray
 
+from baramFlow.base.base import Vector
 from baramFlow.base.dynamic_mesh.dynamic_mesh import MotionType
 from baramFlow.base.dynamic_mesh.motion_function import MotionFunctionType
 from baramFlow.base.dynamic_mesh.moving_boundary import MovingBoundaryEntry, PointMotionType, RotationalConstraintType, TranslationalConstraintType
 from baramFlow.base.dynamic_mesh.restraint import RestraintType
 from baramFlow.base.dynamic_mesh.rigid_body_solver import RigidBodyDynamicsSolverType
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.boundary_db import BoundaryType
 from baramFlow.coredb.coredb_reader import Region
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition

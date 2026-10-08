@@ -3,7 +3,6 @@
 
 from pathlib import Path
 
-import qasync
 from PySide6.QtCore import QObject, Signal
 
 from libbaram.utils import rmtree
@@ -51,7 +50,6 @@ class StepPage(QObject):
 
         return await self.save()
 
-    @qasync.asyncSlot()
     async def save(self):
         return True
 

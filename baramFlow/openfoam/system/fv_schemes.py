@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from baramFlow.base.numberical_condition.numberical_condition import ImplicitDiscretizationScheme
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.services.numerical_condition.numberical_service import NumericalService
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -131,29 +132,31 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDdtSchemes(self):
-        time = self._db.getValue('/numericalConditions/discretizationSchemes/time')
-
-        ddtSchemes = {}
         if GeneralDB.isTimeTransient():
-            if time == 'firstOrderImplicit':
-                ddtSchemes = {
+            discretizationSchemes = NumericalService.getConditions().discretizationSchemes
+            if discretizationSchemes.time == ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT:
+                return {
                     'default': 'Euler'
                 }
-            elif time == 'secondOrderImplicit':
-                ddtSchemes = {
+
+            # discretizationSchemes.time == ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT
+            if ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID:
+                return {
+                    'default': ('CrankNicolson', discretizationSchemes.crankNicolsonBlendingFactor)
+                }
+            else:
+                return {
                     'default': 'backward'
                 }
         else:
             if allRoundSolver():  # this solver is able to solve both steady and transient
-                ddtSchemes = {
+                return {
                     'default': 'localEuler'
                 }
             else:
-                ddtSchemes = {
+                return {
                     'default': 'steadyState'
                 }
-
-        return ddtSchemes
 
     def _constructGradSchemes(self):
         return {

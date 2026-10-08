@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from xml.etree.ElementTree import Element
+
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 
 from libbaram.openfoam.constants import Directory
@@ -11,9 +13,8 @@ from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.region.poly_mesh import PolyMeshRegion
 from baramFlow.base.region.region_data import RegionModel, BoundaryModel, CellZoneModel
 from baramFlow.coredb.boundary_db import GeometricalType, BoundaryType
-from baramFlow.coredb.coredb import CoreDB
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.libdb import E
+from baramFlow.coredb.libdb import E, nsmap
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import CELL_ZONE_NAME_FOR_REGION
 from baramFlow.openfoam.file_system import FileSystem
@@ -21,7 +22,7 @@ from baramFlow.openfoam.file_system import FileSystem
 REGIONS_XPATH = '/regions'
 
 
-class _RegionsCache:
+class Regions:
     initialPressure = '0'
     defaultMaterial = '1'
 
@@ -42,10 +43,10 @@ class _RegionsCache:
     def cellZones(self):
         return self._cellZones
 
-    def load(self):
-        db = CoreDB()
+    def load(self, e: Element):
+        self.clear()
 
-        for r in db.getElements(REGIONS_XPATH + '/region'):
+        for r in e.findall('region', namespaces=nsmap):
             region = RegionModel.fromElement(r)
             self._regions[region.name] = region
 
@@ -99,8 +100,8 @@ class _RegionsCache:
             self._regions[r.rname].sortBoundaries()
 
             for name in r.cellZones:
-                self._addCellZone(CellZoneModel(cellZone=CellZoneData(name=name,
-                                                                      rname=r.rname),
+                self._addCellZone(CellZoneModel(configurations=CellZoneData(name=name,
+                                                                            rname=r.rname),
                                                 rname=r.rname))
 
     def updatePolyMeshData(self, polyMeshBoundaries: dict):
@@ -122,8 +123,8 @@ class _RegionsCache:
     def _addRegion(self, rname):
         self._regions[rname] = RegionModel(name=rname, material=self.defaultMaterial)
         self._regions[rname].initialization.initialValues.pressure = self.initialPressure
-        self._addCellZone(CellZoneModel(cellZone=CellZoneData(name=CELL_ZONE_NAME_FOR_REGION,
-                                                              rname=rname),
+        self._addCellZone(CellZoneModel(configurations=CellZoneData(name=CELL_ZONE_NAME_FOR_REGION,
+                                                                    rname=rname),
                                         rname=rname))
 
     def _addBoundary(self, model: BoundaryModel):
@@ -135,6 +136,3 @@ class _RegionsCache:
         model.setID(str(len(self._cellZones) + 1))
         self._cellZones[model.czid] = model
         self._regions[model.rname].addCellZone(model)
-
-
-regionCache = _RegionsCache()

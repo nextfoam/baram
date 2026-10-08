@@ -17,11 +17,12 @@ from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import E, nsmap
-from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.async_signal import AsyncSignal
+from libbaram.colormap import NFM_DARK_SLATE_GRAY, NFM_LIGHT_GRAY
 from libbaram.openfoam.polymesh import addCoordinateVector, collectInternalMesh
+from widgets.rendering.color_scheme import ColormapScheme
 
 
 class StreamlineIntegratorType(Enum):
@@ -79,6 +80,7 @@ class Graphic:
     customRangeMin: str = '0.0'
     customRangeMax: str = '0.0'
     clipToRange: bool = False
+    labelFormat: str = '%-#6.5g'
     useCustomColorScheme: bool = False
     colorScheme: ColormapScheme = ColormapScheme.BlueToRedRainbow
     customMinColor: QColor = dataClassField(default_factory=lambda: QColor.fromString('#000000'))
@@ -100,6 +102,9 @@ class Graphic:
 
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
+
+    background1: QColor = dataClassField(default_factory=lambda: QColor.fromString(NFM_LIGHT_GRAY))
+    background2: QColor = dataClassField(default_factory=lambda: QColor.fromString(NFM_DARK_SLATE_GRAY))
 
     def __post_init__(self):
         self.instanceUpdated = AsyncSignal(UUID)
@@ -130,6 +135,7 @@ class Graphic:
         customRangeMin = e.find('customRangeMin', namespaces=nsmap).text
         customRangeMax = e.find('customRangeMax', namespaces=nsmap).text
         clipToRange = True if e.find('clipToRange', namespaces=nsmap).text == 'true' else False
+        labelFormat = e.find('labelFormat', namespaces=nsmap).text
         useCustomColorScheme = True if e.find('useCustomColorScheme', namespaces=nsmap).text == 'true' else False
         colorScheme = ColormapScheme(e.find('colorScheme', namespaces=nsmap).text)
         customMinColor = QColor.fromString(e.find('customMinColor', namespaces=nsmap).text)
@@ -158,6 +164,10 @@ class Graphic:
             item = DisplayItem.fromElement(displayItemElement)
             displayItems[item.scaffoldUuid] = item
 
+        rendering = e.find('rendering', namespaces=nsmap)
+        background1 = QColor.fromString(rendering.find('background1', namespaces=nsmap).text)
+        background2 = QColor.fromString(rendering.find('background2', namespaces=nsmap).text)
+
         graphic = Graphic(uuid=uuid,
                           name=name,
                           field=field,
@@ -171,6 +181,7 @@ class Graphic:
                           customRangeMin=customRangeMin,
                           customRangeMax=customRangeMax,
                           clipToRange=clipToRange,
+                          labelFormat=labelFormat,
                           useCustomColorScheme=useCustomColorScheme,
                           colorScheme=colorScheme,
                           customMinColor=customMinColor,
@@ -187,7 +198,9 @@ class Graphic:
                           accuracyControl=accuracyControl,
                           tolerance=tolerance,
                           streamlineType=streamlineType,
-                          lineWidth=lineWidth)
+                          lineWidth=lineWidth,
+                          background1=background1,
+                          background2=background2)
 
         for item in displayItems.values():
             item.instanceUpdated.asyncConnect(graphic._displayItemUpdated)
@@ -214,6 +227,7 @@ class Graphic:
                  E('customRangeMin', self.customRangeMin),
                  E('customRangeMax', self.customRangeMax),
                  E('clipToRange', self.clipToRange),
+                 E('labelFormat', self.labelFormat),
                  E('useCustomColorScheme', self.useCustomColorScheme),
                  E('colorScheme', self.colorScheme.value),
                  E('customMinColor', self.customMinColor.name()),
@@ -231,7 +245,10 @@ class Graphic:
                  E('tolerance', self.tolerance),
                  E('streamlineType', self.streamlineType.value),
                  E('lineWidth', self.lineWidth),
-                 displayItemsElement)
+                 displayItemsElement,
+                 E('rendering',
+                   E('background1', self.background1.name()),
+                   E('background2', self.background2.name())))
 
     def xpath(self):
         return f'/graphic[uuid="{str(self.uuid)}"]'
@@ -315,4 +332,12 @@ class Graphic:
         await self.displayItemRemoving.emit(scaffoldUuid)
         del self.displayItems[scaffoldUuid]
         await self.displayItemRemoved.emit(scaffoldUuid)
+        self.saveToCoreDB()
+
+    def updateBackground1(self, color: QColor):
+        self.background1 = color
+        self.saveToCoreDB()
+
+    def updateBackground2(self, color: QColor):
+        self.background2 = color
         self.saveToCoreDB()

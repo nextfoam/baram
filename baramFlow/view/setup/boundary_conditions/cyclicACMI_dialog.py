@@ -45,12 +45,9 @@ class CyclicACMIDialog(CoupledBoundaryConditionDialog):
 
         try:
             with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
+                self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
                 db.setValue(self._xpath + '/fallbackBoundary', self._fallbackBoundary)
-
-                if coupleTypeChanged:
-                    self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
                 super().accept()
         except ValueException as ve:

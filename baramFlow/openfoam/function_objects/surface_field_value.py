@@ -20,7 +20,7 @@ SURFACE_MONITOR_OPERATION = {
     SurfaceReportType.MASS_WEIGHTED_AVERAGE: 'weightedAverage',
     SurfaceReportType.INTEGRAL: 'areaIntegrate',
     SurfaceReportType.MASS_FLOW_RATE: 'sum',
-    SurfaceReportType.VOLUME_FLOW_RATE: 'areaNormalIntegrate',
+    SurfaceReportType.VOLUME_FLOW_RATE: 'sum',
     SurfaceReportType.MINIMUM: 'min',
     SurfaceReportType.MAXIMUM: 'max',
     SurfaceReportType.COEFFICIENT_OF_VARIATION: 'CoV',

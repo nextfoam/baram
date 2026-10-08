@@ -5,15 +5,15 @@ from enum import IntEnum, auto
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout, QGridLayout
 
-from baramFlow.base.boundary.boundary import TemperatureLayers, TemperatureLayer
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
+from widgets.typed_edit import FloatEdit
 
+from baramFlow.base.boundary.boundary import TemperatureLayers, TemperatureLayer
 from baramFlow.coredb import coredb
 from baramFlow.view.setup.boundary_conditions.wall_layers_widget_ui import Ui_WallLayersWidget
-from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 
 
 class Column(IntEnum):
@@ -28,11 +28,11 @@ class WallLayerItem(QObject):
 
     _removeIcon = QIcon(':/icons/trash-outline.svg')
 
-    def __init__(self, no, thickness='', thermalConductivity=''):
+    def __init__(self, no, thickness: str, thermalConductivity: str):
         super().__init__()
 
-        self._widgets = None
-        self._hidden = False
+        self._widgets: list[QWidget]
+        self._hidden: bool = False
 
         if no > 1:
             removeButton = FlatPushButton(self._removeIcon, '')
@@ -42,15 +42,15 @@ class WallLayerItem(QObject):
 
         self._widgets = [
             QLabel(str(no)),
-            BatchableFloatEdit(thickness),
-            BatchableFloatEdit(thermalConductivity),
+            FloatEdit(thickness),
+            FloatEdit(thermalConductivity),
             removeButton]
 
     def thickness(self):
-        return self.widget(Column.THICKNESS).text().strip()
+        return self.widget(Column.THICKNESS).text()
 
     def thermalConductivity(self):
-        return self.widget(Column.THERMAL_CONDUCTIVITY).text().strip()
+        return self.widget(Column.THERMAL_CONDUCTIVITY).text()
 
     def widget(self, column):
         return self._widgets[column]
@@ -70,10 +70,6 @@ class WallLayerItem(QObject):
         if not self._hidden:
             self._widgets[Column.NO].setText(str(self.no() - 1))
 
-    def validate(self):
-        self.widget(Column.THICKNESS).validate(self.tr('Wall Layer Thickness'))
-        self.widget(Column.THERMAL_CONDUCTIVITY).validate(self.tr('Wall Layer Thermal Conductivity'))
-
 
 class WallLayersWidget(QWidget):
     _removeIcon = QIcon(':/icons/trash-outline.svg')
@@ -83,9 +79,9 @@ class WallLayersWidget(QWidget):
         self._ui = Ui_WallLayersWidget()
         self._ui.setupUi(self)
 
-        self._layout = self._ui.wallLayersTable.layout()
+        self._layout: QGridLayout = self._ui.wallLayersTable.layout()
 
-        self._rows = []
+        self._rows: list[WallLayerItem] = []
         
         self._connectSignalsSlots()
 
@@ -134,11 +130,6 @@ class WallLayersWidget(QWidget):
         db.setValue(xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
         db.setValue(xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
 
-    def validate(self):
-        for row in self._rows:
-            if not row.isHidden():
-                row.validate()
-
     def _connectSignalsSlots(self):
         self._ui.addWallLayer.clicked.connect(lambda: self.addRow('0.001', '10'))
 
@@ -175,7 +166,3 @@ class WallLayersBox(QGroupBox):
             await self._layers.updateDB(db, xpath)
         else:
             db.setAttribute(xpath, 'disabled', 'true')
-
-    def validate(self):
-        if self.isChecked():
-            self._layers.validate()

@@ -41,7 +41,7 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
 
         try:
             with coredb.CoreDB() as db:
-                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
+                self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
                 if ModelsDB.isEnergyModelOn():
                     wallLayersXpath = self._xpath + '/thermoCoupledWall/temperature/wallLayers'
@@ -59,9 +59,6 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
                 super().accept()
         except ValueException as ve:
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
-
-        if coupleTypeChanged:
-            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)

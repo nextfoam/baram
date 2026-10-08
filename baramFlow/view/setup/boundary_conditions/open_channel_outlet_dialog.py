@@ -6,7 +6,7 @@ import qasync
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.boundary.boundary_patch import OpenChannelOutletPatch
+from baramFlow.base.boundary.boundary_patch import OpenChannelOutletUpdate
 from baramFlow.base.boundary.open_channel_port import OpenChannelOutlet
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -44,7 +44,7 @@ class OpenChannelOutletDialog(ResizableDialog):
             if not self._turbulenceWidget.appendToWriter(writer):
                 return
 
-            data = OpenChannelOutletPatch(
+            data = OpenChannelOutletUpdate(
                 openChannelOutlet=OpenChannelOutlet(
                     meanVelocity=str(PFloat(self._ui.meanVelocity.text(), self.tr("Mean Velocity")))),
                 turbulence=self._turbulenceWidget.data())

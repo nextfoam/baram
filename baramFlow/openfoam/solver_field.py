@@ -77,7 +77,7 @@ def getSolverComponentName(field: Field, component: VectorComponent) -> str:
 
 
 def getAvailableFlowFields():
-    fields = [PRESSURE, VELOCITY]
+    fields: list[Field] = [PRESSURE, VELOCITY]
 
     # Fields depending on the turbulence model
     rasModel = TurbulenceModelsDB.getRASModel()
@@ -102,11 +102,14 @@ def getAvailableFlowFields():
 
     # Material fields on multiphase model
     if ModelsDB.isMultiphaseModelOn():
-        for mid, _, _, phase in MaterialDB.getMaterials():
-            if phase == Phase.SOLID.value:
-                continue
-
+        secondaries = RegionDB.getSecondaryMaterials('')  # Multiphase solvers do not support multi-region
+        for mid in secondaries:
             field = PhaseField(mid)
+            fields.append(field)
+
+        if len(secondaries) > 1:  # multiphaseInterFoam leaves a field file for primary material
+            primary = RegionDB.getMaterial('')  # Multiphase solvers do not support multi-region
+            field = PhaseField(primary)
             fields.append(field)
 
     elif ModelsDB.isSpeciesModelOn():

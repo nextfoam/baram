@@ -31,10 +31,10 @@ from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDial
 
 from baramFlow.app import app
 from baramFlow.base import expert_mode
-from baramFlow.base.cache_manager import CacheManager
+from baramFlow.base.event_bus import EventBus
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.monitor.monitor import MonitorManager
 from baramFlow.base.model.model import ModelManager
+from baramFlow.base.project_data import projectData
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
@@ -51,6 +51,7 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.solver_status import SolverStatus
 from baramFlow.view.dock_widgets.chart_dock import ChartDock
 from baramFlow.view.dock_widgets.console_dock import ConsoleDock
@@ -200,6 +201,12 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
+        self._ui.splitter.setCollapsible(2, False)
+
+        # QSplitterHandle does not enable hover tracking by default, so the
+        # "QSplitter::handle:hover" style rule never triggers without this.
+        for index in range(1, self._ui.splitter.count()):
+            self._ui.splitter.handle(index).setAttribute(Qt.WidgetAttribute.WA_Hover)
 
         self._docks: dict[UUID, GraphicDock] = {}
 
@@ -260,7 +267,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._ui.actionLanguage.setShortcut('Ctrl+L')
 
     def _connectSignalsSlots(self):
-        self._ui.actionSave.triggered.connect(self._save)
+        self._ui.actionSave.triggered.connect(self._saveSlot)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionOpenFoam.triggered.connect(self._importOpenFOAMMesh)
         self._ui.actionMultiplePolyMesh.triggered.connect(self._importMultiplePolyMesh)
@@ -300,6 +307,8 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
 
+        EventBus().onGraphicsPlaybackChanged.connect(self._graphicsPlaybackChanged)
+
         expert_mode.registerObserver(self)
 
     def _disconnectSignalsSlots(self):
@@ -312,7 +321,18 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
         GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
+        EventBus().onGraphicsPlaybackChanged.disconnect(self._graphicsPlaybackChanged)
+
+    def _graphicsPlaybackChanged(self, playing: bool):
+        self._ui.navigatorView.setEnabled(not playing)
+        self._ui.formView.setEnabled(not playing)
+        self._ui.menubar.setEnabled(not playing)
+        self._dockView.setTabSwitchingEnabled(not playing)
+
     @qasync.asyncSlot()
+    async def _saveSlot(self):
+        await self._save()
+
     async def _save(self):
         if await self._saveCurrentPage():
             self._project.save()
@@ -465,7 +485,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         try:
             progressDialog.setLabelText(self.tr('Scaling the mesh.'))
             if await MeshManager().scale(*self._dialog.data()):
-                progressDialog.finish(self.tr('Mesh scaling failed.'))
+                await progressDialog.finish(self.tr('Mesh scaling failed.'))
                 return
 
             # Workaround to give some time for QT to set up timer or event loop.
@@ -477,10 +497,10 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             loader.progress.connect(progressDialog.setLabelText)
             await loader.loadVtk()
 
-            progressDialog.finish(self.tr('Mesh scaling is complete'))
+            await progressDialog.finish(self.tr('Mesh scaling is complete'))
         except Exception as ex:
             logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def _translateMesh(self):
@@ -500,7 +520,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         try:
             progressDialog.setLabelText(self.tr('Translating the mesh.'))
             if await MeshManager().translate(*self._dialog.data()):
-                progressDialog.finish(self.tr('Mesh translation failed.'))
+                await progressDialog.finish(self.tr('Mesh translation failed.'))
                 return
 
             # Workaround to give some time for QT to set up timer or event loop.
@@ -512,10 +532,10 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             loader.progress.connect(progressDialog.setLabelText)
             await loader.loadVtk()
 
-            progressDialog.finish(self.tr('Mesh translation is complete'))
+            await progressDialog.finish(self.tr('Mesh translation is complete'))
         except Exception as ex:
             logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def _rotateMesh(self):
@@ -535,7 +555,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         try:
             progressDialog.setLabelText(self.tr('Rotating the mesh.'))
             if await MeshManager().rotate(*self._dialog.data()):
-                progressDialog.finish(self.tr('Mesh rotation failed.'))
+                await progressDialog.finish(self.tr('Mesh rotation failed.'))
                 return
 
             # Workaround to give some time for QT to set up timer or event loop.
@@ -547,10 +567,10 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             loader.progress.connect(progressDialog.setLabelText)
             await loader.loadVtk()
 
-            progressDialog.finish(self.tr('Mesh rotation is complete'))
+            await progressDialog.finish(self.tr('Mesh rotation is complete'))
         except Exception as ex:
             logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def _updateParallelEnvironment(self):
@@ -572,17 +592,16 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
                 await redistributionTask.redistribute()
 
+                await progressDialog.finish('Parallel Environment was Applied.')
             except RuntimeError as e:
-                progressDialog.finish(str(e))
-
-        progressDialog.finish('Parallel Environment was Applied.')
+                await progressDialog.finish(str(e))
 
     @qasync.asyncSlot()
     async def _changeForm(self, currentMenu, previousMenu=-1):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
             if previousPage.widget and previousPage.widget == self._contentView.currentPage():
-                if not await previousPage.widget.save() or not previousPage.widget.checkToQuit():
+                if not await previousPage.widget.save() or not await previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
 
@@ -653,15 +672,26 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
         self._caseManager.load(LiveCase())
 
         if self._caseManager.isRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
+            menu = MenuItem.MENU_SOLUTION_RUN.value
             self._chartDock.raise_()
         else:
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
+            menu = MenuItem.MENU_SETUP_GENERAL.value
             self._renderingDock.raise_()
+
+        # Select the initial menu without emitting currentMenuChanged. Going
+        # through _changeForm here would schedule a second asyncSlot task that
+        # tries to save the previous page while _projectOpened is still running,
+        # re-entering the event loop and raising "Cannot enter into task ...".
+        wasBlocked = self._navigatorView.blockSignals(True)
+        try:
+            self._navigatorView.setCurrentMenu(menu)
+        finally:
+            self._navigatorView.blockSignals(wasBlocked)
+        self._loadForm(menu)
 
         progressDialog = ProgressDialog(self, self.tr('Case Loading'))
         progressDialog.open()
-        CacheManager.load()
+        projectData.load()
 
         db = coredb.CoreDB()
         if db.hasMesh():
@@ -671,7 +701,9 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             await asyncio.sleep(0.1)
 
             async with OpenFOAMReader() as reader:
+                reader.readerProgressEvent.connect(lambda progress: progressDialog.setLabelText(self.tr('Loading Case: ') + str(progress) +'%'))
                 await reader.setupReader()
+                reader.readerProgressEvent.disconnect()
 
             ScaffoldsDB().load()
             await GraphicsDB().load()
@@ -694,7 +726,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
                 await loader.loadMesh()
 
             except Exception as ex:
-                progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+                await progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
             self._project.fileDB().saveCoreDB()
 
@@ -781,11 +813,13 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             removeVoidBoundaries(FileSystem.caseRoot())
 
             progressDialog.close()
-
-            await self._loadMesh()
         except Exception as ex:
             self._deleteMeshFilesAndData()
-            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+
+            return
+
+        await self._loadMesh()
 
     @qasync.asyncSlot()
     async def _polyMeshesSelected(self):
@@ -807,7 +841,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             await self._loadMesh()
         except Exception as ex:
             self._deleteMeshFilesAndData()
-            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def _meshFileSelected(self, file, meshType):
@@ -832,7 +866,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
                     cellZones = CellZonesToRegions().loadCellZones()
                     if len(cellZones) > 1 or 'solid' in cellZones.values():
                         self._dialog = FluentRegionsDialog(self, cellZones)
-                        self._dialog.accepted.connect(lambda: self._cellZonesToRegions(meshManager))
+                        self._dialog.accepted.connect(lambda: self._cellZonesToRegionsSlot(meshManager))
                         self._dialog.rejected.connect(meshManager.cancel)
                         self._dialog.open()
                     else:
@@ -840,7 +874,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
                         await self._cellZonesToRegions(meshManager)
                 else:
                     self._deleteMeshFilesAndData()
-                    progressDialog.finish(self.tr('Failed to extract cell zones.'))
+                    await progressDialog.finish(self.tr('Failed to extract cell zones.'))
             else:
                 await meshManager.convertMesh(Path(file), meshType)
                 removeVoidBoundaries(FileSystem.caseRoot())
@@ -851,9 +885,12 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             progressDialog.close()
         except Exception as ex:
             self._deleteMeshFilesAndData()
-            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
 
     @qasync.asyncSlot()
+    async def _cellZonesToRegionsSlot(self, meshManager):
+        await self._cellZonesToRegions(meshManager)
+
     async def _cellZonesToRegions(self, meshManager):
         progressDialog = ProgressDialog(self, self.tr('Mesh Converting'))
         progressDialog.setLabelText(self.tr('Converting the mesh'))
@@ -869,11 +906,11 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
                 await self._loadMesh()
                 return
 
-            progressDialog.finish(self.tr('Failed to convert mesh.'))
+            await progressDialog.finish(self.tr('Failed to convert mesh.'))
         except CanceledException:
             pass
         except Exception as ex:
-            progressDialog.finish(self.tr('Mesh Convert failed:\n' + str(ex)))
+            await progressDialog.finish(self.tr('Mesh Convert failed:\n' + str(ex)))
 
         self._deleteMeshFilesAndData()
 
@@ -894,10 +931,10 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
             redistributeTask = RedistributionTask()
             redistributeTask.progress.connect(progressDialog.setLabelText)
             await redistributeTask.redistribute()
-        except Exception as ex:
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
-        progressDialog.close()
+            progressDialog.close()
+        except Exception as ex:
+            await progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     def _runParaView(self, executable, updateSetting=True):
         casePath = FileSystem.foamFilePath()
@@ -947,7 +984,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     def _deleteMeshFilesAndData(self):
         db = coredb.CoreDB()
         db.clearRegions()
-        MonitorManager.clearMonitors()
+        MonitorService.clearMonitors()
         FileSystem.deleteMesh()
         self.meshUpdated()
 

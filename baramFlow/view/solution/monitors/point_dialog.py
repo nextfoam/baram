@@ -13,17 +13,18 @@ from widgets.rendering.point_widget import PointWidget
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
+from baramFlow.base.base import Vector
 from baramFlow.base.constants import FieldCategory
 from baramFlow.base.field import TEMPERATURE, getFieldInstance
 from baramFlow.base.material.material import Phase
-from baramFlow.base.monitor.monitor import MonitorManager, PointMonitorConfiguration, MonitorField
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.monitor.monitor import PointMonitorConfiguration, MonitorField
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .point_dialog_ui import Ui_PointDialog
 
@@ -35,7 +36,7 @@ class PointDialog(QDialog):
         """Constructs point monitor setup dialog.
 
         Args:
-            name: Force Monitor name. If None, create a new monitor.
+            uuid: Force Monitor ID. If None, create a new monitor.
         """
         super().__init__(parent)
         self._ui = Ui_PointDialog()
@@ -86,9 +87,9 @@ class PointDialog(QDialog):
     def _load(self):
         if self._uuid is None:
             self._isNew = True
-            data = MonitorManager.newPointMonitor()
+            data = MonitorService.newPointMonitor()
         else:
-            data = MonitorManager.getPointMonitor(self._uuid)
+            data = MonitorService.getPointMonitor(self._uuid)
             self._ui.nameWidget.hide()
             self._ui.monitor.setTitle(data.monitorBase.name)
 
@@ -114,7 +115,7 @@ class PointDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
             return
 
-        if name != self._base.name and MonitorManager.isExistingName(name):
+        if name != self._base.name and MonitorService.isExistingName(name):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Name "{0}" already exist.'.format(name)))
             return
@@ -172,9 +173,9 @@ class PointDialog(QDialog):
                 region=region)
 
             if self._isNew:
-                MonitorManager.addPointMonitor(data)
+                MonitorService.addPointMonitor(data)
             else:
-                MonitorManager.updatePointMonitor(data)
+                MonitorService.updatePointMonitor(data)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return

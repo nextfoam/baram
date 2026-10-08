@@ -90,14 +90,21 @@
            </layout>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="2" column="0" colspan="2">
+          <widget class="QPushButton" name="selectFromVolume">
+           <property name="text">
+            <string>Select from Volume...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
           <widget class="QLabel" name="label_13">
            <property name="text">
             <string>Point (Specify a point in the region)</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QWidget" name="widget_8" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <property name="leftMargin">

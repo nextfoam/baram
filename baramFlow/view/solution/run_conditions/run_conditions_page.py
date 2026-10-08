@@ -3,8 +3,6 @@
 
 from enum import Enum, auto
 
-import qasync
-
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
@@ -43,7 +41,6 @@ class RunConditionsPage(ContentPage):
         self._connectSignalsSlots()
         self._updateEnabled()
 
-    @qasync.asyncSlot()
     async def save(self):
         try:
             with coredb.CoreDB() as db:

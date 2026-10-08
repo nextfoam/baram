@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
+
 from PySide6.QtWidgets import QWidget
 
 from widgets.enum_button_group import EnumButtonGroup
@@ -35,32 +37,26 @@ class PatchInteractionWidget(QWidget):
     def setData(self, data):
         self._data = data
         self._typeRadios.setCheckedData(data.type)
-        self._ui.normal.setBatchableNumber(data.reflect.normal)
-        self._ui.tangential.setBatchableNumber(data.reflect.tangential)
+        self._ui.normal.setPFloat(data.reflect.normal)
+        self._ui.tangential.setPFloat(data.reflect.tangential)
         self._setRecycleBoundary(data.recycle.recycleBoundary)
-        self._ui.recycleFraction.setBatchableNumber(data.recycle.recycleFraction)
+        self._ui.recycleFraction.setPFloat(data.recycle.recycleFraction)
 
-    def updateData(self):
-        self._data.type = self._typeRadios.checkedData()
-        if self._data.type == PatchInteractionType.REFLECT:
-            self._data.reflect.normal = self._ui.normal.batchableNumber()
-            self._data.reflect.tangential = self._ui.tangential.batchableNumber()
-        elif self._data.type == PatchInteractionType.RECYCLE:
-            self._data.recycle.recycleBoundary = self._recycleBoundary
-            self._data.recycle.recycleFraction = self._ui.recycleFraction.batchableNumber()
+    def data(self):
+        data = deepcopy(self._data)
 
-        return self._data
-
-    def validate(self):
-        type_ = self._typeRadios.checkedData()
-        if type_ == PatchInteractionType.REFLECT:
-            self._ui.normal.validate(self.tr('Normal'), low=0, high=1)
-            self._ui.tangential.validate(self.tr('Tangential'), low=0, high=1)
-        elif type_ == PatchInteractionType.RECYCLE:
+        data.type = self._typeRadios.checkedData()
+        if data.type == PatchInteractionType.REFLECT:
+            data.reflect.normal = self._ui.normal.pFloat(self.tr('Normal'), low=0, high=1)
+            data.reflect.tangential = self._ui.tangential.pFloat(self.tr('Tangential'), low=0, high=1)
+        elif data.type == PatchInteractionType.RECYCLE:
             if self._recycleBoundary == '0':
                 raise ValueError(self.tr('Select Recycle Boundary.'))
 
-            self._ui.recycleFraction.validate(self.tr('Recycle Fraction'), low=0, high=1)
+            data.recycle.recycleBoundary = self._recycleBoundary
+            data.recycle.recycleFraction = self._ui.recycleFraction.pFloat(self.tr('Recycle Fraction'), low=0, high=1)
+
+        return data
 
     def _connectSignalsSlots(self):
         self._typeRadios.selectionChanged.connect(self._typeChanged)

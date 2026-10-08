@@ -13,24 +13,20 @@ from widgets.selector_dialog import SelectorDialog
 from baramFlow.base.constants import FieldCategory
 from baramFlow.base.field import TEMPERATURE, getFieldInstance
 from baramFlow.base.material.material import Phase
-from baramFlow.base.monitor.monitor import MonitorManager, VolumeMonitorConfiguration, MonitorField
+from baramFlow.base.monitor.monitor import VolumeMonitorConfiguration, MonitorField
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .volume_dialog_ui import Ui_VolumeDialog
 
 
 class VolumeDialog(QDialog):
     def __init__(self, parent, uuid=None):
-        """Constructs volume monitor setup dialog.
-
-        Args:
-            name: Force Monitor name. If None, create a new monitor.
-        """
         super().__init__(parent)
         self._ui = Ui_VolumeDialog()
         self._ui.setupUi(self)
@@ -69,9 +65,9 @@ class VolumeDialog(QDialog):
     def _load(self):
         if self._uuid is None:
             self._isNew = True
-            data = MonitorManager.newVolumeMonitor()
+            data = MonitorService.newVolumeMonitor()
         else:
-            data = MonitorManager.getVolumeMonitor(self._uuid)
+            data = MonitorService.getVolumeMonitor(self._uuid)
             self._ui.nameWidget.hide()
             self._ui.monitor.setTitle(data.monitorBase.name)
 
@@ -93,7 +89,7 @@ class VolumeDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
             return
 
-        if name != self._base.name and MonitorManager.isExistingName(name):
+        if name != self._base.name and MonitorService.isExistingName(name):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Name "{0}" already exist.'.format(name)))
             return
@@ -135,9 +131,9 @@ class VolumeDialog(QDialog):
             )
 
             if self._isNew:
-                MonitorManager.addVolumeMonitor(data)
+                MonitorService.addVolumeMonitor(data)
             else:
-                MonitorManager.updateVolumeMonitor(data)
+                MonitorService.updateVolumeMonitor(data)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return

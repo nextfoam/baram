@@ -24,6 +24,9 @@ class Step(IntEnum):
 
     LAST_STEP = EXPORT
 
+    def next(self):
+        return Step(self + 1)
+
 
 class GeometryType(Enum):
     SURFACE = 'surface'
@@ -182,7 +185,7 @@ schema = {
         'refinementVolumes': IntKeyList(volumeRefinement),
     },
     'snap': {
-        'nSmoothPatch': IntType().setDefault(0),
+        'nSmoothPatch': IntType().setDefault(1),
         'nSmoothInternal': IntType().setDefault(0),
         'nSolveIter': IntType().setDefault(30),
         'nRelaxIter': IntType().setDefault(5),
@@ -217,7 +220,7 @@ schema = {
         'maxThicknessToMedialRatio': FloatType().setDefault(0.3),
         'nSmoothNormals': IntType().setDefault(3),
         'nRelaxIter': IntType().setDefault(10),
-        'nBufferCellsNoExtrude': IntType().setDefault(0),
+        'nBufferCellsNoExtrude': IntType().setDefault(1),
         'nLayerIter': IntType().setDefault(50),
         'nRelaxedIter': IntType().setDefault(20)
     },

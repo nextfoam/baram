@@ -30,9 +30,11 @@ from analytics.events import EVENT_LOOP_ERROR
 
 from baramFlow.app import app
 from baramFlow.app_plug_in import AppPlugIn
-from baramFlow.base.graphic.color_scheme import initializeBaramPresetColorSchemes
+from baramFlow.base.policies import connectSignalsToPolicies
 from baramFlow.view.main_window.start_window import Baram
 from baramFlow.coredb.app_settings import AppSettings
+
+from widgets.rendering.color_scheme import initializeBaramPresetColorSchemes
 
 logger = logging.getLogger()
 formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
@@ -82,6 +84,7 @@ def main():
 
     app.setupApplication(flowAppProperties)
     app.setPlug(AppPlugIn())
+    connectSignalsToPolicies()
 
     Analytics().configure(
         app_name=flowAppProperties.name,

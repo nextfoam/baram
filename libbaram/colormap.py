@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 from vtkmodules.vtkCommonCore import vtkLookupTable
 
+NFM_LIGHT_GRAY      = '#d1d1d1'
+NFM_DARK_SLATE_GRAY = '#383d54'
 
 STEP = 256
 

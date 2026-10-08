@@ -3,7 +3,6 @@
 
 import logging
 
-import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from widgets.async_message_box import AsyncMessageBox
@@ -36,7 +35,6 @@ class GeneralPage(ContentPage):
         self._updateEnabled()
         self._load()
 
-    @qasync.asyncSlot()
     async def save(self):
         writer = CoreDBWriter()
 

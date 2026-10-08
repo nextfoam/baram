@@ -33,10 +33,8 @@ class SnapPage(StepPage):
         self._surfaces = None
         self._oldSurfaces = None
 
-        self._ui.featureSnapType.addEnumItems({
-            FeatureSnapType.EXPLICIT: self.tr('explicit'),
-            FeatureSnapType.IMPLICIT: self.tr('implicit')
-        })
+        self._ui.featureSnapType.addItem(self.tr('explicit'),   FeatureSnapType.EXPLICIT)
+        self._ui.featureSnapType.addItem(self.tr('implicit'),   FeatureSnapType.IMPLICIT)
 
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerLaplacian, BufferLayerPointSmoothingMethod.LAPLACIAN)
         self._smoothingMethod.addEnumButton(self._ui.bufferLayerGETMe, BufferLayerPointSmoothingMethod.GETME)
@@ -126,8 +124,8 @@ class SnapPage(StepPage):
         self._ui.snap.clicked.connect(self._snap)
         self._ui.snapCancel.clicked.connect(snappyHexMesh.cancel)
         self._ui.snapReset.clicked.connect(self._reset)
-        self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
-        self._smoothingMethod.selectionChanged.connect(self._smootingMethodChanged)
+        self._ui.featureSnapType.currentIndexChanged.connect(self._onFeatureSnapTypeChanged)
+        self._smoothingMethod.selectionChanged.connect(self._onSmoothingMethodChanged)
         self._ui.bufferLayerSurfacesSelect.clicked.connect(self._selectSurfaces)
 
     @qasync.asyncSlot()
@@ -143,7 +141,8 @@ class SnapPage(StepPage):
         self._ui.meshDisplacementRelaxation.setText(snap.value('nSolveIter'))
         self._ui.globalSnappingRelaxation.setText(snap.value('nRelaxIter'))
         self._ui.featureSnappingRelaxation.setText(snap.value('nFeatureSnapIter'))
-        self._ui.featureSnapType.setCurrentData(FeatureSnapType(snap.value('featureSnapType')))
+        self._ui.featureSnapType.setCurrentIndex(
+            self._ui.featureSnapType.findData(FeatureSnapType(snap.value('featureSnapType'))))
         self._ui.multiSurfaceFeatureSnap.setChecked(snap.value('multiRegionFeatureSnap'))
         self._ui.tolerance.setText(snap.value('tolerance'))
         self._ui.concaveAngle.setText(snap.value('concaveAngle'))
@@ -154,6 +153,8 @@ class SnapPage(StepPage):
         self._smoothingMethod.setCheckedData(bufferLayer.enum('pointSmoothingMethod'))
         self._ui.bufferLayerNumberOfPointSmootherIteration.setText(bufferLayer.value('numberOfPointSmoothingIteration'))
         self._ui.bufferLayerGETMeTransformationParameter.setText(bufferLayer.value('GETMeTransformationParameter'))
+
+        self._onFeatureSnapTypeChanged()
 
     def _loadSurfaces(self):
         self._availableSurfaces = []
@@ -201,10 +202,10 @@ class SnapPage(StepPage):
         self._ui.snap.setEnabled(True)
         self.stepReset.emit()
 
-    def _featureSnapTypeChanged(self, type_):
-        self._ui.multiSurfaceFeatureSnap.setEnabled(type_ == FeatureSnapType.EXPLICIT)
+    def _onFeatureSnapTypeChanged(self):
+        self._ui.multiSurfaceFeatureSnap.setEnabled(self._ui.featureSnapType.currentData() == FeatureSnapType.EXPLICIT)
 
-    def _smootingMethodChanged(self, method):
+    def _onSmoothingMethodChanged(self, method):
         self._ui.bufferLayerGETMeTransformationParameter.setEnabled(method == BufferLayerPointSmoothingMethod.GETME)
 
     def _selectSurfaces(self):
@@ -245,7 +246,6 @@ class SnapPage(StepPage):
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
 
-    @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
 

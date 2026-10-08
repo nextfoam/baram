@@ -74,13 +74,14 @@ class App(QObject):
         self._window.load()
         self._window.show()
 
-    def updateMeshModel(self, meshModel, cellZoneActors, internalMeshActors):
-        if self._meshModel:
-            self._meshModel.deactivate()
-
+    def updateMeshModel(self, meshModel, cellZoneActors, internalMeshActors, boundaryInfos):
         self._meshModel = meshModel
         self._cellZoneActors = cellZoneActors
         self._internalMeshActors = internalMeshActors
+
+        if self.renderingView:
+            self.renderingView.rebuildBoundaryDisplayControls(meshModel, boundaryInfos)
+
         self.showMesh()
 
     def updateMesh(self):
@@ -89,10 +90,6 @@ class App(QObject):
     def showMesh(self):
         if self._meshModel:
             self._meshModel.activate()
-
-    def hideMesh(self):
-        if self._meshModel:
-            self._meshModel.deactivate()
 
     def quit(self):
         self._window = None

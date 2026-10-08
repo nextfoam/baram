@@ -4,12 +4,12 @@
 import qasync
 from PySide6.QtWidgets import QMenu, QListWidgetItem
 
-from baramFlow.base.monitor.monitor import MonitorManager
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.project import Project
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.view.widgets.content_page import ContentPage
 from .monitors_page_ui import Ui_MonitorsPage
 from .force_dialog import ForceDialog
@@ -41,13 +41,13 @@ class MonitorsPage(ContentPage):
     def _load(self):
         self._ui.list.clear()
 
-        for m in MonitorManager.getForceMonitors():
+        for m in MonitorService.getForceMonitors():
             self._addItem(ForceMonitorWidget(m))
-        for m in MonitorManager.getPointMonitors():
+        for m in MonitorService.getPointMonitors():
             self._addItem(PointMonitorWidget(m))
-        for m in MonitorManager.getSurfaceMonitors():
+        for m in MonitorService.getSurfaceMonitors():
             self._addItem(SurfaceMonitorWidget(m))
-        for m in MonitorManager.getVolumeMonitors():
+        for m in MonitorService.getVolumeMonitors():
             self._addItem(VolumeMonitorWidget(m))
 
     def _connectSignalsSlots(self):
@@ -88,16 +88,16 @@ class MonitorsPage(ContentPage):
         self._dialog.open()
 
     def _addForcesMonitor(self):
-        self._addItem(ForceMonitorWidget(MonitorManager.getForceMonitor(self._dialog.getID())))
+        self._addItem(ForceMonitorWidget(MonitorService.getForceMonitor(self._dialog.getID())))
 
     def _addPointsMonitor(self):
-        self._addItem(PointMonitorWidget(MonitorManager.getPointMonitor(self._dialog.getID())))
+        self._addItem(PointMonitorWidget(MonitorService.getPointMonitor(self._dialog.getID())))
 
     def _addSurfacesMonitor(self):
-        self._addItem(SurfaceMonitorWidget(MonitorManager.getSurfaceMonitor(self._dialog.getID())))
+        self._addItem(SurfaceMonitorWidget(MonitorService.getSurfaceMonitor(self._dialog.getID())))
 
     def _addVolumesMonitor(self):
-        self._addItem(VolumeMonitorWidget(MonitorManager.getVolumeMonitor(self._dialog.getID())))
+        self._addItem(VolumeMonitorWidget(MonitorService.getVolumeMonitor(self._dialog.getID())))
 
     def _addItem(self, widget):
         item = QListWidgetItem()

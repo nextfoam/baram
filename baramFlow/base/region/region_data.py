@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from xml.etree.ElementTree import Element
 
+from baramFlow.base.base import Vector
 from baramFlow.base.boundary.boundary_data import BoundaryData
 from baramFlow.base.cell_zone.cell_zone import CellZoneData
-from baramFlow.base.xml_helper import Vector
 from baramFlow.coredb.libdb import E, nsmap
 from baramFlow.coredb.region_db import CELL_ZONE_NAME_FOR_REGION
 
@@ -46,30 +47,30 @@ class BoundaryModel:
 
 @dataclass
 class CellZoneModel:
-    cellZone: CellZoneData
+    configurations: CellZoneData
     rname: str = ''
 
     @property
     def czid(self):
-        return self.cellZone.czid
+        return self.configurations.czid
 
     @property
     def name(self):
-        return self.cellZone.name
+        return self.configurations.name
 
     @property
     def scopedName(self):
-        return self.cellZone.name if self.rname == '' else f'{self.rname}:{self.cellZone.name}'
+        return self.configurations.name if self.rname == '' else f'{self.rname}:{self.configurations.name}'
 
     def setID(self, czid: str):
-        assert self.cellZone.czid is None
-        self.cellZone.czid = czid
+        assert self.configurations.czid == ''
+        self.configurations.czid = czid
 
     def isRegion(self):
-        return self.cellZone.name == CELL_ZONE_NAME_FOR_REGION
+        return self.configurations.isRegion()
 
     def toElement(self):
-        return self.cellZone.toElement()
+        return self.configurations.toElement()
 
 
 @dataclass
@@ -137,6 +138,27 @@ class RegionInitialization:
         return RegionInitialization(
             initialValues=RegionInitialValues.fromElement(e.find('initialValues', namespaces=nsmap)))
 
+
+@dataclass
+class RegionData:
+    name: str
+    material: str
+    secondaryMaterials: list[str]
+
+    def isMultiPhase(self):
+        return len(self.secondaryMaterials) > 0
+
+    @staticmethod
+    def fromElement(e: Element):
+        rname = e.find('name', namespaces=nsmap).text
+        if rname is None:
+            rname = ''
+
+        secondaries = e.find('secondaryMaterials', namespaces=nsmap).text
+        return RegionData(
+            name=rname,
+            material=e.find('material', namespaces=nsmap).text,
+            secondaryMaterials=[] if secondaries is None else secondaries.split())
 
 
 @dataclass
@@ -226,7 +248,7 @@ class RegionModel:
 
         cellZones = []
         for c in e.findall('cellZones/cellZone', namespaces=nsmap):
-            cellZones.append(CellZoneModel(cellZone=CellZoneData.fromElement(c),
+            cellZones.append(CellZoneModel(configurations=CellZoneData.fromElement(c),
                                            rname=rname))
 
         return RegionModel(

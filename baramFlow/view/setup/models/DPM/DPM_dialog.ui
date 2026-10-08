@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>583</width>
+    <width>591</width>
     <height>931</height>
    </rect>
   </property>
@@ -258,7 +258,7 @@ Energy model should be included in calculation.</string>
                 </widget>
                </item>
                <item>
-                <widget class="BatchableFloatEdit" name="temperature"/>
+                <widget class="PFloatLineEdit" name="temperature"/>
                </item>
               </layout>
              </widget>
@@ -330,7 +330,7 @@ Energy model should be included in calculation.</string>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="BatchableFloatEdit" name="maxParticleCourantNumber"/>
+                   <widget class="PFloatLineEdit" name="maxParticleCourantNumber"/>
                   </item>
                  </layout>
                 </widget>
@@ -358,7 +358,7 @@ Energy model should be included in calculation.</string>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="BatchableFloatEdit" name="DPMIterationInterval"/>
+                   <widget class="PFloatLineEdit" name="DPMIterationInterval"/>
                   </item>
                  </layout>
                 </widget>
@@ -538,12 +538,12 @@ Energy model should be included in calculation.</string>
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_9">
                   <property name="text">
-                   <string>Shape Factor</string>
+                   <string>Shape Factor (0~1)</string>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="BatchableFloatEdit" name="shapeFactor"/>
+                 <widget class="PFloatLineEdit" name="shapeFactor"/>
                 </item>
                </layout>
               </widget>
@@ -621,7 +621,7 @@ Energy model should be included in calculation.</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="BatchableFloatEdit" name="dragTomiyamaSurfaceTension"/>
+                    <widget class="PFloatLineEdit" name="dragTomiyamaSurfaceTension"/>
                    </item>
                   </layout>
                  </widget>
@@ -733,7 +733,7 @@ Energy model should be included in calculation.</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="BatchableFloatEdit" name="liftTomiyamaSurfaceTension"/>
+                    <widget class="PFloatLineEdit" name="liftTomiyamaSurfaceTension"/>
                    </item>
                   </layout>
                  </widget>
@@ -840,7 +840,7 @@ It is for laminar flow when energy model is turned on.</string>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="BatchableFloatEdit" name="molecularFreePathLength"/>
+              <widget class="PFloatLineEdit" name="molecularFreePathLength"/>
              </item>
             </layout>
            </widget>
@@ -1108,9 +1108,9 @@ It is for laminar flow when energy model is turned on.</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BatchableFloatEdit</class>
+   <class>PFloatLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>baramFlow.view.widgets.batchable_float_edit</header>
+   <header>widgets.pfloat_line_edit</header>
   </customwidget>
  </customwidgets>
  <resources>

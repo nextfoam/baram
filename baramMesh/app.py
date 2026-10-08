@@ -83,10 +83,21 @@ class App(QObject):
     def createProject(self, path):
         assert(self._project is None)
 
-        self._project = self._projectManager.createProject(path)
+        project = None
+        try:
+            project = self._projectManager.createProject(path)
+            fileSystem = FileSystem(project.path)
+            fileSystem.createCase(resource.file('openfoam/case'))
+        except Exception:
+            if project:
+                project.close()
+            self._project = None
+            self._fileSystem = None
+            raise
+
+        self._project = project
+        self._fileSystem = fileSystem
         self._settings.updateRecents(self._project.path, True)
-        self._fileSystem = FileSystem(self._project.path)
-        self._fileSystem.createCase(resource.file('openfoam/case'))
 
         return self._project
 
@@ -103,6 +114,7 @@ class App(QObject):
         if self._project:
             self._project.close()
         self._project = None
+        self._fileSystem = None
 
 
 app = App()

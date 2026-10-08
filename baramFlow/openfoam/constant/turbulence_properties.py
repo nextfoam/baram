@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.base.material.material import TransportSpecification
+from baramFlow.base.material.constants import TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.numerical_db import NumericalDB

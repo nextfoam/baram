@@ -65,7 +65,6 @@ class InitializationPage(ContentPage):
             self._ui.tabWidget.removeTab(0)
             widget.close()
 
-    @qasync.asyncSlot()
     async def save(self):
         #
         # Validation check for parameters
@@ -90,16 +89,16 @@ class InitializationPage(ContentPage):
                 if patch is not None:
                     data.append(widget.data())
 
-            RegionService.updateInitialization(data)
+            RegionService.updateInitialization(data, writer)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return False
 
         return True
 
-    def checkToQuit(self):
+    async def checkToQuit(self):
         if coredb.CoreDB().configCount != self._dbConfigCount:
-            confirm = QMessageBox.question(
+            confirm = await AsyncMessageBox().question(
                 self, self.tr("Changed Not Applied"),
                 self.tr(
                     'Initialization configuration has changed but "Initialization" button was not clicked. Proceed?'),
@@ -154,16 +153,16 @@ class InitializationPage(ContentPage):
 
             try:
                 await CaseManager().initialize()
-                progressDialog.finish(self.tr('Initialization Completed'))
+                await progressDialog.finish(self.tr('Initialization Completed'))
                 self._dbConfigCount = coredb.CoreDB().configCount
             except PermissionError:
-                progressDialog.finish('Permission error')
+                await progressDialog.finish('Permission error')
             except SolverNotFound as e:
-                progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+                await progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             except CanceledException:
-                progressDialog.finish(self.tr('Calculation cancelled'))
+                await progressDialog.finish(self.tr('Calculation cancelled'))
             except RuntimeError as r:
-                progressDialog.finish(str(r))
+                await progressDialog.finish(str(r))
             finally:
                 CaseManager().progress.disconnect(progressDialog.setLabelText)
 

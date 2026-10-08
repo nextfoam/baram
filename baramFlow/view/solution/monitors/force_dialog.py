@@ -9,12 +9,11 @@ from PySide6.QtWidgets import QDialog
 from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts
-from baramFlow.base.monitor.monitor import MonitorManager, ForceMonitorConfiguration
-from baramFlow.base.monitor.monitor import ForceDirection
-from baramFlow.base.xml_helper import Vector
+from baramFlow.base.base import DirectionSpecificationMethod, DirectionSpecificationMethodTexts, Vector
+from baramFlow.base.monitor.monitor import ForceMonitorConfiguration, ForceDirection
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.services.monitor.monitor_service import MonitorService
 from baramFlow.view.widgets.region_objects_selector import BoundariesSelector
 
 from .force_dialog_ui import Ui_ForceDialog
@@ -22,11 +21,6 @@ from .force_dialog_ui import Ui_ForceDialog
 
 class ForceDialog(QDialog):
     def __init__(self, parent, uuid=None):
-        """Constructs force monitor setup dialog.
-
-        Args:
-            name: Force Monitor name. If None, create a new monitor.
-        """
         super().__init__(parent)
         self._ui = Ui_ForceDialog()
         self._ui.setupUi(self)
@@ -63,9 +57,9 @@ class ForceDialog(QDialog):
     def _load(self):
         if self._uuid is None:
             self._isNew = True
-            data = MonitorManager.newForceMonitor()
+            data = MonitorService.newForceMonitor()
         else:
-            data = MonitorManager.getForceMonitor(self._uuid)
+            data = MonitorService.getForceMonitor(self._uuid)
             self._ui.nameWidget.hide()
             self._ui.monitor.setTitle(data.monitorBase.name)
 
@@ -81,8 +75,8 @@ class ForceDialog(QDialog):
         self._ui.liftDirectionX.setPFloat(data.forceDirection.liftDirection.x)
         self._ui.liftDirectionY.setPFloat(data.forceDirection.liftDirection.y)
         self._ui.liftDirectionZ.setPFloat(data.forceDirection.liftDirection.z)
-        self._ui.AoA.setText(data.forceDirection.angleOfAttack)
-        self._ui.AoS.setText(data.forceDirection.angleOfSideslip)
+        self._ui.AoA.setPFloat(data.forceDirection.angleOfAttack)
+        self._ui.AoS.setPFloat(data.forceDirection.angleOfSideslip)
 
         self._ui.centerOfRotationX.setPFloat(data.centerOfRotation.x)
         self._ui.centerOfRotationY.setPFloat(data.centerOfRotation.y)
@@ -99,7 +93,7 @@ class ForceDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
             return
 
-        if name != self._base.name and MonitorManager.isExistingName(name):
+        if name != self._base.name and MonitorService.isExistingName(name):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Name "{0}" already exist.'.format(name)))
             return
@@ -124,8 +118,8 @@ class ForceDialog(QDialog):
                                      self._ui.liftDirectionY.pFloat(self.tr('Lift Direction')),
                                      self._ui.liftDirectionZ.pFloat(self.tr('Lift Direction'))))
             if forceDirection.specificationMethod == DirectionSpecificationMethod.AOA_AOS:
-                forceDirection.angleOfAttack = str(PFloat(self._ui.AoA.text(), self.tr('Angle of Attack')))
-                forceDirection.angleOfSideslip = str(PFloat(self._ui.AoS.text(), self.tr('Angle of Sideslip')))
+                forceDirection.angleOfAttack = self._ui.AoA.pFloat(self.tr('Angle of Attack'))
+                forceDirection.angleOfSideslip = self._ui.AoS.pFloat(self.tr('Angle of Sideslip'))
 
             data = ForceMonitorConfiguration(
                 monitorBase=base,
@@ -138,9 +132,9 @@ class ForceDialog(QDialog):
                 boundaries=self._boundaries)
 
             if self._isNew:
-                MonitorManager.addForceMonitor(data)
+                MonitorService.addForceMonitor(data)
             else:
-                MonitorManager.updateForceMonitor(data)
+                MonitorService.updateForceMonitor(data)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Lock
+from typing import Optional
 
 from PySide6.QtCore import QCoreApplication
 from thermo import PR
@@ -9,8 +10,8 @@ from thermo import PR
 from libbaram.math import calucateDirectionsByRotation
 
 from baramFlow.base.base import DirectionSpecificationMethod
-from baramFlow.base.material.material import (
-    UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, SpecificHeatSpecification, TransportSpecification)
+from baramFlow.base.material.constants import UNIVERSAL_GAS_CONSTANT, Phase
+from baramFlow.base.material.constants import DensitySpecification, SpecificHeatSpecification, TransportSpecification
 from baramFlow.libbaram.calculation import AverageCalculator
 
 from . import coredb
@@ -27,44 +28,71 @@ _mutex = Lock()
 
 class Region:
     def __init__(self, db, rname):
-        self._rname = rname
+        self._rname: str = rname
 
-        self._db = db
+        self._db: _CoreDB = db
 
-        self._mid = RegionDB.getMaterial(rname)
-        self._secondaryMaterials = RegionDB.getSecondaryMaterials(rname)
-        self._phase = MaterialDB.getPhase(self._mid)
-        self._boundaries = db.getBoundaryConditions(self._rname)
+        self._mid: str = RegionDB.getMaterial(rname)
+        self._secondaryMaterials: list[str] = RegionDB.getSecondaryMaterials(rname)
+        self._phase: Phase = MaterialDB.getPhase(self._mid)
+        self._boundaries: list[str, str, str] = db.getBoundaryConditions(self._rname)
 
-        self._U = None
-        self._t = None
-        self._rho = None
+        self._U: list[float, float, float]
+        self._p: float
+        self._t: float
+        self._rho: Optional[float] = None
 
-        self._nut = None
-        self._alphat = None
-        self._k = None
-        self._e = None
-        self._w = None
+        self._nut: Optional[float] = None
+        self._alphat: Optional[float] = None
+        self._k: Optional[float] = None
+        self._e: Optional[float] = None
+        self._w: Optional[float] = None
 
         self._initialValuesXpath = InitializationDB.getXPath(rname) + '/initialValues'
 
         self._U = db.getVector(f'{self._initialValuesXpath}/velocity')
+        self._p = float(db.getValue(f'{self._initialValuesXpath}/pressure'))
         self._t = float(db.getValue(f'{self._initialValuesXpath}/temperature'))
 
         if self.isFluid():
-            p = float(db.getValue(f'{self._initialValuesXpath}/pressure'))
             v = float(db.getValue(f'{self._initialValuesXpath}/scaleOfVelocity'))
             i = (float(db.getValue(f'{self._initialValuesXpath}/turbulentIntensity')) / 100.0)
             b = float(db.getValue(f'{self._initialValuesXpath}/turbulentViscosity'))
 
             material = MaterialDB.getMaterialComposition(f'{self._initialValuesXpath}/species', self._mid)
-            self._rho = db.getDensity(material, self._t, p)  # Density
+            self._rho = db.getDensity(material, self._t, self._p)  # Density
             mu = db.getViscosity(material, self._t)  # Viscosity
+
+            if self._rho == 0:
+                if self._rname:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Material density is zero in region "{0}". '
+                        'Check the material properties and initial values.').format(self._rname)
+                else:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Material density is zero. '
+                        'Check the material properties and initial values.')
+                raise RuntimeError(message)
 
             nu = mu / self._rho  # Kinetic Viscosity
             pr = float(db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
 
             self._nut = b * nu
+
+            if self._nut == 0:
+                if self._rname:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Turbulent viscosity is zero in region "{0}". '
+                        'Check the material properties and initial values.').format(self._rname)
+                else:
+                    message = QCoreApplication.translate(
+                        'CoreDBReader',
+                        'Turbulent viscosity is zero. '
+                        'Check the material properties and initial values.')
+                raise RuntimeError(message)
 
             self._alphat = self._rho * self._nut / pr
 
@@ -113,6 +141,10 @@ class Region:
         return self._w
 
     @property
+    def initialPressure(self):
+        return self._p
+
+    @property
     def initialTemperature(self):
         return self._t
 
@@ -145,6 +177,8 @@ class Region:
     def isSolid(self):
         return self._phase == Phase.SOLID
 
+    def isMultiPhase(self):
+        return len(self.secondaryMaterials) > 0
 
 class CoreDBReader(_CoreDB):
     def __new__(cls, *args, **kwargs):

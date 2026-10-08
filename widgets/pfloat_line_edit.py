@@ -15,6 +15,7 @@ class PFloatLineEdit(QLineEdit):
         super().__init__(*args, **kwargs)
 
         self.setValidator(QRegularExpressionValidator(QRegularExpression(F'({FLOAT})|({PARAMETER})'), self))
+        self.setMinimumWidth(90)
 
     def setPFloat(self, value: PFloat):
         self.setText(str(value))

@@ -9,9 +9,9 @@ from uuid import UUID, uuid4
 from bidict import bidict
 
 from baramFlow.coredb.libdb import E, nsmap
+from baramFlow.base.base import Vector
 from baramFlow.base.dynamic_mesh.rigid_body_solver import RigidBodySolver
 from baramFlow.base.dynamic_mesh.restraint import Restraint
-from baramFlow.base.xml_helper import Vector
 from libbaram.pfloat import PFloat
 
 

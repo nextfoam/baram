@@ -136,7 +136,7 @@ class CellZoneConditionsPage(ContentPage):
 
     def _edit(self):
         if item := self._ui.cellZones.currentItem():
-            self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
+            self._dialog = CellZoneConditionDialog(self, str(item.czid()), item.rname())
             self._dialog.accepted.connect(item.update)
             self._dialog.open()
 

@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QButtonGroup
 
 from baramMesh.db.configurations_schema import Step
+from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 
 
 steps = {
@@ -18,15 +20,15 @@ steps = {
 
 
 class NavigationView(QObject):
-    currentStepChanged = Signal(int, int)
+    currentStepChanged = Signal(Step, Step)
 
-    def __init__(self, ui):
+    def __init__(self, ui: Ui_MainWindow):
         super().__init__()
 
-        self._ui = ui
-        self._steps = ui.stepButtons
-        self._currentStep = Step.NONE
-        self._workingStep = Step.GEOMETRY
+        self._ui: Ui_MainWindow = ui
+        self._steps: QButtonGroup = ui.stepButtons
+        self._currentStep: Step = Step.NONE
+        self._workingStep: Step = Step.GEOMETRY
 
         for b in self._steps.buttons():
             self._steps.setId(b, steps[b.objectName()])
@@ -38,7 +40,7 @@ class NavigationView(QObject):
 
     def setCurrentStep(self, step):
         self._steps.button(step).setChecked(True)
-        self._stepChanged(step)
+        self._handleStepButtonClicked()
 
     def enableStep(self, step):
         self._steps.button(step).setEnabled(True)
@@ -62,10 +64,10 @@ class NavigationView(QObject):
         setBold(self._steps.button(step), True)
 
     def _connectSignalsSlots(self):
-        self._steps.idClicked.connect(self._stepChanged)
+        self._steps.idClicked.connect(self._handleStepButtonClicked)
 
-    def _stepChanged(self, step=None):
-        step = self._steps.id(self._steps.checkedButton())
+    def _handleStepButtonClicked(self):
+        step = Step(self._steps.id(self._steps.checkedButton()))
         self.currentStepChanged.emit(step, self._currentStep)
         self._currentStep = step
 

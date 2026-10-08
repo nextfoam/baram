@@ -228,7 +228,6 @@ class BoundaryLayerPage(StepPage):
         self._ui.boundaryLayerConfigurations.disableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
 
-    @qasync.asyncSlot()
     async def _run(self):
         self._disableEdit()
 

@@ -31,7 +31,8 @@ class ImportDialog(QDialog):
         self._ui.select.clicked.connect(self._openFileDialog)
 
     def _openFileDialog(self):
-        self._dialog = QFileDialog(self, self.tr('Select STL File'), app.settings.getRecentImportDirectory(), 'STL (*.stl)')
+        self._dialog = QFileDialog(
+            self, self.tr('Select STL File'), app.settings.getRecentImportDirectory(), 'STL (*.stl *.STL)')
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         self._dialog.filesSelected.connect(self._filesSelected)

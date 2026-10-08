@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+from asyncio import Future, get_running_loop, CancelledError
 from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import QTimer, Qt, Signal
 
@@ -16,16 +16,18 @@ class ProgressDialog(QDialog):
         self._ui = Ui_ProgressDialog()
         self._ui.setupUi(self)
 
-        self._autoCloseOnCancel = autoCloseOnCancel
-        self._openDelay = openDelay
+        self._autoCloseOnCancel: bool = autoCloseOnCancel
+        self._openDelay: int = openDelay
 
-        self._canceled = False
-        self._isOpen = False
+        self._canceled: bool = False
+        self._isOpen: bool = False
 
-        self._timer: QTimer = None
+        self._timer: QTimer | None = None
+
+        self._future: Future | None = None
 
         self.setWindowTitle(title)
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
 
         self._ui.button.setVisible(cancelable)
 
@@ -44,13 +46,15 @@ class ProgressDialog(QDialog):
     def hideCancelButton(self):
         self._ui.button.setVisible(False)
 
-    def abort(self, text: str):
+    async def abort(self, text: str):
         if not self._isOpen:
             super().open()
 
-        self.finish(text)
+        await self.finish(text)
 
-    def finish(self, text: str):
+    async def finish(self, text: str):
+        self._future = get_running_loop().create_future()
+
         self._clearTimer()
 
         self._ui.label.setText(text)
@@ -60,6 +64,11 @@ class ProgressDialog(QDialog):
         self._ui.button.show()
 
         self._ui.button.clicked.connect(self.close)
+
+        try:
+            await self._future
+        except CancelledError:
+            pass
 
     def open(self):
         if self._openDelay > 0:
@@ -81,6 +90,12 @@ class ProgressDialog(QDialog):
         self._clearTimer()
         super().close()
         self._isOpen = False
+
+    def closeEvent(self, event):
+        if self._future is not None:
+            self._future.cancel()
+
+        event.accept()
 
     def cancel(self):
         self.close()

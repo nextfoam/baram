@@ -649,6 +649,7 @@ class CaseManager(QObject):
     async def initialize(self):
         case = await self.loadLiveCase()
         await case.initialize()
+        self.resultCleared.emit()
 
     def latestTimeToZero(self):
         FileSystem.latestTimeToZero()

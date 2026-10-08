@@ -96,7 +96,7 @@ class GraphicsPage(ContentPage):
         name = GraphicsDB().getNewGraphicName()
         self._report = Graphic(uuid=uuid, name=name)
         self._report.time = times[-1]
-        self._dialog = GraphicDialog(self, self._report, times)
+        self._dialog = GraphicDialog(self, self._report)
         self._dialog.accepted.connect(self._addGraphic)
         self._dialog.open()
 
